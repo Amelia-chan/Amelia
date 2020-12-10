@@ -5,11 +5,8 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
 import pw.mihou.amelia.commands.base.Command;
-import pw.mihou.amelia.commands.base.db.ServerDB;
 import pw.mihou.amelia.commands.db.FeedDB;
 import pw.mihou.amelia.templates.Message;
-
-import static pw.mihou.amelia.commands.creation.RegisterCommand.hasRole;
 
 public class UnsubscribeCommand extends Command {
 

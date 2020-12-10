@@ -1,6 +1,5 @@
 package pw.mihou.amelia.commands.feeds;
 
-import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
