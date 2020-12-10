@@ -43,7 +43,7 @@ public class RegisterCommand extends Command {
                             String content = event.getMessageContent().replaceAll(args[0] + " " + args[1] + " " + args[2] + " ", "");
                             if (isStory(args[1])) {
                                 // Story version.
-                                new Amatsuki().searchStory(content).thenAccept(storyResults -> {
+                                amatsuki.searchStory(content).thenAccept(storyResults -> {
                                     if (!storyResults.isEmpty()) {
                                         StoryNavigators navigators = new StoryNavigators(storyResults);
                                         Message.msg(storyResultEmbed(navigators.current(), navigators.getArrow(), navigators.getMaximum())).send(event.getChannel()).thenAccept(message -> {
@@ -87,7 +87,7 @@ public class RegisterCommand extends Command {
                                 });
                             } else {
                                 // User version.
-                                new Amatsuki().searchUser(content).thenAccept(userResults -> {
+                                amatsuki.searchUser(content).thenAccept(userResults -> {
                                     if (!userResults.isEmpty()) {
                                         UserNavigators navigators = new UserNavigators(userResults);
                                         Message.msg(userResultEmbed(navigators.current(), navigators.getArrow(), navigators.getMaximum())).send(event.getChannel()).thenAccept(message -> {
@@ -107,14 +107,11 @@ public class RegisterCommand extends Command {
                                                             message.edit(userResultEmbed(navigators.backwards(), navigators.getArrow(), navigators.getMaximum()));
                                                         }
                                                     } else if (e.getEmoji().equalsEmoji("👍")) {
-                                                        navigators.current().transformToUser().thenAccept(u -> {
-                                                            ReadRSS.getLatest(u.getRSS()).ifPresentOrElse(syndEntry -> {
-                                                                FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), u.getUID(), u.getRSS(), channel.getId(), user.getId(), u.getName() + "'s stories", syndEntry.getPublishedDate(), new ArrayList<>()));
-                                                                message.delete();
-                                                                System.out.println(syndEntry.getPublishedDate());
-                                                                Message.msg("The bot will now send updates for the user's stories on the channel, " + channel.getMentionTag()).send(event.getChannel());
-                                                            }, () -> Message.msg("An error occurred while retrieving RSS feed, please try again.").send(event.getChannel()));
-                                                        });
+                                                        navigators.current().transformToUser().thenAccept(u -> ReadRSS.getLatest(u.getRSS()).ifPresentOrElse(syndEntry -> {
+                                                            FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), u.getUID(), u.getRSS(), channel.getId(), user.getId(), u.getName() + "'s stories", syndEntry.getPublishedDate(), new ArrayList<>()));
+                                                            message.delete();
+                                                            Message.msg("The bot will now send updates for the user's stories on the channel, " + channel.getMentionTag()).send(event.getChannel());
+                                                        }, () -> Message.msg("An error occurred while retrieving RSS feed, please try again.").send(event.getChannel())));
                                                         message.delete("End of purpose.");
                                                     } else if (e.getEmoji().equalsEmoji("👎")) {
                                                         message.delete("End of purpose.");
