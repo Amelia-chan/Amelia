@@ -1,4 +1,4 @@
-### Amelia, a Discord Bot of Waters.
+#### Amelia, a Discord Bot of Waters.
 
 Amelia is a simple Discord bot that is used to fetch RSS feeds, and updates users
 about a certain author updating their stories.
@@ -34,7 +34,6 @@ After all of that is done, make sure you have Java 11 by opening your terminal a
 openjdk 11.0.9.1 2020-11-04
 OpenJDK Runtime Environment (build 11.0.9.1+1-Ubuntu-0ubuntu1.18.04)
 OpenJDK 64-Bit Server VM (build 11.0.9.1+1-Ubuntu-0ubuntu1.18.04, mixed mode, sharing)
-
 ```
 or it could be something higher the JDK 11, that is fine.
 
