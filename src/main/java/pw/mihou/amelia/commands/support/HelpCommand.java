@@ -37,10 +37,8 @@ public class HelpCommand extends Command {
 
     private EmbedBuilder helpEmbed(DiscordApi api){
         return new Embed().setThumbnail(api.getYourself().getAvatar())
-                .build().addInlineField("Creation", "`register`")
-                .addInlineField("Deletion", "`remove`")
-                .addInlineField("Settings", "`settings`")
-                .addInlineField("Feeds", "`feeds`\n`subscribe`\n`unsubscribe`")
-                .addInlineField("Miscellaneous", "`ping`\n`invite`\n`test`");
+                .build()
+                .addInlineField("Feeds", "`feeds`\n`subscribe`\n`unsubscribe`\n`register`\n`remove`")
+                .addInlineField("Miscellaneous", "`ping`\n`invite`\n`test`\n`settings`");
     }
 }
