@@ -29,7 +29,7 @@ public class RegisterCommand extends Command {
     private final Amatsuki amatsuki = new Amatsuki();
 
     public RegisterCommand(){
-        super("register", "Registers either a user, or a story's RSS feed.", "register [story/user] [query] [@channel]", true);
+        super("register", "Registers either a user, or a story's RSS feed.", "register [story/user] [#channel] [@user]", true);
     }
 
     @Override

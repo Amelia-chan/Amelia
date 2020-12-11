@@ -100,9 +100,8 @@ public class FeedDB {
         return getServer(server).getChannel(model.getChannel()).getFeedModel(model.getUnique());
     }
 
-    public static void removeModel(long server, long channel, long unique){
+    public static void removeModel(long unique){
         db.deleteOne(Filters.eq("unique", unique));
-        getServer(server).getChannel(channel).removeFeed(unique);
     }
 
     public static ServerFeeds getServer(long server) {

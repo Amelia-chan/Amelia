@@ -6,12 +6,10 @@ import java.util.*;
 
 public class ChannelFeeds {
 
-    private long channel;
-    private long server;
-    private Map<Long, FeedModel> feeds = new HashMap<>();
+    private final long server;
+    private final Map<Long, FeedModel> feeds = new HashMap<>();
 
-    public ChannelFeeds(long channel, long server){
-        this.channel = channel;
+    public ChannelFeeds(long server){
         this.server = server;
     }
 
@@ -22,19 +20,18 @@ public class ChannelFeeds {
         return Optional.of(feeds.get(id));
     }
 
-    public FeedModel addFeed(FeedModel model){
+    public void addFeed(FeedModel model){
         if(!feeds.containsKey(model.getUnique())) {
             feeds.put(model.getUnique(), model);
         } else {
             feeds.replace(model.getUnique(), model);
         }
-        return model;
     }
 
     public void removeFeed(long id){
         // Removes it from both the database and the db.
         feeds.remove(id);
-        FeedDB.removeModel(server, channel, id);
+        FeedDB.removeModel(id);
     }
 
     public ArrayList<FeedModel> getModels(){
