@@ -24,8 +24,14 @@ public class TestCommand extends Command {
             try {
                 long id = Long.parseLong(args[1]);
                 if (FeedDB.validate(id)) {
-                    FeedDB.getServer(server.getId()).getChannel(event.getChannel().getId()).getFeedModel(id).ifPresentOrElse(feedModel -> ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry -> server.getTextChannelById(feedModel.getChannel()).ifPresentOrElse(tc -> Message.msg("\uD83D\uDCD6 **"+syndEntry.getTitle()+" by "+syndEntry.getAuthor()+".**" +
-                            "\n"+syndEntry.getLink()+"\n\n"+getMentions(feedModel.getMentions(), server)).send(tc), () -> Message.msg("Error: The channel provided does not exist.").send(event.getChannel())), () -> Message.msg("Error: We couldn't connect to ScribbleHub's RSS feed, please try again later.").send(event.getChannel())), () -> Message.msg("We couldn't find the feed, are you sure you are using the feed's unique ID?").send(event.getChannel()));
+                    FeedDB.getServer(server.getId()).getChannel(event.getChannel().getId()).getFeedModel(id).ifPresentOrElse(feedModel ->
+                                    ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry ->
+                             server.getTextChannelById(feedModel.getChannel()).ifPresentOrElse(tc ->
+                             Message.msg("\uD83D\uDCD6 **"+syndEntry.getTitle()+" by "+syndEntry.getAuthor()+".**" +
+                            "\n"+syndEntry.getLink()+"\n\n"+getMentions(feedModel.getMentions(), server)).send(tc),
+                            () -> Message.msg("Error: The channel provided does not exist.").send(event.getChannel())),
+                            () -> Message.msg("Error: We couldn't connect to ScribbleHub's RSS feed, please try again later.").send(event.getChannel())),
+                            () -> Message.msg("We couldn't find the feed, are you sure you are using the feed's unique ID?").send(event.getChannel()));
                 } else {
                     Message.msg("Error: We couldn't find the feed, are you sure you are using the feed's unique id." +
                             "\nPlease verify using `feeds`").send(event.getChannel());

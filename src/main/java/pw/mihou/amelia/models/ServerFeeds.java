@@ -8,8 +8,8 @@ import java.util.concurrent.CompletableFuture;
 public class ServerFeeds {
 
     private final long server;
-    private static final Map<Long, ChannelFeeds> channels = new HashMap<>();
-    private static final ArrayList<FeedModel> models = new ArrayList<>();
+    private final Map<Long, ChannelFeeds> channels = new HashMap<>();
+    private final ArrayList<FeedModel> models = new ArrayList<>();
 
     public ServerFeeds(long server){
         this.server = server;

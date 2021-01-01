@@ -45,8 +45,7 @@ public class FeedDB {
                         doc.getString("url"), doc.getLong("channel"), doc.getLong("user"), doc.getString("name"), doc.getDate("date"),
                         doc.get("mentions", new ArrayList<>()));
 
-                // Stores for future use.
-                getServer(doc.getLong("server")).getChannel(doc.getLong("channel")).addFeed(model);
+                // Store.
                 models.add(model);
             });
             return models;
@@ -90,6 +89,9 @@ public class FeedDB {
 
         Document doc = db.find(Filters.eq("unique", unique)).first();
 
+        if(doc.getLong("server") != server)
+            return Optional.empty();
+
         FeedModel model = new FeedModel(doc.getLong("unique"), doc.getInteger("id"), doc.getString("url"), doc.getLong("channel"), doc.getLong("user"), doc.getString("name"), doc.getDate("date"),
                 doc.get("mentions", new ArrayList<>()));
 
@@ -107,6 +109,7 @@ public class FeedDB {
     public static ServerFeeds getServer(long server) {
         if (!servers.containsKey(server)){
             servers.put(server, new ServerFeeds(server));
+            return servers.get(server);
         }
 
         return servers.get(server);
