@@ -7,9 +7,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class ServerFeeds {
 
-    private long server;
-    private static Map<Long, ChannelFeeds> channels = new HashMap<>();
-    private static ArrayList<FeedModel> models = new ArrayList<>();
+    private final long server;
+    private final Map<Long, ChannelFeeds> channels = new HashMap<>();
+    private final ArrayList<FeedModel> models = new ArrayList<>();
 
     public ServerFeeds(long server){
         this.server = server;
@@ -17,7 +17,7 @@ public class ServerFeeds {
 
     public ChannelFeeds getChannel(long id){
         if(!channels.containsKey(id)) {
-            channels.put(id, new ChannelFeeds(id, server));
+            channels.put(id, new ChannelFeeds(server));
         }
 
         return channels.get(id);
@@ -31,18 +31,9 @@ public class ServerFeeds {
             }
 
             // Add all the new feeds.
-            channels.forEach((aLong, channelFeeds) -> {
-                models.addAll(channelFeeds.getModels());
-            });
+            channels.forEach((aLong, channelFeeds) -> models.addAll(channelFeeds.getModels()));
             return models;
         });
-    }
-
-    public ArrayList<FeedModel> getCachedModels(){
-        if(models.isEmpty())
-            getModels();
-
-        return models;
     }
 
     public ArrayList<ChannelFeeds> getFeeds(){
