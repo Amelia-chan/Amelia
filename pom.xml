@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.github.ShindouMihou</groupId>
             <artifactId>amatsuki</artifactId>
-            <version>1.2.5r1</version>
+            <version>1.2.6r1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
