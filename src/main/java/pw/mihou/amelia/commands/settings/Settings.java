@@ -8,6 +8,7 @@ import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
 import pw.mihou.amelia.commands.base.Command;
 import pw.mihou.amelia.commands.base.db.ServerDB;
+import pw.mihou.amelia.commands.db.MessageDB;
 import pw.mihou.amelia.models.ServerModel;
 import pw.mihou.amelia.templates.Embed;
 import pw.mihou.amelia.templates.Message;
@@ -65,6 +66,19 @@ public class Settings extends Command {
                             Message.msg("Error: Invalid arguments.").send(event.getChannel());
                         }
                     }
+                } else if(args[1].equalsIgnoreCase("message")){
+                    if(args.length > 2){
+                        String message = event.getMessageContent().replaceFirst(args[0] + " " + args[1] + " ", "");
+                        MessageDB.setFormat(server.getId(), message);
+                        Message.msg("The message format has now been changed.").send(event.getChannel());
+                    } else {
+                        Message.msg("Error: Please type the message you wish to use for all feeds. \n" +
+                                "**Placeholders**" +
+                                "\n- **{title}**, the title of the chapter." +
+                                "\n- **{author}**, the author of the story." +
+                                "\n- **{link}**, the link to the chapter." +
+                                "\n- **{subscribed}**, mentions of all subscribed roles.").send(event.getChannel());
+                    }
                 }
             } else {
               Message.msg(embed(server)).send(event.getChannel());
@@ -80,6 +94,7 @@ public class Settings extends Command {
                 .setDescription("Here are your current server settings.")
                 .build().addInlineField("Limit", (model.getLimit() ? "`Active`" : "`Inactive (WARNING)`"))
                 .addInlineField("Prefix", "`"+model.getPrefix()+"`")
-                .addInlineField("`RSS Manager Role`", (model.getRole().isPresent() ? server.getRoleById(model.getRole().get()).map(Role::getMentionTag).orElse("`Disabled`") : "`Disabled`"));
+                .addInlineField("RSS Manager Role", (model.getRole().isPresent() ? server.getRoleById(model.getRole().get()).map(Role::getMentionTag).orElse("`Disabled`") : "`Disabled`"))
+                .addField("Message Format", MessageDB.getFormat(server.getId()));
     }
 }
