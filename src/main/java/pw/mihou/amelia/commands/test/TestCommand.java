@@ -6,6 +6,7 @@ import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
 import pw.mihou.amelia.commands.base.Command;
 import pw.mihou.amelia.commands.db.FeedDB;
+import pw.mihou.amelia.commands.db.MessageDB;
 import pw.mihou.amelia.io.rome.ReadRSS;
 import pw.mihou.amelia.templates.Message;
 
@@ -27,8 +28,10 @@ public class TestCommand extends Command {
                     FeedDB.getServer(server.getId()).getChannel(event.getChannel().getId()).getFeedModel(id).ifPresentOrElse(feedModel ->
                                     ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry ->
                              server.getTextChannelById(feedModel.getChannel()).ifPresentOrElse(tc ->
-                             Message.msg("\uD83D\uDCD6 **"+syndEntry.getTitle()+" by "+syndEntry.getAuthor()+".**" +
-                            "\n"+syndEntry.getLink()+"\n\n"+getMentions(feedModel.getMentions(), server)).send(tc),
+                                     // Replace all placeholders ahead of time.
+                                     Message.msg(MessageDB.requestFormat(tc.getServer().getId()).replaceAll("\\{title}", syndEntry.getTitle())
+                                             .replaceAll("\\{author}", syndEntry.getAuthor()).replaceAll("\\{link}", syndEntry.getLink())
+                                             .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc),
                             () -> Message.msg("Error: The channel provided does not exist.").send(event.getChannel())),
                             () -> Message.msg("Error: We couldn't connect to ScribbleHub's RSS feed, please try again later.").send(event.getChannel())),
                             () -> Message.msg("We couldn't find the feed, are you sure you are using the feed's unique ID?").send(event.getChannel()));

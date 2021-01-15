@@ -10,6 +10,7 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.api.util.logging.FallbackLoggerConfiguration;
 import pw.mihou.amelia.commands.creation.RegisterCommand;
 import pw.mihou.amelia.commands.db.FeedDB;
+import pw.mihou.amelia.commands.db.MessageDB;
 import pw.mihou.amelia.commands.feeds.FeedsCommand;
 import pw.mihou.amelia.commands.feeds.SubscribeCommand;
 import pw.mihou.amelia.commands.feeds.UnsubscribeCommand;
@@ -75,8 +76,10 @@ public class Amelia {
             FeedDB.retrieveAllModels().thenAccept(feedModels -> feedModels.forEach(feedModel -> {
                 ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry -> {
                     if(syndEntry.getPublishedDate().after(feedModel.getDate())){
-                        api.getServerTextChannelById(feedModel.getChannel()).ifPresent(tc -> feedModel.setPublishedDate(syndEntry.getPublishedDate()).update(tc.getServer().getId()).thenAccept(unused -> Message.msg("\uD83D\uDCD6 **"+syndEntry.getTitle()+" by "+syndEntry.getAuthor()+".**" +
-                                "\n"+syndEntry.getLink()+"\n\n"+getMentions(feedModel.getMentions(), tc.getServer())).send(tc)));
+                        api.getServerTextChannelById(feedModel.getChannel()).ifPresent(tc -> feedModel.setPublishedDate(syndEntry.getPublishedDate()).update(tc.getServer().getId()).thenAccept(unused ->
+                                Message.msg(MessageDB.requestFormat(tc.getServer().getId()).replaceAll("\\{title}", syndEntry.getTitle())
+                                .replaceAll("\\{author}", syndEntry.getAuthor()).replaceAll("\\{link}", syndEntry.getLink())
+                                .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc)));
                     }
                 }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL()));
                 // Thread.sleep is here, so we don't overload ScribbleHub.
