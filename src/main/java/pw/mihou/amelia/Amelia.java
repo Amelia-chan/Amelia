@@ -22,12 +22,14 @@ import pw.mihou.amelia.commands.support.HelpCommand;
 import pw.mihou.amelia.commands.test.TestCommand;
 import pw.mihou.amelia.db.MongoDB;
 import pw.mihou.amelia.io.Scheduler;
+import pw.mihou.amelia.io.StoryHandler;
 import pw.mihou.amelia.io.rome.ReadRSS;
 import pw.mihou.amelia.listeners.BotJoinCommand;
 import pw.mihou.amelia.listeners.BotLeaveListener;
 import pw.mihou.amelia.templates.Message;
 
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,20 +76,17 @@ public class Amelia {
         System.out.println("-> The bot has started with everything in place!");
         Scheduler.schedule(() -> {
             FeedDB.retrieveAllModels().thenAccept(feedModels -> feedModels.forEach(feedModel -> {
-                ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry -> {
+                // We want them all to be executed in different threads to speed up everything.
+                CompletableFuture.runAsync(() -> ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry -> {
                     if(syndEntry.getPublishedDate().after(feedModel.getDate())){
                         api.getServerTextChannelById(feedModel.getChannel()).ifPresent(tc -> feedModel.setPublishedDate(syndEntry.getPublishedDate()).update(tc.getServer().getId()).thenAccept(unused ->
-                                Message.msg(MessageDB.requestFormat(tc.getServer().getId()).replaceAll("\\{title}", syndEntry.getTitle())
-                                .replaceAll("\\{author}", syndEntry.getAuthor()).replaceAll("\\{link}", syndEntry.getLink())
-                                .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc)));
+                                Message.msg(MessageDB.getFormat(tc.getServer().getId())
+                                        .replaceAll("\\{title}", syndEntry.getTitle())
+                                        .replaceAll("\\{author}", StoryHandler.getAuthor(syndEntry.getAuthor(), feedModel.getId()))
+                                        .replaceAll("\\{link}", syndEntry.getLink())
+                                        .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc)));
                     }
-                }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL()));
-                // Thread.sleep is here, so we don't overload ScribbleHub.
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL())), Scheduler.getExecutorService());
             }));
             System.out.println("-> RSS feed deployment, complete.");
         }, 0, 10, TimeUnit.MINUTES);
