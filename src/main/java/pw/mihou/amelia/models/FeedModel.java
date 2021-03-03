@@ -8,14 +8,14 @@ import java.util.concurrent.CompletableFuture;
 
 public class FeedModel {
 
-    private int id;
-    private long unique;
-    private String feedURL;
-    private long channel;
-    private String name;
-    private long user;
+    private final int id;
+    private final long unique;
+    private final String feedURL;
+    private final long channel;
+    private final String name;
+    private final long user;
     private Date date;
-    private ArrayList<Long> mentions = new ArrayList<>();
+    private final ArrayList<Long> mentions = new ArrayList<>();
 
     public FeedModel(long unique, int id, String feedURL, long channel, long user, String name, Date date, ArrayList<Long> mentions) {
         this.unique = unique;
@@ -32,16 +32,12 @@ public class FeedModel {
         return mentions;
     }
 
-    public FeedModel subscribeRole(long id){
+    public void subscribeRole(long id){
         mentions.add(id);
-
-        return this;
     }
 
-    public FeedModel unsubscribeRole(long id){
+    public void unsubscribeRole(long id){
         mentions.remove(id);
-
-        return this;
     }
 
     public FeedModel setPublishedDate(Date date){
