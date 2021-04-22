@@ -28,6 +28,7 @@ import pw.mihou.amelia.listeners.BotJoinCommand;
 import pw.mihou.amelia.listeners.BotLeaveListener;
 import pw.mihou.amelia.templates.Message;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +53,10 @@ public class Amelia {
                 .loginAllShards().forEach(shard -> shard.thenAccept(Amelia::onShardLogin).exceptionally(ExceptionLogger.get())); // After they reply, we then direct each shard to a onShardLogin.
     }
 
+    private static int determineNextTarget(){
+        return LocalDateTime.now().getMinute()%10 != 0 ? (LocalDateTime.now().getMinute() + (10 - LocalDateTime.now().getMinute() % 10)) - LocalDateTime.now().getMinute() : 0;
+    }
+
     private static void onShardLogin(DiscordApi api){
 
         /* Performance optimizations **/
@@ -74,6 +79,8 @@ public class Amelia {
         System.out.println("-> All commmands are now registered!");
         api.updateActivity(ActivityType.WATCHING, "People read stories!");
         System.out.println("-> The bot has started with everything in place!");
+        int initial = determineNextTarget();
+        System.out.println("-> The scheduler will be delayed for " + initial + " minutes for synchronization.");
         Scheduler.schedule(() -> {
             FeedDB.retrieveAllModels().thenAccept(feedModels -> feedModels.forEach(feedModel -> {
                 // We want them all to be executed in different threads to speed up everything.
@@ -89,7 +96,7 @@ public class Amelia {
                 }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL())), Scheduler.getExecutorService());
             }));
             System.out.println("-> RSS feed deployment, complete.");
-        }, 0, 10, TimeUnit.MINUTES);
+        }, initial, 10, TimeUnit.MINUTES);
     }
 
     private static String getMentions(ArrayList<Long> roles, Server server){
