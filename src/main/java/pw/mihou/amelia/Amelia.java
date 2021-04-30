@@ -23,11 +23,14 @@ import pw.mihou.amelia.commands.test.TestCommand;
 import pw.mihou.amelia.db.MongoDB;
 import pw.mihou.amelia.io.Scheduler;
 import pw.mihou.amelia.io.StoryHandler;
+import pw.mihou.amelia.io.Terminal;
 import pw.mihou.amelia.io.rome.ReadRSS;
 import pw.mihou.amelia.listeners.BotJoinCommand;
 import pw.mihou.amelia.listeners.BotLeaveListener;
 import pw.mihou.amelia.templates.Message;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +55,10 @@ public class Amelia {
                 .loginAllShards().forEach(shard -> shard.thenAccept(Amelia::onShardLogin).exceptionally(ExceptionLogger.get())); // After they reply, we then direct each shard to a onShardLogin.
     }
 
+    private static int determineNextTarget(){
+        return LocalDateTime.now().getMinute()%10 != 0 ? (LocalDateTime.now().getMinute() + (10 - LocalDateTime.now().getMinute() % 10)) - LocalDateTime.now().getMinute() : 0;
+    }
+
     private static void onShardLogin(DiscordApi api){
 
         /* Performance optimizations **/
@@ -68,28 +75,32 @@ public class Amelia {
             MongoDB.shutdown();
             Scheduler.shutdown();
         }));
-        System.out.println("-> Javacord Optimizations and Shutdown hook is now ready!");
+        Terminal.log("Javacord Optimizations and Shutdown hook is now ready!");
 
         registerAllCommands(api);
-        System.out.println("-> All commmands are now registered!");
+        Terminal.log("All commands are now registered.");
         api.updateActivity(ActivityType.WATCHING, "People read stories!");
-        System.out.println("-> The bot has started with everything in place!");
+        Terminal.log("The bot has started!");
+        int initial = determineNextTarget();
+        Terminal.log("The scheduler will be delayed for " + initial + " minutes for synchronization.");
         Scheduler.schedule(() -> {
             FeedDB.retrieveAllModels().thenAccept(feedModels -> feedModels.forEach(feedModel -> {
                 // We want them all to be executed in different threads to speed up everything.
                 CompletableFuture.runAsync(() -> ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry -> {
                     if(syndEntry.getPublishedDate().after(feedModel.getDate())){
-                        api.getServerTextChannelById(feedModel.getChannel()).ifPresent(tc -> feedModel.setPublishedDate(syndEntry.getPublishedDate()).update(tc.getServer().getId()).thenAccept(unused ->
-                                Message.msg(MessageDB.getFormat(tc.getServer().getId())
-                                        .replaceAll("\\{title}", syndEntry.getTitle())
-                                        .replaceAll("\\{author}", StoryHandler.getAuthor(syndEntry.getAuthor(), feedModel.getId()))
-                                        .replaceAll("\\{link}", syndEntry.getLink())
-                                        .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc)));
+                        api.getServerTextChannelById(feedModel.getChannel()).ifPresent(tc -> {
+                            feedModel.setPublishedDate(syndEntry.getPublishedDate()).update(tc.getServer().getId()).thenAccept(unused ->
+                                    Message.msg(MessageDB.getFormat(tc.getServer().getId())
+                                            .replaceAll("\\{title}", syndEntry.getTitle())
+                                            .replaceAll("\\{author}", StoryHandler.getAuthor(syndEntry.getAuthor(), feedModel.getId()))
+                                            .replaceAll("\\{link}", syndEntry.getLink())
+                                            .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc));
+                            System.out.printf("[%s]: RSS feed deployed for: %s with feed id: [%d]", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), tc.getServer().getName(), feedModel.getUnique());
+                        });
                     }
                 }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL())), Scheduler.getExecutorService());
             }));
-            System.out.println("-> RSS feed deployment, complete.");
-        }, 0, 10, TimeUnit.MINUTES);
+        }, initial, 10, TimeUnit.MINUTES);
     }
 
     private static String getMentions(ArrayList<Long> roles, Server server){

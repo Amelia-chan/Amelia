@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.github.ShindouMihou</groupId>
             <artifactId>amatsuki</artifactId>
-            <version>1.2.6r2</version>
+            <version>v1.8.2r2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
@@ -49,9 +49,10 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.ShindouMihou</groupId>
+            <groupId>org.javacord</groupId>
             <artifactId>javacord</artifactId>
-            <version>7e7389e0a4</version>
+            <version>3.3.0</version>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
