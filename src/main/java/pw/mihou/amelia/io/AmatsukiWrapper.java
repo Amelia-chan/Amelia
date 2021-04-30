@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 public class AmatsukiWrapper {
 
     private static final Amatsuki connector = new Amatsuki().setLifespan(24, TimeUnit.HOURS).setCache(true);
-    private static final String base_story = "https://scribblehub.com/series/%s/";
+    private static final String base_story = "https://scribblehub.com/series/%s/amelia-discord-bot/";
 
     public static Story getStoryById(int id){
         // Amatsuki has its own built-in cache manager.
