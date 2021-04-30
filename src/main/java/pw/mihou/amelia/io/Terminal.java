@@ -10,7 +10,7 @@ public class Terminal {
     }
 
     public static void log(String message){
-        System.out.printf("[%s]: %s", getTime(), message);
+        System.out.printf("[%s]: %s\n", getTime(), message);
     }
 
 

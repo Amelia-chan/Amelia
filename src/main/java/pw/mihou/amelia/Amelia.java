@@ -75,11 +75,10 @@ public class Amelia {
             MongoDB.shutdown();
             Scheduler.shutdown();
         }));
-        System.out.println("[A] Javacord Optimizations and Shutdown hook is now ready!");
+        Terminal.log("Javacord Optimizations and Shutdown hook is now ready!");
 
         registerAllCommands(api);
         Terminal.log("All commands are now registered.");
-        System.out.println("-> All commmands are now registered!");
         api.updateActivity(ActivityType.WATCHING, "People read stories!");
         Terminal.log("The bot has started!");
         int initial = determineNextTarget();
