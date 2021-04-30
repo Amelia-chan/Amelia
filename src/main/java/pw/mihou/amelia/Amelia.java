@@ -23,6 +23,7 @@ import pw.mihou.amelia.commands.test.TestCommand;
 import pw.mihou.amelia.db.MongoDB;
 import pw.mihou.amelia.io.Scheduler;
 import pw.mihou.amelia.io.StoryHandler;
+import pw.mihou.amelia.io.Terminal;
 import pw.mihou.amelia.io.rome.ReadRSS;
 import pw.mihou.amelia.listeners.BotJoinCommand;
 import pw.mihou.amelia.listeners.BotLeaveListener;
@@ -74,14 +75,15 @@ public class Amelia {
             MongoDB.shutdown();
             Scheduler.shutdown();
         }));
-        System.out.println("-> Javacord Optimizations and Shutdown hook is now ready!");
+        System.out.println("[A] Javacord Optimizations and Shutdown hook is now ready!");
 
         registerAllCommands(api);
+        Terminal.log("All commands are now registered.");
         System.out.println("-> All commmands are now registered!");
         api.updateActivity(ActivityType.WATCHING, "People read stories!");
-        System.out.println("-> The bot has started with everything in place!");
+        Terminal.log("The bot has started!");
         int initial = determineNextTarget();
-        System.out.println("-> The scheduler will be delayed for " + initial + " minutes for synchronization.");
+        Terminal.log("The scheduler will be delayed for " + initial + " minutes for synchronization.");
         Scheduler.schedule(() -> {
             FeedDB.retrieveAllModels().thenAccept(feedModels -> feedModels.forEach(feedModel -> {
                 // We want them all to be executed in different threads to speed up everything.
@@ -94,7 +96,7 @@ public class Amelia {
                                             .replaceAll("\\{author}", StoryHandler.getAuthor(syndEntry.getAuthor(), feedModel.getId()))
                                             .replaceAll("\\{link}", syndEntry.getLink())
                                             .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc));
-                            System.out.println(String.format("[%s]: RSS feed deployed for: %s", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), tc.getServer().getName()));
+                            System.out.printf("[%s]: RSS feed deployed for: %s with feed id: [%d]", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), tc.getServer().getName(), feedModel.getUnique());
                         });
                     }
                 }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL())), Scheduler.getExecutorService());
