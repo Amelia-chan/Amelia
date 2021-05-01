@@ -11,8 +11,6 @@ import pw.mihou.amelia.commands.db.FeedDB;
 import pw.mihou.amelia.models.FeedModel;
 import pw.mihou.amelia.models.FeedNavigator;
 import pw.mihou.amelia.templates.Embed;
-import pw.mihou.amelia.templates.Message;
-
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -27,8 +25,7 @@ public class FeedsCommand extends Command {
         FeedDB.getServer(server.getId()).getModels().thenAccept(feedModels -> {
             FeedNavigator navigator = new FeedNavigator(feedModels);
             if (!navigator.getModels().isEmpty()) {
-                Message.msg(embed(server, navigator.current().orElse(new ArrayList<>()), 1))
-                        .send(event.getChannel()).thenAccept(message -> {
+                event.getMessage().reply(embed(server, navigator.current().orElse(new ArrayList<>()), 1)).thenAccept(message -> {
                     if (navigator.hasNext()) {
                         message.addReactions("⬅", "trash:775601666845573140", "➡");
                     } else {
@@ -61,8 +58,7 @@ public class FeedsCommand extends Command {
                     });
                 });
             } else {
-                Message.msg(embed(server, new ArrayList<>(), 1))
-                        .send(event.getChannel());
+                event.getMessage().reply(embed(server, new ArrayList<>(), 1));
             }
         });
     }

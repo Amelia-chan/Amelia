@@ -36,23 +36,23 @@ public class TestCommand extends Command {
                                                                                 .replaceAll("\\{link}", syndEntry.getLink())
                                                                                 .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc).whenComplete((message, throwable) -> {
                                                                             if (throwable != null) {
-                                                                                Message.msg("Error: A throwable was thrown, the bot possibly cannot send a message to the channel.").send(event.getChannel());
+                                                                                event.getMessage().reply("Error: A throwable was thrown, the bot possibly cannot send a message to the channel.");
                                                                             } else {
-                                                                                Message.msg("The test went well!");
+                                                                                event.getMessage().reply("The test went well!");
                                                                             }
                                                                         }),
-                                                                () -> Message.msg("Error: The channel provided does not exist.").send(event.getChannel())),
-                                                () -> Message.msg("Error: We couldn't connect to ScribbleHub's RSS feed, please try again later.").send(event.getChannel())),
-                                () -> Message.msg("We couldn't find the feed, are you sure you are using the feed's unique ID?").send(event.getChannel()));
+                                                                () -> event.getMessage().reply("Error: The channel provided does not exist.")),
+                                                () -> event.getMessage().reply("Error: We couldn't connect to ScribbleHub's RSS feed, please try again later.")),
+                                () -> event.getMessage().reply("We couldn't find the feed, are you sure you are using the feed's unique ID?"));
                     } else {
-                        Message.msg("Error: We couldn't find the feed, are you sure you are using the feed's unique id." +
-                                "\nPlease verify using `feeds`").send(event.getChannel());
+                        event.getMessage().reply("Error: We couldn't find the feed, are you sure you are using the feed's unique id." +
+                                "\nPlease verify using `feeds`");
                     }
                 } catch (NumberFormatException | ArithmeticException e) {
-                    Message.msg("Error: Number format exception, or arithmetic exception.").send(event.getChannel());
+                    event.getMessage().reply("Error: Number format exception, or arithmetic exception.");
                 }
             } else {
-                Message.msg("Error: Lacking arguments [feed id]").send(event.getChannel());
+                event.getMessage().reply("Error: Lacking arguments [feed id]");
             }
         }
     }

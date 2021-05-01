@@ -21,10 +21,10 @@ public class HelpCommand extends Command {
     protected void runCommand(MessageCreateEvent event, User user, Server server, String[] args) {
         if (args.length > 1) {
             if (Commands.meta.containsKey(args[1])) {
-                Message.msg(commandEmbed(Commands.getCommand(args[1]))).send(event.getChannel());
+                event.getMessage().reply(commandEmbed(Commands.getCommand(args[1])));
             }
         } else {
-            Message.msg(helpEmbed(event.getApi())).send(event.getChannel());
+            event.getMessage().reply(helpEmbed(event.getApi()));
         }
     }
 

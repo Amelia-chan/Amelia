@@ -15,7 +15,6 @@ import pw.mihou.amelia.models.ServerModel;
 import pw.mihou.amelia.models.StoryNavigators;
 import pw.mihou.amelia.models.UserNavigators;
 import pw.mihou.amelia.templates.Embed;
-import pw.mihou.amelia.templates.Message;
 import pw.mihou.amelia.utility.StringUtils;
 import tk.mihou.amatsuki.api.Amatsuki;
 import tk.mihou.amatsuki.entities.story.lower.StoryResults;
@@ -58,7 +57,7 @@ public class RegisterCommand extends Command {
                             amatsuki.searchStory(content).thenAccept(storyResults -> {
                                 if (!storyResults.isEmpty()) {
                                     StoryNavigators navigators = new StoryNavigators(storyResults);
-                                    Message.msg(storyResultEmbed(navigators.current(), navigators.getArrow(), navigators.getMaximum())).send(event.getChannel()).thenAccept(message -> {
+                                    event.getMessage().reply(storyResultEmbed(navigators.current(), navigators.getArrow(), navigators.getMaximum())).thenAccept(message -> {
                                         if (navigators.getMaximum() > 1) {
                                             message.addReactions("⬅", "👎", "👍", "➡");
                                         } else {
@@ -80,8 +79,8 @@ public class RegisterCommand extends Command {
                                                         ReadRSS.getLatest(story.getRSS()).ifPresentOrElse(syndEntry -> {
                                                             FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), story.getSID(), story.getRSS(), channel.getId(), user.getId(), story.getTitle(), syndEntry.getPublishedDate(), new ArrayList<>()));
                                                             message.delete();
-                                                            Message.msg("The bot will now send updates for the story on the channel, " + channel.getMentionTag()).send(event.getChannel());
-                                                        }, () -> Message.msg("An error occurred while retrieving RSS feed, please try again.").send(event.getChannel()));
+                                                            event.getMessage().reply("The bot will now send updates for the story on the channel, " + channel.getMentionTag());
+                                                        }, () -> event.getMessage().reply("An error occurred while retrieving RSS feed, please try again."));
                                                     });
                                                 } else if (e.getEmoji().equalsEmoji("👎")) {
                                                     message.delete("End of purpose.");
@@ -94,7 +93,7 @@ public class RegisterCommand extends Command {
                                         }).removeAfter(5, TimeUnit.MINUTES).addRemoveHandler(message::removeAllReactions);
                                     });
                                 } else {
-                                    Message.msg("Error: No results found.").send(event.getChannel());
+                                    event.getMessage().reply("Error: No results found.");
                                 }
                             });
                         } else {
@@ -102,7 +101,7 @@ public class RegisterCommand extends Command {
                             amatsuki.searchUser(content).thenAccept(userResults -> {
                                 if (!userResults.isEmpty()) {
                                     UserNavigators navigators = new UserNavigators(userResults);
-                                    Message.msg(userResultEmbed(navigators.current(), navigators.getArrow(), navigators.getMaximum())).send(event.getChannel()).thenAccept(message -> {
+                                    event.getMessage().reply(userResultEmbed(navigators.current(), navigators.getArrow(), navigators.getMaximum())).thenAccept(message -> {
                                         if (navigators.getMaximum() > 1) {
                                             message.addReactions("⬅", "👎", "👍", "➡");
                                         } else {
@@ -122,8 +121,8 @@ public class RegisterCommand extends Command {
                                                     navigators.current().transformToUser().thenAccept(u -> ReadRSS.getLatest(u.getRSS()).ifPresentOrElse(syndEntry -> {
                                                         FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), u.getUID(), u.getRSS(), channel.getId(), user.getId(), u.getName() + "'s stories", syndEntry.getPublishedDate(), new ArrayList<>()));
                                                         message.delete();
-                                                        Message.msg("The bot will now send updates for the user's stories on the channel, " + channel.getMentionTag()).send(event.getChannel());
-                                                    }, () -> Message.msg("An error occurred while retrieving RSS feed, please try again.").send(event.getChannel())));
+                                                        event.getMessage().reply("The bot will now send updates for the user's stories on the channel, " + channel.getMentionTag());
+                                                    }, () -> event.getMessage().reply("An error occurred while retrieving RSS feed, please try again.")));
                                                     message.delete("End of purpose.");
                                                 } else if (e.getEmoji().equalsEmoji("👎")) {
                                                     message.delete("End of purpose.");
@@ -136,21 +135,21 @@ public class RegisterCommand extends Command {
                                         }).removeAfter(5, TimeUnit.MINUTES).addRemoveHandler(message::removeAllReactions);
                                     });
                                 } else {
-                                    Message.msg("Error: No results found, try a deeper query.").send(event.getChannel());
+                                    event.getMessage().reply("Error: No results found, try a deeper query.");
                                 }
                             });
                         }
                     } else {
-                        Message.msg("Error: Invalid usage [`register [story/user] [@channel] [query]").send(event.getChannel());
+                        event.getMessage().reply("Error: Invalid usage [`register [story/user] [@channel] [query]`]");
                     }
                 } else {
-                    Message.msg("Error: The bot cannot write on the channel mentioned!").send(event.getChannel());
+                    event.getMessage().reply("Error: The bot cannot write on the channel mentioned!");
                 }
             } else {
-                Message.msg("Error: No channel mentioned.").send(event.getChannel());
+                event.getMessage().reply("Error: No channel mentioned.");
             }
         } else {
-            Message.msg("Error: Invalid usage [`register [story/user] [@channel] [query]`]").send(event.getChannel());
+            event.getMessage().reply("Error: Invalid usage [`register [story/user] [@channel] [query]`]");
         }
     }
 

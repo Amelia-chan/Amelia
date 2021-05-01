@@ -5,7 +5,6 @@ import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
 import pw.mihou.amelia.commands.base.Command;
 import pw.mihou.amelia.templates.Embed;
-import pw.mihou.amelia.templates.Message;
 
 import java.lang.management.ManagementFactory;
 import java.time.Instant;
@@ -23,14 +22,14 @@ public class PingCommand extends Command {
         String uptime = uptime();
         event.getApi().measureRestLatency().thenAccept(rest -> {
             long gateway = event.getApi().getLatestGatewayLatency().toMillis();
-            Message.msg(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
+            event.getMessage().reply(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
                     .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " + (Instant.now().toEpochMilli() - start) + "ms" +
                             "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
                             "\n<:latency:778551868301246485> Rest Latency: " + rest.toMillis() + "ms" +
                             "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards" +
                             "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers" +
                             "\n<:uptime:778552145406459924> Uptime: " + uptime +
-                            "\n<:memory:778552648029831208> RAM: " + Runtime.getRuntime().totalMemory() / (1000.0 * 1000.0) + " MB").setAuthor(user)).send(event.getChannel())
+                            "\n<:memory:778552648029831208> RAM: " + Runtime.getRuntime().totalMemory() / (1000.0 * 1000.0) + " MB").setAuthor(user))
                     .thenAccept(message -> message.edit(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
                             .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " + (Instant.now().toEpochMilli() - start) + "ms" +
                                     "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +

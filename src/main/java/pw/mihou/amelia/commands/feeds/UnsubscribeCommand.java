@@ -31,20 +31,19 @@ public class UnsubscribeCommand extends Command {
                                         .setAllowedMentions(new AllowedMentionsBuilder()
                                                 .setMentionRoles(false)
                                                 .setMentionEveryoneAndHere(false)
-                                                .setMentionUsers(false).build()).send(event.getChannel());
+                                                .setMentionUsers(false).build()).replyTo(event.getMessage());
                             });
-                        }, () -> Message.msg("Error: We couldn't find the feed with the unique id [" + i + "]." +
-                                "\nPlease verify the unique id through `feeds`").send(event.getChannel()));
+                        }, () -> event.getMessage().reply("Error: We couldn't find the feed with the unique id [" + i + "]." +
+                                "\nPlease verify the unique id through `feeds`"));
                     } else {
-                        Message.msg("Error: We couldn't find the feed with the unique id [" + i + "]." +
-                                "\nPlease verify the unique id through `feeds`").send(event.getChannel());
+                        event.getMessage().reply("Error: We couldn't find the feed with the unique id [" + i + "]." +
+                                "\nPlease verify the unique id through `feeds`");
                     }
                 } catch (NumberFormatException | ArithmeticException e) {
-                    Message.msg("Error: Arithmetic, or NumberFormatException occurred. Are you sure you giving the proper value for args 1? [" + args[1] + "]")
-                            .send(event.getChannel());
+                    event.getMessage().reply("Error: Arithmetic, or NumberFormatException occurred. Are you sure you giving the proper value for args 1? [" + args[1] + "]");
                 }
             } else {
-                Message.msg("There are no roles mentioned.");
+                event.getMessage().reply("There are no roles mentioned.");
             }
         }
     }
