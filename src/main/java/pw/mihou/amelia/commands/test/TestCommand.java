@@ -34,7 +34,13 @@ public class TestCommand extends Command {
                                                                                 .replaceAll("\\{title}", syndEntry.getTitle())
                                                                                 .replaceAll("\\{author}", StoryHandler.getAuthor(syndEntry.getAuthor(), feedModel.getId()))
                                                                                 .replaceAll("\\{link}", syndEntry.getLink())
-                                                                                .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc),
+                                                                                .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc).whenComplete((message, throwable) -> {
+                                                                                    if(throwable != null){
+                                                                                        Message.msg("Error: A throwable was thrown, the bot possibly cannot send a message to the channel.").send(event.getChannel());
+                                                                                    } else {
+                                                                                        Message.msg("The test went well!");
+                                                                                    }
+                                                                        }),
                                                                 () -> Message.msg("Error: The channel provided does not exist.").send(event.getChannel())),
                                                 () -> Message.msg("Error: We couldn't connect to ScribbleHub's RSS feed, please try again later.").send(event.getChannel())),
                                 () -> Message.msg("We couldn't find the feed, are you sure you are using the feed's unique ID?").send(event.getChannel()));
