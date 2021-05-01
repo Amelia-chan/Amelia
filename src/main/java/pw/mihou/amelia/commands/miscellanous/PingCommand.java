@@ -29,7 +29,7 @@ public class PingCommand extends Command {
                             "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards" +
                             "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers" +
                             "\n<:uptime:778552145406459924> Uptime: " + uptime +
-                            "\n<:memory:778552648029831208> RAM: " + Runtime.getRuntime().totalMemory() / (1000.0 * 1000.0) + " MB").setAuthor(user))
+                            "\n<:memory:778552648029831208> RAM: " + getUsedMemory() + " MB").setAuthor(user))
                     .thenAccept(message -> message.edit(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
                             .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " + (Instant.now().toEpochMilli() - start) + "ms" +
                                     "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
@@ -37,8 +37,12 @@ public class PingCommand extends Command {
                                     "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards" +
                                     "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers" +
                                     "\n<:uptime:778552145406459924> Uptime: " + uptime +
-                                    "\n<:memory:778552648029831208> RAM: " + Runtime.getRuntime().totalMemory() / (1000.0 * 1000.0) + " MB").setAuthor(user)));
+                                    "\n<:memory:778552648029831208> RAM: " + getUsedMemory() + " MB").setAuthor(user)));
         });
+    }
+
+    private long getUsedMemory(){
+        return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1000 * 1000);
     }
 
     public String uptime() {
