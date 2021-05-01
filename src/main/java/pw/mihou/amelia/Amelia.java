@@ -95,7 +95,7 @@ public class Amelia {
                                             .replaceAll("\\{author}", StoryHandler.getAuthor(syndEntry.getAuthor(), feedModel.getId()))
                                             .replaceAll("\\{link}", syndEntry.getLink())
                                             .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc));
-                            System.out.printf("[%s]: RSS feed deployed for: %s with feed id: [%d]", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), tc.getServer().getName(), feedModel.getUnique());
+                            System.out.printf("[%s]: RSS feed deployed for: %s with feed id: [%d]\n", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), tc.getServer().getName(), feedModel.getUnique());
                         });
                     }
                 }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL())), Scheduler.getExecutorService());
