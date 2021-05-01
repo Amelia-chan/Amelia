@@ -10,9 +10,9 @@ public class AmatsukiWrapper {
     private static final Amatsuki connector = new Amatsuki().setLifespan(24, TimeUnit.HOURS).setCache(true);
     private static final String base_story = "https://scribblehub.com/series/%s/amelia-discord-bot/";
 
-    public static Story getStoryById(int id){
+    public static Story getStoryById(int id) {
         // Amatsuki has its own built-in cache manager.
-       return connector.getStoryFromUrl(String.format(base_story, id)).join();
+        return connector.getStoryFromUrl(String.format(base_story, id)).join();
     }
 
 

@@ -13,36 +13,36 @@ import java.util.concurrent.TimeUnit;
 
 public class PingCommand extends Command {
 
-    public PingCommand(){
+    public PingCommand() {
         super("ping", "Pings the bot to test if it is alive.", "ping", false);
     }
 
     @Override
     protected void runCommand(MessageCreateEvent event, User user, Server server, String[] args) {
-    long start = Instant.now().toEpochMilli();
-    String uptime = uptime();
+        long start = Instant.now().toEpochMilli();
+        String uptime = uptime();
         event.getApi().measureRestLatency().thenAccept(rest -> {
-        long gateway = event.getApi().getLatestGatewayLatency().toMillis();
-        Message.msg(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
-                .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is "+(Instant.now().toEpochMilli() - start)+"ms"+
-                        "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
-                        "\n<:latency:778551868301246485> Rest Latency: " + rest.toMillis() + "ms"+
-                        "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards"+
-                        "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers"+
-                        "\n<:uptime:778552145406459924> Uptime: " + uptime+
-                        "\n<:memory:778552648029831208> RAM: " + Runtime.getRuntime().totalMemory() / (1000.0 * 1000.0) + " MB").setAuthor(user)).send(event.getChannel())
-                .thenAccept(message -> message.edit(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
-                        .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is "+(Instant.now().toEpochMilli() - start)+"ms"+
-                                "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
-                                "\n<:latency:778551868301246485> Rest Latency: " + rest.toMillis() + "ms"+
-                                "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards"+
-                                "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers"+
-                                "\n<:uptime:778552145406459924> Uptime: "+uptime+
-                                "\n<:memory:778552648029831208> RAM: " + Runtime.getRuntime().totalMemory() / (1000.0 * 1000.0) + " MB").setAuthor(user)));
-    });
-}
+            long gateway = event.getApi().getLatestGatewayLatency().toMillis();
+            Message.msg(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
+                    .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " + (Instant.now().toEpochMilli() - start) + "ms" +
+                            "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
+                            "\n<:latency:778551868301246485> Rest Latency: " + rest.toMillis() + "ms" +
+                            "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards" +
+                            "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers" +
+                            "\n<:uptime:778552145406459924> Uptime: " + uptime +
+                            "\n<:memory:778552648029831208> RAM: " + Runtime.getRuntime().totalMemory() / (1000.0 * 1000.0) + " MB").setAuthor(user)).send(event.getChannel())
+                    .thenAccept(message -> message.edit(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
+                            .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " + (Instant.now().toEpochMilli() - start) + "ms" +
+                                    "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
+                                    "\n<:latency:778551868301246485> Rest Latency: " + rest.toMillis() + "ms" +
+                                    "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards" +
+                                    "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers" +
+                                    "\n<:uptime:778552145406459924> Uptime: " + uptime +
+                                    "\n<:memory:778552648029831208> RAM: " + Runtime.getRuntime().totalMemory() / (1000.0 * 1000.0) + " MB").setAuthor(user)));
+        });
+    }
 
-    public String uptime(){
+    public String uptime() {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
         return String.format("%d days, %d hours, %d minutes, %d seconds",
                 TimeUnit.MILLISECONDS.toDays(uptime),

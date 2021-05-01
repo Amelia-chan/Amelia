@@ -9,33 +9,33 @@ public class StoryNavigators {
     private List<StoryResults> results;
     private int arrow = 0;
 
-    public StoryNavigators(List<StoryResults> results){
+    public StoryNavigators(List<StoryResults> results) {
         this.results = results;
     }
 
-    public StoryResults next(){
-        if(arrow < results.size()){
+    public StoryResults next() {
+        if (arrow < results.size()) {
             arrow++;
         }
         return results.get(arrow);
     }
 
-    public StoryResults backwards(){
-        if(arrow > 0){
+    public StoryResults backwards() {
+        if (arrow > 0) {
             arrow--;
         }
         return results.get(arrow);
     }
 
-    public StoryResults current(){
+    public StoryResults current() {
         return results.get(arrow);
     }
 
-    public int getArrow(){
+    public int getArrow() {
         return arrow;
     }
 
-    public int getMaximum(){
+    public int getMaximum() {
         return results.size();
     }
 

@@ -12,15 +12,15 @@ public class InviteCommand extends Command {
 
     private final int bitmask = 67488832;
 
-    public InviteCommand(){
+    public InviteCommand() {
         super("invite", "Want an invitation link for the bot?", "invite", false);
     }
 
     @Override
     protected void runCommand(MessageCreateEvent event, User user, Server server, String[] args) {
         Message.msg(new Embed().setTitle("Want to invite me?")
-        .setThumbnail(event.getApi().getYourself().getAvatar()).setDescription("Feel free to invite me then using this link!" +
-                        "\n\n- [Invite me now]("+event.getApi().createBotInvite(Permissions.fromBitmask(bitmask))+")").build())
+                .setThumbnail(event.getApi().getYourself().getAvatar()).setDescription("Feel free to invite me then using this link!" +
+                        "\n\n- [Invite me now](" + event.getApi().createBotInvite(Permissions.fromBitmask(bitmask)) + ")").build())
                 .send(event.getChannel());
     }
 }

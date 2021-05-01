@@ -15,32 +15,32 @@ import pw.mihou.amelia.templates.Message;
 
 public class Settings extends Command {
 
-    public Settings(){
+    public Settings() {
         super("settings", "Modifies the settings for Amelia-chan in the server.", "settings prefix [prefix], settings limit, settings role [@role]", false);
     }
 
     @Override
     protected void runCommand(MessageCreateEvent event, User user, Server server, String[] args) {
-        if(server.canManage(user) || server.canManageRoles(user) || server.canCreateChannels(user) || server.isAdmin(user) || server.isOwner(user)){
-            if(args.length > 1){
-                if(args[1].equalsIgnoreCase("prefix")){
-                    if(args.length > 2) {
+        if (server.canManage(user) || server.canManageRoles(user) || server.canCreateChannels(user) || server.isAdmin(user) || server.isOwner(user)) {
+            if (args.length > 1) {
+                if (args[1].equalsIgnoreCase("prefix")) {
+                    if (args.length > 2) {
                         String prefix = event.getMessageContent().replace(args[0] + " " + args[1] + " ", "");
-                        ServerDB.getServer(server.getId()).setPrefix(prefix).update().thenAccept(unused -> Message.msg("The prefix has now been changed to `"+prefix+"`").send(event.getChannel()));
+                        ServerDB.getServer(server.getId()).setPrefix(prefix).update().thenAccept(unused -> Message.msg("The prefix has now been changed to `" + prefix + "`").send(event.getChannel()));
                     } else {
                         Message.msg("Error: Invalid arguments, missing prefix value.").send(event.getChannel());
                     }
-                } else if(args[1].equalsIgnoreCase("limit")){
-                    if(server.isAdmin(user) || server.isOwner(user)) {
+                } else if (args[1].equalsIgnoreCase("limit")) {
+                    if (server.isAdmin(user) || server.isOwner(user)) {
                         ServerModel model = ServerDB.getServer(server.getId());
                         model.setLimit(!model.getLimit()).update().thenAccept(unused -> {
                             if (!ServerDB.getServer(server.getId()).getLimit()) {
                                 Message.msg("**__[WARNING]: ANARCHY MODE HAS BEEN ACTIVATED. WE DO NOT RECOMMEND THIS MODE! [WARNING]__**")
                                         .send(event.getChannel()).thenAccept(message -> Message.msg("What is Anarchy Mode?" +
-                                                "\nAnarchy mode is as it means, the removal of the role, and permission limitations for all commands (except settings) for the bot." +
-                                                "\n- This mode will allow any users to exploit the command to mention any roles, remove feeds, add feeds at their own will." +
-                                                "\n- **__WE HIGHLY RECOMMEND YOU DISABLE THIS BY USING THE COMMAND ONCE MORE__**")
-                                                .send(event.getChannel()));
+                                        "\nAnarchy mode is as it means, the removal of the role, and permission limitations for all commands (except settings) for the bot." +
+                                        "\n- This mode will allow any users to exploit the command to mention any roles, remove feeds, add feeds at their own will." +
+                                        "\n- **__WE HIGHLY RECOMMEND YOU DISABLE THIS BY USING THE COMMAND ONCE MORE__**")
+                                        .send(event.getChannel()));
                             } else {
                                 Message.msg("Your server is now safe from exploitation.").send(event.getChannel());
                             }
@@ -49,15 +49,15 @@ public class Settings extends Command {
                         Message.msg("Due to the high-risks of this command, we have disabled **ANY** attempt to use this unless you are the server administrator or owner.")
                                 .send(event.getChannel());
                     }
-                } else if(args[1].equalsIgnoreCase("role")){
-                    if(!event.getMessage().getMentionedRoles().isEmpty()){
+                } else if (args[1].equalsIgnoreCase("role")) {
+                    if (!event.getMessage().getMentionedRoles().isEmpty()) {
                         ServerDB.getServer(server.getId()).setRole(event.getMessage().getMentionedRoles().get(0).getId()).update().thenAccept(unused -> Message.msg("We have now updated the configuration to allow " + event.getMessage().getMentionedRoles().get(0).getMentionTag() + " to edit, add, and remove RSS feeds and also subscribe roles to RSS feeds at will." +
                                 "\nTo reset this config, please do `settings role reset`.")
                                 .setAllowedMentions(new AllowedMentionsBuilder().setMentionUsers(false).setMentionEveryoneAndHere(false).setMentionRoles(false).build())
                                 .send(event.getChannel()));
                     } else {
-                        if(args.length > 2){
-                            if(args[2].equalsIgnoreCase("reset")){
+                        if (args.length > 2) {
+                            if (args[2].equalsIgnoreCase("reset")) {
                                 ServerDB.getServer(server.getId()).setRole(0L).update().thenAccept(unused -> Message.msg("We have reset the role configuration.").send(event.getChannel()));
                             } else {
                                 Message.msg("Error: Invalid arguments.").send(event.getChannel());
@@ -66,8 +66,8 @@ public class Settings extends Command {
                             Message.msg("Error: Invalid arguments.").send(event.getChannel());
                         }
                     }
-                } else if(args[1].equalsIgnoreCase("message")){
-                    if(args.length > 2){
+                } else if (args[1].equalsIgnoreCase("message")) {
+                    if (args.length > 2) {
                         String message = event.getMessageContent().replaceFirst(args[0] + " " + args[1] + " ", "");
                         MessageDB.setFormat(server.getId(), message);
                         Message.msg("The message format has now been changed.").send(event.getChannel());
@@ -81,19 +81,19 @@ public class Settings extends Command {
                     }
                 }
             } else {
-              Message.msg(embed(server)).send(event.getChannel());
+                Message.msg(embed(server)).send(event.getChannel());
             }
         } else {
             Message.msg(embed(server)).send(event.getChannel());
         }
     }
 
-    private EmbedBuilder embed(Server server){
+    private EmbedBuilder embed(Server server) {
         ServerModel model = ServerDB.getServer(server.getId());
         return new Embed().setTitle("Server Settings")
                 .setDescription("Here are your current server settings.")
                 .build().addInlineField("Limit", (model.getLimit() ? "`Active`" : "`Inactive (WARNING)`"))
-                .addInlineField("Prefix", "`"+model.getPrefix()+"`")
+                .addInlineField("Prefix", "`" + model.getPrefix() + "`")
                 .addInlineField("RSS Manager Role", (model.getRole().isPresent() ? server.getRoleById(model.getRole().get()).map(Role::getMentionTag).orElse("`Disabled`") : "`Disabled`"))
                 .addField("Message Format", MessageDB.getFormat(server.getId()));
     }

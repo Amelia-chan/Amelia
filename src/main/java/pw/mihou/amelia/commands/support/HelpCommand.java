@@ -13,14 +13,14 @@ import pw.mihou.amelia.templates.Message;
 
 public class HelpCommand extends Command {
 
-    public HelpCommand(){
+    public HelpCommand() {
         super("help", "The general command point of Amelia.", "help, help [command]", false);
     }
 
     @Override
     protected void runCommand(MessageCreateEvent event, User user, Server server, String[] args) {
-        if(args.length > 1){
-            if(Commands.meta.containsKey(args[1])){
+        if (args.length > 1) {
+            if (Commands.meta.containsKey(args[1])) {
                 Message.msg(commandEmbed(Commands.getCommand(args[1]))).send(event.getChannel());
             }
         } else {
@@ -28,14 +28,14 @@ public class HelpCommand extends Command {
         }
     }
 
-    private EmbedBuilder commandEmbed(CommandMeta meta){
+    private EmbedBuilder commandEmbed(CommandMeta meta) {
         return new Embed().setTitle(meta.getCommand())
                 .setDescription(meta.getDescription())
                 .build().addInlineField("Usage", meta.getUsage())
                 .addInlineField("Cooldown", meta.getCooldown() + " seconds");
     }
 
-    private EmbedBuilder helpEmbed(DiscordApi api){
+    private EmbedBuilder helpEmbed(DiscordApi api) {
         return new Embed().setThumbnail(api.getYourself().getAvatar())
                 .build()
                 .addInlineField("Feeds", "`feeds`\n`subscribe`\n`unsubscribe`\n`register`\n`remove`")

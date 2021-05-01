@@ -8,11 +8,11 @@ public class FeedNavigator {
     private final ArrayList<FeedModel> models = new ArrayList<>();
     private int page = 1;
 
-    public FeedNavigator(ArrayList<FeedModel> models){
+    public FeedNavigator(ArrayList<FeedModel> models) {
         this.models.addAll(models);
     }
 
-    public ArrayList<FeedModel> getModels(){
+    public ArrayList<FeedModel> getModels() {
         return models;
     }
 
@@ -20,11 +20,11 @@ public class FeedNavigator {
         ArrayList<FeedModel> objects = new ArrayList<>();
         // Expected Behavior: Checks if warnings size is greater than 5 multiplied by page and so replies with 5 otherwise replies with warning size.
         try {
-            for(int i = 0; i < getLimit(); i++){
+            for (int i = 0; i < getLimit(); i++) {
                 // Expected Behavior: Checks if page is above one, if so adds 5 multiplied by page (for example, page 2: 20+i).
                 objects.add(models.get(i + (page > 1 ? (5 * (page - 1)) : 0)));
             }
-        } catch(IndexOutOfBoundsException e){
+        } catch (IndexOutOfBoundsException e) {
             return Optional.empty();
         }
         return objects.isEmpty() ? Optional.empty() : Optional.of(objects);
@@ -71,7 +71,7 @@ public class FeedNavigator {
         return 1 + models.size() / 5;
     }
 
-    private int getLimit(){
+    private int getLimit() {
         int x = 0;
         try {
             for (int i = 0; i < 5; i++) {
@@ -81,7 +81,7 @@ public class FeedNavigator {
                     return x;
                 }
             }
-        } catch(IndexOutOfBoundsException e){
+        } catch (IndexOutOfBoundsException e) {
             return x;
         }
         return x;

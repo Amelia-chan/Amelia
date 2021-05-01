@@ -15,14 +15,14 @@ import java.util.ArrayList;
 
 public class TestCommand extends Command {
 
-    public TestCommand(){
+    public TestCommand() {
         super("test", "Test runs a feed.", "test", true);
     }
 
     @Override
     protected void runCommand(MessageCreateEvent event, User user, Server server, String[] args) {
         // Add more security.
-        if(event.getMessageAuthor().isServerAdmin() || server.canCreateChannels(user) || server.canManage(user) || server.canManageRoles(user)) {
+        if (event.getMessageAuthor().isServerAdmin() || server.canCreateChannels(user) || server.canManage(user) || server.canManageRoles(user)) {
             if (args.length > 1) {
                 try {
                     long id = Long.parseLong(args[1]);
@@ -35,11 +35,11 @@ public class TestCommand extends Command {
                                                                                 .replaceAll("\\{author}", StoryHandler.getAuthor(syndEntry.getAuthor(), feedModel.getId()))
                                                                                 .replaceAll("\\{link}", syndEntry.getLink())
                                                                                 .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc).whenComplete((message, throwable) -> {
-                                                                                    if(throwable != null){
-                                                                                        Message.msg("Error: A throwable was thrown, the bot possibly cannot send a message to the channel.").send(event.getChannel());
-                                                                                    } else {
-                                                                                        Message.msg("The test went well!");
-                                                                                    }
+                                                                            if (throwable != null) {
+                                                                                Message.msg("Error: A throwable was thrown, the bot possibly cannot send a message to the channel.").send(event.getChannel());
+                                                                            } else {
+                                                                                Message.msg("The test went well!");
+                                                                            }
                                                                         }),
                                                                 () -> Message.msg("Error: The channel provided does not exist.").send(event.getChannel())),
                                                 () -> Message.msg("Error: We couldn't connect to ScribbleHub's RSS feed, please try again later.").send(event.getChannel())),
@@ -57,7 +57,7 @@ public class TestCommand extends Command {
         }
     }
 
-    private String getMentions(ArrayList<Long> roles, Server server){
+    private String getMentions(ArrayList<Long> roles, Server server) {
         StringBuilder builder = new StringBuilder();
         roles.forEach(aLong -> builder.append(server.getRoleById(aLong).map(Role::getMentionTag).orElse("[Vanished Role]")));
         return builder.toString();
