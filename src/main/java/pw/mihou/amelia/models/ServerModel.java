@@ -9,11 +9,11 @@ import java.util.concurrent.CompletableFuture;
 public class ServerModel {
 
     private String prefix;
-    private long id;
+    private final long id;
     private boolean limit;
-    private long role = 0;
+    private long role;
 
-    public ServerModel(long id, String prefix, boolean limit, long role){
+    public ServerModel(long id, String prefix, boolean limit, long role) {
         this.id = id;
         this.prefix = prefix;
         this.limit = limit;
@@ -22,58 +22,62 @@ public class ServerModel {
 
     /**
      * Returns the role required to be able to modify the feeds.
+     *
      * @return the role required.
      */
-    public Optional<Long> getRole(){
+    public Optional<Long> getRole() {
         // Checks if the limit is activated, if not then disable role, otherwise if it is activated, then check if role is not empty.
         // otherwise, disable again.
         return limit ? (role != 0 ? Optional.of(role) : Optional.empty()) : Optional.empty();
     }
 
-    public ServerModel setLimit(boolean limit){
-        this.limit = limit;
-
-        return this;
-    }
-
-    public ServerModel setRole(long role){
+    public ServerModel setRole(long role) {
         this.role = role;
 
         return this;
     }
 
-    public ServerModel setPrefix(String prefix){
-        this.prefix = prefix;
-
-        return this;
-    }
-
-    public CompletableFuture<Void> update(){
+    public CompletableFuture<Void> update() {
         return CompletableFuture.runAsync(() -> ServerDB.addServer(this));
     }
 
     /**
      * Returns whether the server opted to limit the feed creation to only people with Manage Server permissions.
+     *
      * @return limitation is active?
      */
-    public boolean getLimit(){
+    public boolean getLimit() {
         return limit;
+    }
+
+    public ServerModel setLimit(boolean limit) {
+        this.limit = limit;
+
+        return this;
     }
 
     /**
      * Returns the id of the server.
+     *
      * @return the server id.
      */
-    public long getId(){
+    public long getId() {
         return id;
     }
 
     /**
      * Returns the prefix used by the server.
+     *
      * @return the prefix used by the server.
      */
-    public String getPrefix(){
+    public String getPrefix() {
         return prefix;
+    }
+
+    public ServerModel setPrefix(String prefix) {
+        this.prefix = prefix;
+
+        return this;
     }
 
     @Override

@@ -7,11 +7,11 @@ public class ColorSpace {
 
     private static Random rand = new Random();
 
-    public static Color defaultColor(){
+    public static Color defaultColor() {
         final float hue = rand.nextFloat();
         final float saturation = 0.9f;
         final float luminance = 1.0f;
-        return Color.getHSBColor(hue,saturation,luminance);
+        return Color.getHSBColor(hue, saturation, luminance);
     }
 
 }

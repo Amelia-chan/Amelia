@@ -8,15 +8,13 @@ import static pw.mihou.amelia.commands.creation.RegisterCommand.hasRole;
 
 public class Limitations {
 
-    public static boolean isLimited(Server server, User user){
-        if (ServerDB.getServer(server.getId()).getLimit() ) {
-            if(server.canManage(user) || hasRole(user, server)|| server.isAdmin(user) || server.isOwner(user)){
-                return false;
-            } else {
-                return true;
-            }
-        }
-        return false;
+    public static boolean isLimited(Server server, User user) {
+        // If anarchy mode is enabled.
+        if(!ServerDB.getServer(server.getId()).getLimit())
+            return true;
+
+        // If anarchy mode is disabled, then we check if the user is any of these.
+        return server.canManage(user) || hasRole(user, server) || server.isAdmin(user) || server.isOwner(user);
     }
 
 }

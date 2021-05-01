@@ -11,22 +11,22 @@ public class ServerFeeds {
     private final Map<Long, ChannelFeeds> channels = new HashMap<>();
     private final ArrayList<FeedModel> models = new ArrayList<>();
 
-    public ServerFeeds(long server){
+    public ServerFeeds(long server) {
         this.server = server;
     }
 
-    public ChannelFeeds getChannel(long id){
-        if(!channels.containsKey(id)) {
+    public ChannelFeeds getChannel(long id) {
+        if (!channels.containsKey(id)) {
             channels.put(id, new ChannelFeeds(server));
         }
 
         return channels.get(id);
     }
 
-    public CompletableFuture<ArrayList<FeedModel>> getModels(){
+    public CompletableFuture<ArrayList<FeedModel>> getModels() {
         return CompletableFuture.supplyAsync(() -> {
             // We want models to clear models to make way for a newer version.
-            if(!models.isEmpty()){
+            if (!models.isEmpty()) {
                 models.clear();
             }
 
@@ -36,7 +36,7 @@ public class ServerFeeds {
         });
     }
 
-    public ArrayList<ChannelFeeds> getFeeds(){
+    public ArrayList<ChannelFeeds> getFeeds() {
         return new ArrayList<>(channels.values());
     }
 
