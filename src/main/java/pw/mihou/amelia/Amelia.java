@@ -21,6 +21,7 @@ import pw.mihou.amelia.commands.settings.Settings;
 import pw.mihou.amelia.commands.support.HelpCommand;
 import pw.mihou.amelia.commands.test.TestCommand;
 import pw.mihou.amelia.db.MongoDB;
+import pw.mihou.amelia.db.UserDB;
 import pw.mihou.amelia.io.Scheduler;
 import pw.mihou.amelia.io.StoryHandler;
 import pw.mihou.amelia.io.Terminal;
@@ -52,6 +53,8 @@ public class Amelia {
             MongoDB.shutdown();
             Scheduler.shutdown();
         }));
+
+        UserDB.load();
 
         // The DiscordAPI Builder.
         new DiscordApiBuilder()
