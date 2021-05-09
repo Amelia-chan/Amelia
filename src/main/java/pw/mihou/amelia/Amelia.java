@@ -7,7 +7,6 @@ import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
-import org.javacord.api.entity.user.User;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.api.util.logging.FallbackLoggerConfiguration;
 import pw.mihou.amelia.commands.creation.RegisterCommand;
@@ -32,14 +31,9 @@ import pw.mihou.amelia.listeners.BotJoinCommand;
 import pw.mihou.amelia.listeners.BotLeaveListener;
 import pw.mihou.amelia.templates.Embed;
 import pw.mihou.amelia.templates.Message;
-import tk.mihou.amatsuki.entities.story.Story;
 import tk.mihou.amatsuki.entities.story.lower.StoryResults;
 
-import java.lang.management.ManagementFactory;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -137,6 +131,7 @@ public class Amelia {
     }
 
     private static EmbedBuilder notificationEmbed(StoryResults results){
+        Terminal.log(String.format("DEBUG: %s's story: [%s] has reached trending! The user has been notified!", results.getCreator(), results.getName()));
         return new Embed().setTitle("[Trending Notification]")
                 .setDescription(String.format("`\uD83C\uDF89` Congratulations %s! Your story **[%s]** has trended on the frontpage (one of the 9 stories on the frontpage) of ScribbleHub! `\uD83C\uDF89`",
                         results.getCreator(), results.getName()))

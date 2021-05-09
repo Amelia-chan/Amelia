@@ -1,9 +1,7 @@
 package pw.mihou.amelia;
 
 import pw.mihou.amelia.io.AmatsukiWrapper;
-import tk.mihou.amatsuki.entities.story.lower.StoryResults;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 

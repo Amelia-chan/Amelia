@@ -9,7 +9,6 @@ import pw.mihou.amelia.commands.base.Command;
 import pw.mihou.amelia.commands.base.info.CommandMeta;
 import pw.mihou.amelia.commands.base.info.Commands;
 import pw.mihou.amelia.templates.Embed;
-import pw.mihou.amelia.templates.Message;
 
 public class HelpCommand extends Command {
 

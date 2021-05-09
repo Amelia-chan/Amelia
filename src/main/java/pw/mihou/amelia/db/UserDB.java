@@ -1,10 +1,8 @@
 package pw.mihou.amelia.db;
 
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
-import pw.mihou.amelia.io.Terminal;
 import pw.mihou.amelia.models.SHUser;
 import pw.mihou.amelia.models.UserModel;
 import pw.mihou.amelia.templates.SingleRandom;
