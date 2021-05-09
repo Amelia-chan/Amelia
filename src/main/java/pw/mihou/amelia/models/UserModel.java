@@ -1,40 +1,42 @@
 package pw.mihou.amelia.models;
 
-import java.util.List;
+import pw.mihou.amelia.io.AmatsukiWrapper;
+import tk.mihou.amatsuki.entities.user.User;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class UserModel {
 
-    // User Model is meant to be mutable
-    // since we don't want to create a new object everytime.
-
-    private List<String> accounts;
+    private final Map<Integer, SHUser> accounts = new TreeMap<>();
     private final long user;
 
-    public UserModel(long user, List<String> accounts){
-        this.accounts = accounts;
+    public UserModel(long user, List<SHUser> accounts){
+        accounts.forEach(s -> this.accounts.put(s.getUnique(), s));
         this.user = user;
     }
 
-    public UserModel add(String user){
-        this.accounts.add(user);
-        return this;
+    public void addAccount(SHUser acc){
+        this.accounts.put(acc.getUnique(), acc);
     }
 
-    public UserModel remove(String user){
-        this.accounts.remove(user);
-        return this;
+    public void removeAccount(int unique){
+        this.accounts.remove(unique);
     }
 
-    public List<String> getAccounts(){
-        return accounts;
+    public Collection<SHUser> getAccounts(){
+        return accounts.values();
+    }
+
+    public CompletableFuture<List<User>> getUsers(){
+        return CompletableFuture.supplyAsync(() -> {
+            List<User> s = new ArrayList<>();
+            accounts.values().forEach(x -> AmatsukiWrapper.getConnector().getUserFromUrl(x.getUrl()).thenAccept(s::add));
+            return s;
+        });
     }
 
     public long getUser(){
         return user;
-    }
-
-    public UserModel replace(List<String> accounts){
-        this.accounts = accounts;
-        return this;
     }
 }

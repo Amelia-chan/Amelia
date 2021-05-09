@@ -15,5 +15,9 @@ public class AmatsukiWrapper {
         return connector.getStoryFromUrl(String.format(base_story, id)).join();
     }
 
+    public static Amatsuki getConnector(){
+        return connector;
+    }
+
 
 }

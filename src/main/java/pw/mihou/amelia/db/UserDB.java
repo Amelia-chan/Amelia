@@ -1,27 +1,33 @@
 package pw.mihou.amelia.db;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import pw.mihou.amelia.io.Terminal;
+import pw.mihou.amelia.models.SHUser;
 import pw.mihou.amelia.models.UserModel;
+import pw.mihou.amelia.templates.SingleRandom;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class UserDB {
 
     private static final Map<Long, UserModel> userCache = new TreeMap<>();
-    private static final MongoCollection<Document> db = MongoDB.collection("users", "notifications");
+    private static final MongoDatabase database = MongoDB.database("notifications");
 
-    public static void add(UserModel model){
-        if(db.find(Filters.eq("id", model.getUser())).first() != null) {
-            db.replaceOne(Filters.eq("id", model.getUser()), new Document("id", model.getUser())
-                    .append("accounts", model.getAccounts()));
-        } else {
-            db.insertOne(new Document("id", model.getUser())
-                    .append("accounts", model.getAccounts()));
-        }
+    public static void add(long user, String url, String name){
+        int unique = generateUnique(user);
+        database.getCollection(Long.toString(user)).insertOne(new Document("unique", unique)
+                    .append("url", url).append("name", name));
 
-        userCache.put(model.getUser(), model);
+        get(user).addAccount(new SHUser(url, unique, name));
+    }
+
+    private static int generateUnique(long user){
+        int x = SingleRandom.rand.nextInt(9999);
+        return database.getCollection(Long.toString(user)).find(Filters.eq("unique", x)).first() != null ? generateUnique(user) : x;
     }
 
     public static UserModel get(long id){
@@ -32,28 +38,38 @@ public class UserDB {
         return userCache.values();
     }
 
-    public static void load(){
-        db.find().forEach(document -> userCache.put(document.getLong("id"), new UserModel(document.getLong("id"), (List<String>) document.get("accounts"))));
+    public static CompletableFuture<List<UserModel>> load(){
+        return CompletableFuture.supplyAsync(() -> {
+            List<UserModel> users = new ArrayList<>();
+            database.listCollectionNames().forEach(s -> {
+                List<SHUser> c = new ArrayList<>();
+                database.getCollection(s).find().forEach(document -> c.add(new SHUser(document.getString("url"),
+                        document.getInteger("unique"), document.getString("name"))));
+                UserModel model = new UserModel(Long.parseLong(s), c);
+                userCache.put(model.getUser(), model);
+
+                users.add(model);
+            });
+
+            return users;
+        });
     }
 
-    public static void remove(long id){
-        userCache.remove(id); db.deleteOne(Filters.eq("id", id));
+    public static boolean doesExist(long user, int unique){
+        return database.getCollection(Long.toString(user)).find(Filters.eq("unique", unique)).first() != null;
     }
 
-    public static UserModel retrieve(long id){
-        if(db.find(Filters.eq("id", id)).first() != null) {
-            Document doc = db.find(Filters.eq("id", id)).first();
-            if(userCache.containsKey(id)){
-                // Ignore the casting, they have the same effect as getList("accounts", String.class).
-                userCache.get(id).replace((List<String>) doc.get("accounts"));
-            } else {
-                userCache.put(id, new UserModel(id, (List<String>) doc.get("accounts")));
-            }
-        } else {
-            add(new UserModel(id, new ArrayList<>()));
-        }
+    public static void remove(long user, int unique){
+        get(user).removeAccount(unique);
+        database.getCollection(Long.toString(user)).deleteOne(Filters.eq("unique", unique));
+    }
 
-        return userCache.get(id);
+    public static UserModel retrieve(long user){
+        List<SHUser> c = new ArrayList<>();
+        database.getCollection(Long.toString(user)).find().forEach(document -> c.add(new SHUser(document.getString("url"), document.getInteger("unique"), document.getString("name"))));
+        userCache.put(user, new UserModel(user, c));
+
+        return userCache.get(user);
     }
 
 }

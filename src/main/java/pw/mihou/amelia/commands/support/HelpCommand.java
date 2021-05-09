@@ -39,6 +39,7 @@ public class HelpCommand extends Command {
         return new Embed().setThumbnail(api.getYourself().getAvatar())
                 .build()
                 .addInlineField("Feeds", "`feeds`\n`subscribe`\n`unsubscribe`\n`register`\n`remove`")
-                .addInlineField("Miscellaneous", "`ping`\n`invite`\n`test`\n`settings`");
+                .addInlineField("Miscellaneous", "`ping`\n`invite`\n`test`\n`settings`")
+                .addInlineField("Trending Notifications", "`iam`\n`author`");
     }
 }
