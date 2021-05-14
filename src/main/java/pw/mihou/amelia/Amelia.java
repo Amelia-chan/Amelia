@@ -94,17 +94,13 @@ public class Amelia {
         Terminal.log("The bot has started!");
         int initial = determineNextTarget();
         Terminal.log("The scheduler will be delayed for " + initial + " minutes for synchronization.");
-        Scheduler.schedule(() -> FeedDB.retrieveAllModels().thenAccept(feedModels -> feedModels.forEach(feedModel -> {
-            // We want them all to be executed in different threads to speed up everything.
-            CompletableFuture.runAsync(() -> ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry -> {
-                if (syndEntry.getPublishedDate().after(feedModel.getDate())) {
-                    api.getServerTextChannelById(feedModel.getChannel()).ifPresent(tc -> {
+        Scheduler.schedule(() -> FeedDB.retrieveAllModels().thenAccept(feedModels -> feedModels.forEach(feedModel ->
+                CompletableFuture.runAsync(() -> api.getServerTextChannelById(feedModel.getChannel()).ifPresent(tc -> ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry -> {
+                    if (syndEntry.getPublishedDate().after(feedModel.getDate())) {
                         feedModel.setPublishedDate(syndEntry.getPublishedDate()).update(tc.getServer().getId()).thenAccept(unused -> Message.msg(format(syndEntry, feedModel, tc.getServer())).send(tc));
                         System.out.printf("[%s]: RSS feed deployed for: %s with feed id: [%d]\n", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), tc.getServer().getName(), feedModel.getUnique());
-                    });
-                }
-            }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL())), Scheduler.getExecutorService());
-        })), initial, 10, TimeUnit.MINUTES);
+                    }
+                }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL())))))), initial, 10, TimeUnit.MINUTES);
 
         Terminal.log("Trending scheduler is delayed: " + secondsToDate());
         Scheduler.schedule(() -> CompletableFuture.runAsync(() -> {

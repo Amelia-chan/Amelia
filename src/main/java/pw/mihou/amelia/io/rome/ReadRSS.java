@@ -30,7 +30,8 @@ public class ReadRSS {
             }
         }
 
-        return requestLatest(url).map(syndEntry -> CacheManager.addCache(syndEntry, String.format(format_cache, url), 5, TimeUnit.MINUTES));
+        // We only need this cache when sending the same story to the channels that have the same one.
+        return requestLatest(url).map(syndEntry -> CacheManager.addCache(syndEntry, String.format(format_cache, url), 2, TimeUnit.MINUTES));
     }
 
     public static Optional<SyndEntry> requestLatest(String url) {
