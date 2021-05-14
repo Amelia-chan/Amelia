@@ -8,7 +8,6 @@ import pw.mihou.amelia.commands.base.Command;
 import pw.mihou.amelia.db.UserDB;
 import pw.mihou.amelia.models.SHUser;
 import pw.mihou.amelia.templates.Embed;
-
 import java.util.Collection;
 
 public class AuthorCommand extends Command {

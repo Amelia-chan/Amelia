@@ -1,5 +1,6 @@
 package pw.mihou.amelia;
 
+import com.rometools.rome.feed.synd.SyndEntry;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
@@ -29,6 +30,7 @@ import pw.mihou.amelia.io.*;
 import pw.mihou.amelia.io.rome.ReadRSS;
 import pw.mihou.amelia.listeners.BotJoinCommand;
 import pw.mihou.amelia.listeners.BotLeaveListener;
+import pw.mihou.amelia.models.FeedModel;
 import pw.mihou.amelia.templates.Embed;
 import pw.mihou.amelia.templates.Message;
 import tk.mihou.amatsuki.entities.story.lower.StoryResults;
@@ -97,12 +99,7 @@ public class Amelia {
             CompletableFuture.runAsync(() -> ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry -> {
                 if (syndEntry.getPublishedDate().after(feedModel.getDate())) {
                     api.getServerTextChannelById(feedModel.getChannel()).ifPresent(tc -> {
-                        feedModel.setPublishedDate(syndEntry.getPublishedDate()).update(tc.getServer().getId()).thenAccept(unused ->
-                                Message.msg(MessageDB.getFormat(tc.getServer().getId())
-                                        .replaceAll("\\{title}", syndEntry.getTitle())
-                                        .replaceAll("\\{author}", StoryHandler.getAuthor(syndEntry.getAuthor(), feedModel.getId()))
-                                        .replaceAll("\\{link}", syndEntry.getLink())
-                                        .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), tc.getServer()))).send(tc));
+                        feedModel.setPublishedDate(syndEntry.getPublishedDate()).update(tc.getServer().getId()).thenAccept(unused -> Message.msg(format(syndEntry, feedModel, tc.getServer())).send(tc));
                         System.out.printf("[%s]: RSS feed deployed for: %s with feed id: [%d]\n", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), tc.getServer().getName(), feedModel.getUnique());
                     });
                 }
@@ -128,6 +125,14 @@ public class Amelia {
                 TimeUnit.SECONDS.toMinutes(uptime) - TimeUnit.HOURS.toMinutes(TimeUnit.SECONDS.toHours(uptime)),
                 TimeUnit.SECONDS.toSeconds(uptime) - TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(uptime))
         );
+    }
+
+    public static String format(SyndEntry syndEntry, FeedModel feedModel, Server server){
+        return MessageDB.getFormat(server.getId())
+                .replaceAll("\\{title}", syndEntry.getTitle())
+                .replaceAll("\\{author}", StoryHandler.getAuthor(syndEntry.getAuthor(), feedModel.getId()))
+                .replaceAll("\\{link}", syndEntry.getLink())
+                .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), server));
     }
 
     private static EmbedBuilder notificationEmbed(StoryResults results){

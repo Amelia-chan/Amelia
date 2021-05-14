@@ -24,7 +24,7 @@
         <dependency>
             <groupId>pw.mihou</groupId>
             <artifactId>amatsuki</artifactId>
-            <version>v1.2.9r1</version>
+            <version>4537a90d4f</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
