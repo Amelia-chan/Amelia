@@ -10,7 +10,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import pw.mihou.amelia.io.Terminal;
 import tk.mihou.amatsuki.impl.cache.CacheManager;
 
 import java.io.IOException;
@@ -34,6 +33,28 @@ public class ReadRSS {
         return requestLatest(url).map(syndEntry -> CacheManager.addCache(syndEntry, String.format(format_cache, url), 2, TimeUnit.MINUTES));
     }
 
+    private static Optional<SyndEntry> retry(String url, int count) {
+        if(count < 5) {
+            try (CloseableHttpClient client = HttpClients.createDefault()) {
+                HttpUriRequest request = new HttpGet(url);
+                request.setHeader("User-Agent", "Amelia/1.0r1 (Language=Java/1.8, Developer=Shindou Mihou)");
+                try (CloseableHttpResponse response = client.execute(request);
+                     InputStream stream = response.getEntity().getContent()) {
+                    return Optional.of(new SyndFeedInput().build(new XmlReader(stream)).getEntries().get(0));
+                } catch (FeedException | IOException e) {
+                    if(count == 4) e.printStackTrace();
+                    return retry(url, count + 1);
+                }
+
+            } catch (IOException e) {
+                if(count == 4) e.printStackTrace();
+                return retry(url, count + 1);
+            }
+        }
+
+        return Optional.empty();
+    }
+
     public static Optional<SyndEntry> requestLatest(String url) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpUriRequest request = new HttpGet(url);
@@ -47,8 +68,7 @@ public class ReadRSS {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
-            return Optional.empty();
+            return retry(url, 0);
         }
     }
 

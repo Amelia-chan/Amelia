@@ -2,10 +2,10 @@ package pw.mihou.amelia.commands.feeds;
 
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
+import pw.mihou.amelia.Amelia;
 import pw.mihou.amelia.commands.base.Command;
 import pw.mihou.amelia.commands.db.FeedDB;
 import pw.mihou.amelia.models.FeedModel;
@@ -64,25 +64,25 @@ public class FeedsCommand extends Command {
         });
     }
 
+
     private EmbedBuilder embed(Server server, ArrayList<FeedModel> objects, int page) {
         EmbedBuilder embed = new Embed().setTitle(server.getName() + "'s feeds").setFooter("Page: " + page)
                 .setDescription(!objects.isEmpty() ? "Here are the feeds registered on the server." : "The server has no feeds registered.").build();
         if (!objects.isEmpty()) {
             for (FeedModel object : objects) {
-                StringBuilder builder = new StringBuilder();
-                object.getMentions().forEach(aLong -> builder.append(server.getRoleById(aLong).map(Role::getMentionTag).orElse("[Unknown role]")));
                 embed.addField("[" + object.getUnique() + "] " + object.getName(), "\n" +
                         "\nLink: " + object.getFeedURL() +
                         "\nFeed Unique ID: `" + object.getUnique() +
                         "`\nFeed ID: `" + object.getId() +
                         "`\nFeed Name: `" + object.getName() +
-                        "`\nRoles Subscribed: " + builder.toString() +
+                        "`\nRoles Subscribed: " + Amelia.getMentions(object.getMentions(), server) +
                         "\nLast Update: `" + object.getDate().toString() +
                         "`\nAssigned Channel: " + server.getTextChannelById(object.getChannel())
                         .map(ServerTextChannel::getMentionTag).orElse("Unknown (possibly deleted?)") +
                         "\nCreated by: " + server.getMemberById(object.getUser()).map(User::getMentionTag).orElse("Unknown (possibly left?)"));
             }
         }
+
         return embed.setFooter("Please use the Unique ID for removing feeds, etc.");
     }
 

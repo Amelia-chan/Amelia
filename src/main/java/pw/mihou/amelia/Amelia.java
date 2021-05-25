@@ -63,6 +63,13 @@ public class Amelia {
 
         UserDB.load();
 
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            shards.forEach((integer, api) -> api.disconnect());
+            MongoDB.shutdown();
+            Scheduler.shutdown();
+            Scheduler.getExecutorService().shutdown();
+        }));
+
         // The DiscordAPI Builder.
         new DiscordApiBuilder()
                 .setToken(token) // Logins with the bot token.
@@ -86,12 +93,12 @@ public class Amelia {
         api.setReconnectDelay(attempt -> attempt * 2);
         FeedDB.preloadAllModels();
         api.updateActivity(ActivityType.WATCHING, "The bot is starting up...");
-        Terminal.log("Javacord Optimizations and Shutdown hook is now ready!");
 
         registerAllCommands(api);
         Terminal.log("All commands are now registered.");
         api.updateActivity(ActivityType.WATCHING, "People read stories!");
         Terminal.log("The bot has started!");
+
         int initial = determineNextTarget();
         Terminal.log("The scheduler will be delayed for " + initial + " minutes for synchronization.");
         Scheduler.schedule(() -> FeedDB.retrieveAllModels().thenAccept(feedModels -> feedModels.forEach(feedModel ->
@@ -103,7 +110,7 @@ public class Amelia {
                 }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL())))))), initial, 10, TimeUnit.MINUTES);
 
         Terminal.log("Trending scheduler is delayed: " + secondsToDate());
-        Scheduler.schedule(() -> CompletableFuture.runAsync(() -> {
+        Scheduler.schedule(() -> Scheduler.getExecutorService().submit(() -> {
             List<StoryResults> trending = AmatsukiWrapper.getConnector().getTrending().join().stream().limit(9).collect(Collectors.toList());
             UserDB.load().thenAccept(list -> list.forEach(userModel -> userModel.getAccounts().forEach(shUser -> AmatsukiWrapper.getConnector().getUserFromUrl(shUser.getUrl())
                     .thenAccept(user -> trending.stream().filter(r -> r.getCreator().equalsIgnoreCase(user.getName()))
@@ -139,10 +146,12 @@ public class Amelia {
                 .setThumbnail(results.getThumbnail()).setFooter("Created by Shindou Mihou @ patreon.com/mihou").build();
     }
 
-    private static String getMentions(ArrayList<Long> roles, Server server) {
-        StringBuilder builder = new StringBuilder();
-        roles.forEach(aLong -> builder.append(server.getRoleById(aLong).map(Role::getMentionTag).orElse("[Vanished Role]")));
-        return builder.toString();
+    public static String getMentions(ArrayList<Long> roles, Server server) {
+        return roles.stream()
+                .map(aLong -> server.getRoleById(aLong)
+                .map(Role::getMentionTag)
+                .orElse("[Vanished Role]"))
+                .collect(Collectors.joining());
     }
 
     private static void registerAllCommands(DiscordApi api) {
