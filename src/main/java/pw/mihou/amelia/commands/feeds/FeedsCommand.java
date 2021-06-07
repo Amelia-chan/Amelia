@@ -23,45 +23,44 @@ public class FeedsCommand extends Command {
 
     @Override
     protected void runCommand(MessageCreateEvent event, User user, Server server, String[] args) {
-        FeedDB.getServer(server.getId()).getModels().thenAccept(feedModels -> {
-            FeedNavigator navigator = new FeedNavigator(feedModels);
-            if (!navigator.getModels().isEmpty()) {
-                event.getMessage().reply(embed(server, navigator.current().orElse(new ArrayList<>()), 1)).thenAccept(message -> {
-                    if (navigator.hasNext()) {
-                        message.addReactions("⬅", "trash:775601666845573140", "➡");
-                    } else {
-                        message.addReaction("trash:775601666845573140");
+        ArrayList<FeedModel> feedModels = FeedDB.getServer(server.getId()).getModels();
+        FeedNavigator navigator = new FeedNavigator(feedModels);
+        if (!navigator.getModels().isEmpty()) {
+            event.getMessage().reply(embed(server, navigator.current().orElse(new ArrayList<>()), 1)).thenAccept(message -> {
+                if (navigator.hasNext()) {
+                    message.addReactions("⬅", "trash:775601666845573140", "➡");
+                } else {
+                    message.addReaction("trash:775601666845573140");
+                }
+                message.addReactionAddListener(e -> {
+                    if (e.getUserId() == event.getMessageAuthor().getId()) {
+                        if (e.getEmoji().equalsEmoji("➡")) {
+                            if (navigator.hasNext()) {
+                                message.edit(embed(server, navigator.next().orElse(new ArrayList<>()), navigator.getPage()));
+                            }
+                        } else if (e.getEmoji().equalsEmoji("⬅")) {
+                            if (navigator.canReverse()) {
+                                message.edit(embed(server, navigator.backwards().orElse(new ArrayList<>()), navigator.getPage()));
+                            }
+                        }
+                        if (e.getEmoji().getMentionTag().equalsIgnoreCase("<:trash:775601666845573140>")) {
+                            message.delete();
+                            event.getMessage().delete();
+                            navigator.reset();
+                        }
                     }
-                    message.addReactionAddListener(e -> {
-                        if (e.getUserId() == event.getMessageAuthor().getId()) {
-                            if (e.getEmoji().equalsEmoji("➡")) {
-                                if (navigator.hasNext()) {
-                                    message.edit(embed(server, navigator.next().orElse(new ArrayList<>()), navigator.getPage()));
-                                }
-                            } else if (e.getEmoji().equalsEmoji("⬅")) {
-                                if (navigator.canReverse()) {
-                                    message.edit(embed(server, navigator.backwards().orElse(new ArrayList<>()), navigator.getPage()));
-                                }
-                            }
-                            if (e.getEmoji().getMentionTag().equalsIgnoreCase("<:trash:775601666845573140>")) {
-                                message.delete();
-                                event.getMessage().delete();
-                                navigator.reset();
-                            }
-                        }
 
-                        if (e.getUserId() != event.getApi().getYourself().getId()) {
-                            e.removeReaction();
-                        }
-                    }).removeAfter(5, TimeUnit.MINUTES).addRemoveHandler(() -> {
-                        message.removeAllReactions();
-                        navigator.reset();
-                    });
+                    if (e.getUserId() != event.getApi().getYourself().getId()) {
+                        e.removeReaction();
+                    }
+                }).removeAfter(5, TimeUnit.MINUTES).addRemoveHandler(() -> {
+                    message.removeAllReactions();
+                    navigator.reset();
                 });
-            } else {
-                event.getMessage().reply(embed(server, new ArrayList<>(), 1));
-            }
-        });
+            });
+        } else {
+            event.getMessage().reply(embed(server, new ArrayList<>(), 1));
+        }
     }
 
 

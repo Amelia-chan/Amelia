@@ -11,7 +11,6 @@ import pw.mihou.amelia.io.rome.ReadRSS;
 import pw.mihou.amelia.templates.Message;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 public class TestCommand extends Command {
 
@@ -27,16 +26,29 @@ public class TestCommand extends Command {
                 try {
                     long id = Long.parseLong(args[1]);
                     if (FeedDB.validate(id)) {
-                        event.getMessage().reply("Please wait...").thenAccept(msg -> FeedDB.getServer(server.getId()).getChannel(event.getChannel().getId()).getFeedModel(id).ifPresentOrElse(feedModel ->
-                                        ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry ->
-                                                        server.getTextChannelById(feedModel.getChannel()).ifPresentOrElse(tc ->
-                                                                Message.msg(Amelia.format(syndEntry, feedModel, server)).send(tc)
-                                                                        .whenComplete((message, throwable) -> Optional.ofNullable(throwable).ifPresentOrElse(t -> msg.delete().thenAccept(unused ->
-                                                                                        event.getMessage().reply("Error: A throwable was thrown, the bot possibly cannot send a message to the channel.")),
-                                                                                () -> msg.delete().thenAccept(u -> event.getMessage().reply("The test went well!")))),
-                                                                () -> msg.delete().thenAccept(u -> event.getMessage().reply("Error: The channel provided does not exist."))),
-                                                () -> msg.delete().thenAccept(unused -> msg.delete().thenAccept(u -> event.getMessage().reply("Error: We couldn't connect to ScribbleHub's RSS feed, please try again later.")))),
-                                () -> msg.delete().thenAccept(unused -> event.getMessage().reply("We couldn't find the feed, are you sure you are using the feed's unique ID?"))));
+                        event.getMessage().reply("Attempting to perform test fetch...")
+                                .thenAccept(message -> {
+                                    FeedDB.getServer(server.getId())
+                                            .getFeedModel(id)
+                                            .ifPresentOrElse(feedModel -> {
+                                                server.getTextChannelById(feedModel.getChannel()).ifPresentOrElse(tc -> {
+                                                    ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(item ->
+                                                            item.getPubDate().ifPresentOrElse(date -> {
+                                                                    if (date.after(feedModel.getDate())) {
+                                                                        Message.msg(Amelia.format(item, feedModel, tc.getServer())).send(tc)
+                                                                                .whenComplete((msg, throwable) -> {
+                                                                                    if(throwable != null){
+                                                                                        message.edit("An exception was thrown, is it possible that the bot cannot write on the channel?");
+                                                                                    } else {
+                                                                                        message.edit("Amelia was successfully able to deliver the feed!");
+                                                                                    }
+                                                                                });
+                                                                    }
+                                                            }, () -> message.edit("We were unable to fetch the date of the feeds...")),
+                                                            () -> message.edit("Amelia was not able to retrieve the RSS feed from ScribbleHub..."));
+                                                }, () -> message.edit("We were unable to find the text channel ("+feedModel.getChannel()+"), please verify it exists and the bot can see and write on it!"));
+                                            }, () -> message.edit("We were unable to find the feed, are you sure you are using the feed's unique id?\nPlease verify using `feeds` command."));
+                                });
                     } else {
                         event.getMessage().reply("Error: We couldn't find the feed, are you sure you are using the feed's unique id." +
                                 "\nPlease verify using `feeds`");

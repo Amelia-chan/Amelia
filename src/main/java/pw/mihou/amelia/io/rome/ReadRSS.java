@@ -1,74 +1,55 @@
 package pw.mihou.amelia.io.rome;
 
-import com.rometools.rome.feed.synd.SyndEntry;
-import com.rometools.rome.feed.synd.SyndEntryImpl;
-import com.rometools.rome.io.FeedException;
-import com.rometools.rome.io.SyndFeedInput;
-import com.rometools.rome.io.XmlReader;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import tk.mihou.amatsuki.impl.cache.CacheManager;
+import com.apptastic.rssreader.RssReader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+import pw.mihou.amelia.Amelia;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class ReadRSS {
 
-    private static final String format_cache = "AMELIA_FEEDS_%s_CACHE";
+    private static final LoadingCache<String, ItemWrapper> feeds = Caffeine.newBuilder()
+            .expireAfterWrite(2, TimeUnit.MINUTES).refreshAfterWrite(9, TimeUnit.MINUTES)
+            .build(key -> request(key).orElse(null));
+    private static final RssReader reader = new RssReader().setUserAgent("Amelia/1.0r1 (Language=Java/1.8, Developer=Shindou Mihou)");
 
-    public static Optional<SyndEntry> getLatest(String url){
-        if(CacheManager.isCached(String.format(format_cache, url))){
-            SyndEntry result = CacheManager.getCache(SyndEntryImpl.class, String.format(format_cache, url));
-            if(result != null){
-                return Optional.of(result);
-            }
-        }
-
-        // We only need this cache when sending the same story to the channels that have the same one.
-        return requestLatest(url).map(syndEntry -> CacheManager.addCache(syndEntry, String.format(format_cache, url), 2, TimeUnit.MINUTES));
-    }
-
-    private static Optional<SyndEntry> retry(String url, int count) {
-        if(count < 5) {
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                HttpUriRequest request = new HttpGet(url);
-                request.setHeader("User-Agent", "Amelia/1.0r1 (Language=Java/1.8, Developer=Shindou Mihou)");
-                try (CloseableHttpResponse response = client.execute(request);
-                     InputStream stream = response.getEntity().getContent()) {
-                    return Optional.of(new SyndFeedInput().build(new XmlReader(stream)).getEntries().get(0));
-                } catch (FeedException | IOException e) {
-                    if(count == 4) e.printStackTrace();
-                    return retry(url, count + 1);
-                }
-
-            } catch (IOException e) {
-                if(count == 4) e.printStackTrace();
-                return retry(url, count + 1);
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    public static Optional<SyndEntry> requestLatest(String url) {
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpUriRequest request = new HttpGet(url);
-            request.setHeader("User-Agent", "Amelia/1.0r1 (Language=Java/1.8, Developer=Shindou Mihou)");
-            try (CloseableHttpResponse response = client.execute(request);
-                 InputStream stream = response.getEntity().getContent()) {
-                return Optional.of(new SyndFeedInput().build(new XmlReader(stream)).getEntries().get(0));
-            } catch (FeedException | IOException e) {
-                e.printStackTrace();
-                return Optional.empty();
-            }
-
-        } catch (IOException e) {
+    private static Optional<ItemWrapper> request(String url){
+        try {
+            return reader.read(url).findFirst().map(ItemWrapper::new);
+        } catch (IOException exception) {
+            Amelia.log.error("Unable to connect to {}: {}", url, exception.getMessage());
+            Amelia.log.info("Attempting to reconnect to {} in 0 seconds...", url);
             return retry(url, 0);
+        }
+    }
+
+    public static Optional<ItemWrapper> getLatest(String url){
+        return Optional.ofNullable(feeds.get(url));
+    }
+
+    private static Optional<ItemWrapper> retry(String url, int i){
+        if(i < 10) {
+            int bucket = i * 1000;
+            try {
+                return reader.read(url)
+                        .findFirst().map(ItemWrapper::new);
+            } catch (IOException exception) {
+                try {
+                    Amelia.log.error("Unable to connect to {}: {}", url, exception.getMessage());
+                    Amelia.log.info("Attempting to reconnect to {} in {} seconds...", url, bucket);
+                    Thread.sleep(bucket);
+                    return retry(url, i);
+                } catch (InterruptedException e) {
+                    Amelia.log.error("Thread was interrupted exception while attempting to retry {} for {} bucket: {}", url, i, e.getMessage());
+                    return Optional.empty();
+                }
+            }
+        } else {
+            Amelia.log.error("Failed to connect to {} after 10 attempts, sending error.", url);
+            return Optional.empty();
         }
     }
 

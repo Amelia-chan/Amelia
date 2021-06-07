@@ -28,7 +28,7 @@ public class FeedDB {
             db.insertOne(doc);
         }
 
-        servers.get(server).getChannel(model.getChannel()).addFeed(model);
+        servers.get(server).addFeed(model);
     }
 
     public static void deleteServer(long server) {
@@ -51,7 +51,7 @@ public class FeedDB {
     }
 
     public static void preloadAllModels() {
-        db.find().forEach(doc -> getServer(doc.getLong("server")).getChannel(doc.getLong("channel"))
+        db.find().forEach(doc -> getServer(doc.getLong("server"))
                 .addFeed(new FeedModel(doc.getLong("unique"), doc.getInteger("id"),
                         doc.getString("url"), doc.getLong("channel"),
                         doc.getLong("user"), doc.getString("name"), doc.getDate("date"),
@@ -88,11 +88,8 @@ public class FeedDB {
         FeedModel model = new FeedModel(doc.getLong("unique"), doc.getInteger("id"), doc.getString("url"), doc.getLong("channel"), doc.getLong("user"), doc.getString("name"), doc.getDate("date"),
                 doc.get("mentions", new ArrayList<>()));
 
-        // Stores for future use.
-        getServer(server).getChannel(model.getChannel()).addFeed(model);
-
-        // Returns back the stored model.
-        return getServer(server).getChannel(model.getChannel()).getFeedModel(model.getUnique());
+        getServer(server).addFeed(model);
+        return getServer(server).getFeedModel(model.getUnique());
     }
 
     public static void removeModel(long unique) {

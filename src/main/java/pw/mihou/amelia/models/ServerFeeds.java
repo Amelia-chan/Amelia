@@ -1,44 +1,44 @@
 package pw.mihou.amelia.models;
 
+import pw.mihou.amelia.commands.db.FeedDB;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
 
 public class ServerFeeds {
 
     private final long server;
-    private final Map<Long, ChannelFeeds> channels = new HashMap<>();
-    private final ArrayList<FeedModel> models = new ArrayList<>();
+    private final Map<Long, FeedModel> feeds = new HashMap<>();
 
     public ServerFeeds(long server) {
         this.server = server;
     }
 
-    public ChannelFeeds getChannel(long id) {
-        if (!channels.containsKey(id)) {
-            channels.put(id, new ChannelFeeds(server));
+    public Optional<FeedModel> getFeedModel(long id) {
+        if (!feeds.containsKey(id))
+            return FeedDB.requestModel(id, server);
+
+        return Optional.of(feeds.get(id));
+    }
+
+    public void addFeed(FeedModel model) {
+        if (!feeds.containsKey(model.getUnique())) {
+            feeds.put(model.getUnique(), model);
+        } else {
+            feeds.replace(model.getUnique(), model);
         }
-
-        return channels.get(id);
     }
 
-    public CompletableFuture<ArrayList<FeedModel>> getModels() {
-        return CompletableFuture.supplyAsync(() -> {
-            // We want models to clear models to make way for a newer version.
-            if (!models.isEmpty()) {
-                models.clear();
-            }
-
-            // Add all the new feeds.
-            channels.forEach((aLong, channelFeeds) -> models.addAll(channelFeeds.getModels()));
-            return models;
-        });
+    public void removeFeed(long id) {
+        // Removes it from both the database and the db.
+        feeds.remove(id);
+        FeedDB.removeModel(id);
     }
 
-    public ArrayList<ChannelFeeds> getFeeds() {
-        return new ArrayList<>(channels.values());
+    public ArrayList<FeedModel> getModels() {
+        return new ArrayList<>(feeds.values());
     }
-
 
 }

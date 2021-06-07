@@ -2,7 +2,6 @@ package pw.mihou.amelia.commands.creation;
 
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -33,14 +32,7 @@ public class RegisterCommand extends Command {
 
     public static boolean hasRole(User user, Server server) {
         ServerModel model = ServerDB.getServer(server.getId());
-        if (model.getRole().isPresent()) {
-            for (Role role : user.getRoles(server)) {
-                if (role.getId() == model.getRole().get()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return model.getRole().isPresent() && user.getRoles(server).stream().anyMatch(role -> role.getId() == model.getRole().get());
     }
 
     @Override
@@ -74,13 +66,16 @@ public class RegisterCommand extends Command {
                                                         message.edit(storyResultEmbed(navigators.backwards(), navigators.getArrow(), navigators.getMaximum()));
                                                     }
                                                 } else if (e.getEmoji().equalsEmoji("👍")) {
+                                                    message.delete();
                                                     navigators.current().transformToStory().thenAccept(story -> {
-                                                        // Give a fresh read on the RSS, retrieve the first entry then save the published date.
-                                                        ReadRSS.getLatest(story.getRSS()).ifPresentOrElse(syndEntry -> {
-                                                            FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), story.getSID(), story.getRSS(), channel.getId(), user.getId(), story.getTitle(), syndEntry.getPublishedDate(), new ArrayList<>()));
-                                                            message.delete();
-                                                            event.getMessage().reply("The bot will now send updates for the story on the channel, " + channel.getMentionTag());
-                                                        }, () -> event.getMessage().reply("An error occurred while retrieving RSS feed, please try again."));
+                                                        ReadRSS.getLatest(story.getRSS()).ifPresentOrElse(item -> {
+                                                            item.getPubDate().ifPresentOrElse(date -> {
+                                                                FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), story.getSID(), story.getRSS(),
+                                                                        channel.getId(), user.getId(), story.getTitle(), date, new ArrayList<>()));
+                                                                message.delete();
+                                                                event.getMessage().reply("The bot will now send updates for the story on the channel, " + channel.getMentionTag());
+                                                            }, () -> event.getMessage().reply("An error occurred while attempting to retrieve date or parse the date of feed."));
+                                                        }, () -> event.getMessage().reply("An error occurred while retrieving RSS feed, **this usually happens when the story has no chapters posted.**"));
                                                     });
                                                 } else if (e.getEmoji().equalsEmoji("👎")) {
                                                     message.delete("End of purpose.");
@@ -118,12 +113,16 @@ public class RegisterCommand extends Command {
                                                         message.edit(userResultEmbed(navigators.backwards(), navigators.getArrow(), navigators.getMaximum()));
                                                     }
                                                 } else if (e.getEmoji().equalsEmoji("👍")) {
-                                                    navigators.current().transformToUser().thenAccept(u -> ReadRSS.getLatest(u.getRSS()).ifPresentOrElse(syndEntry -> {
-                                                        FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), u.getUID(), u.getRSS(), channel.getId(), user.getId(), u.getName() + "'s stories", syndEntry.getPublishedDate(), new ArrayList<>()));
-                                                        message.delete();
-                                                        event.getMessage().reply("The bot will now send updates for the user's stories on the channel, " + channel.getMentionTag());
-                                                    }, () -> event.getMessage().reply("An error occurred while retrieving RSS feed, please try again.")));
-                                                    message.delete("End of purpose.");
+                                                    message.delete();
+                                                    navigators.current().transformToUser().thenAccept(u -> ReadRSS.getLatest(u.getRSS())
+                                                            .ifPresentOrElse(item -> {
+                                                                item.getPubDate().ifPresentOrElse(date -> {
+                                                                    FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(),
+                                                                            u.getUID(), u.getRSS(), channel.getId(), user.getId(),
+                                                                            u.getName() + "'s stories", date, new ArrayList<>()));
+                                                                    event.getMessage().reply("The bot will now send updates for the user's stories on the channel, " + channel.getMentionTag());
+                                                                }, () -> event.getMessage().reply("An error occurred while attempting to retrieve date or parse the date of feed."));
+                                                    }, () -> event.getMessage().reply("An error occurred while retrieving RSS feed, **this usually happens when the user has no stories published.**")));
                                                 } else if (e.getEmoji().equalsEmoji("👎")) {
                                                     message.delete("End of purpose.");
                                                     event.getMessage().delete();

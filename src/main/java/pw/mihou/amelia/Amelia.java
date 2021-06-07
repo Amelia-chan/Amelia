@@ -1,15 +1,18 @@
 package pw.mihou.amelia;
 
-import com.rometools.rome.feed.synd.SyndEntry;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
 import org.javacord.api.entity.intent.Intent;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.util.logging.ExceptionLogger;
-import org.javacord.api.util.logging.FallbackLoggerConfiguration;
+import org.slf4j.LoggerFactory;
+import pw.mihou.amelia.clients.ClientHandler;
 import pw.mihou.amelia.commands.creation.RegisterCommand;
 import pw.mihou.amelia.commands.db.FeedDB;
 import pw.mihou.amelia.commands.db.MessageDB;
@@ -26,61 +29,58 @@ import pw.mihou.amelia.commands.support.HelpCommand;
 import pw.mihou.amelia.commands.test.TestCommand;
 import pw.mihou.amelia.db.MongoDB;
 import pw.mihou.amelia.db.UserDB;
-import pw.mihou.amelia.io.*;
-import pw.mihou.amelia.io.rome.ReadRSS;
+import pw.mihou.amelia.io.Scheduler;
+import pw.mihou.amelia.io.StoryHandler;
+import pw.mihou.amelia.io.rome.ItemWrapper;
 import pw.mihou.amelia.listeners.BotJoinCommand;
 import pw.mihou.amelia.listeners.BotLeaveListener;
 import pw.mihou.amelia.models.FeedModel;
-import pw.mihou.amelia.templates.Embed;
-import pw.mihou.amelia.templates.Message;
-import tk.mihou.amatsuki.entities.story.lower.StoryResults;
+import pw.mihou.amelia.utility.ColorPalette;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class Amelia {
 
+    public static final Logger log = (Logger) LoggerFactory.getLogger("Amelia Client");
     private static final String token = System.getenv("amelia_token");
-    private static final HashMap<Integer, DiscordApi> shards = new HashMap<>();
+    public static final SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss");
+    public static final HashMap<Integer, DiscordApi> shards = new HashMap<>();
+    private static final String version = "1.5";
+    private static final String build = "BETA";
+    public static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+    public static boolean connected = false;
+
+    static {
+        log.setLevel(Level.DEBUG);
+    }
 
     public static void main(String[] args) {
-        // Logger Setup.
-        FallbackLoggerConfiguration.setTrace(true);
+        ((Logger) LoggerFactory.getLogger("org.mongodb.driver")).setLevel(Level.ERROR);
+        System.out.println(banner().replaceAll("y", ColorPalette.ANSI_YELLOW).replaceAll("re", ColorPalette.ANSI_RESET));
+        System.out.printf("Version: %s, Creator: Shindou Mihou, Build: %s\n", version, build);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            ClientHandler.close();
             shards.values().forEach(DiscordApi::disconnect);
-            MongoDB.shutdown();
-            Scheduler.shutdown();
-        }));
-
-        UserDB.load();
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            shards.forEach((integer, api) -> api.disconnect());
             MongoDB.shutdown();
             Scheduler.shutdown();
             Scheduler.getExecutorService().shutdown();
         }));
-
-        // The DiscordAPI Builder.
+        ClientHandler.connect();
+        FeedDB.preloadAllModels();
+        UserDB.load();
         new DiscordApiBuilder()
-                .setToken(token) // Logins with the bot token.
+                .setToken(token)
                 .setAllIntentsExcept(Intent.GUILD_MESSAGE_TYPING, Intent.DIRECT_MESSAGE_TYPING, Intent.GUILD_INTEGRATIONS, Intent.GUILD_WEBHOOKS,
-                        Intent.GUILD_BANS, Intent.GUILD_EMOJIS, Intent.GUILD_INVITES, Intent.GUILD_VOICE_STATES) // Excludes all the intents we won't be using for more performance.
+                        Intent.GUILD_BANS, Intent.GUILD_EMOJIS, Intent.GUILD_INVITES, Intent.GUILD_VOICE_STATES)
                 .setTotalShards(1)
-                .loginAllShards().forEach(shard -> shard.thenAccept(Amelia::onShardLogin).exceptionally(ExceptionLogger.get())); // After they reply, we then direct each shard to a onShardLogin.
-    }
-
-    private static int determineNextTarget() {
-        return LocalDateTime.now().getMinute() % 10 != 0 ? (LocalDateTime.now().getMinute() + (10 - LocalDateTime.now().getMinute() % 10)) - LocalDateTime.now().getMinute() : 0;
+                .loginAllShards()
+                .forEach(shard -> shard.
+                        thenAccept(Amelia::onShardLogin)
+                        .exceptionally(ExceptionLogger.get()));
     }
 
     private static void onShardLogin(DiscordApi api) {
@@ -91,66 +91,32 @@ public class Amelia {
         api.setAutomaticMessageCacheCleanupEnabled(true);
         api.setMessageCacheSize(10, 1);
         api.setReconnectDelay(attempt -> attempt * 2);
-        FeedDB.preloadAllModels();
         api.updateActivity(ActivityType.WATCHING, "The bot is starting up...");
 
         registerAllCommands(api);
-        Terminal.log("All commands are now registered.");
+        Amelia.log.info("All commands are now registered.");
         api.updateActivity(ActivityType.WATCHING, "People read stories!");
-        Terminal.log("The bot has started!");
-
-        int initial = determineNextTarget();
-        Terminal.log("The scheduler will be delayed for " + initial + " minutes for synchronization.");
-        Scheduler.schedule(() -> FeedDB.retrieveAllModels().thenAccept(feedModels -> feedModels.forEach(feedModel ->
-                CompletableFuture.runAsync(() -> api.getServerTextChannelById(feedModel.getChannel()).ifPresent(tc -> ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(syndEntry -> {
-                    if (syndEntry.getPublishedDate().after(feedModel.getDate())) {
-                        feedModel.setPublishedDate(syndEntry.getPublishedDate()).update(tc.getServer().getId()).thenAccept(unused -> Message.msg(format(syndEntry, feedModel, tc.getServer())).send(tc));
-                        System.out.printf("[%s]: RSS feed deployed for: %s with feed id: [%d]\n", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), tc.getServer().getName(), feedModel.getUnique());
-                    }
-                }, () -> Logger.getLogger("Amelia-chan").log(Level.SEVERE, "We couldn't connect to ScribbleHub: " + feedModel.getFeedURL())))))), initial, 10, TimeUnit.MINUTES);
-
-        Terminal.log("Trending scheduler is delayed: " + secondsToDate());
-        Scheduler.schedule(() -> Scheduler.getExecutorService().submit(() -> {
-            List<StoryResults> trending = AmatsukiWrapper.getConnector().getTrending().join().stream().limit(9).collect(Collectors.toList());
-            UserDB.load().thenAccept(list -> list.forEach(userModel -> userModel.getAccounts().forEach(shUser -> AmatsukiWrapper.getConnector().getUserFromUrl(shUser.getUrl())
-                    .thenAccept(user -> trending.stream().filter(r -> r.getCreator().equalsIgnoreCase(user.getName()))
-                            .forEachOrdered(storyResults -> api.getUserById(userModel.getUser())
-                                    .thenAccept(x -> x.sendMessage(notificationEmbed(storyResults))))))));
-            Terminal.log("All notifications for trending (today) has been sent.");
-        }), ResetCalculator.nextTrending(), ResetCalculator.defaultReset(), TimeUnit.SECONDS);
+        Amelia.log.info("The bot has successfully booted up in shard [{}] with {} servers.", api.getCurrentShard(), api.getServers().size());
     }
 
-    private static String secondsToDate() {
-        long uptime = ResetCalculator.nextTrending();
-        return String.format("%d days, %d hours, %d minutes, %d seconds",
-                TimeUnit.SECONDS.toDays(uptime),
-                TimeUnit.SECONDS.toHours(uptime) - TimeUnit.DAYS.toHours(TimeUnit.SECONDS.toDays(uptime)),
-                TimeUnit.SECONDS.toMinutes(uptime) - TimeUnit.HOURS.toMinutes(TimeUnit.SECONDS.toHours(uptime)),
-                TimeUnit.SECONDS.toSeconds(uptime) - TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(uptime))
-        );
-    }
-
-    public static String format(SyndEntry syndEntry, FeedModel feedModel, Server server){
-        return MessageDB.getFormat(server.getId())
-                .replaceAll("\\{title}", syndEntry.getTitle())
-                .replaceAll("\\{author}", StoryHandler.getAuthor(syndEntry.getAuthor(), feedModel.getId()))
-                .replaceAll("\\{link}", syndEntry.getLink())
-                .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), server));
-    }
-
-    private static EmbedBuilder notificationEmbed(StoryResults results){
-        Terminal.log(String.format("DEBUG: %s's story: [%s] has reached trending! The user has been notified!", results.getCreator(), results.getName()));
-        return new Embed().setTitle("[Trending Notification]")
-                .setDescription(String.format("`\uD83C\uDF89` Congratulations %s! Your story **[%s]** has trended on the frontpage (one of the 9 stories on the frontpage) of ScribbleHub! `\uD83C\uDF89`",
-                        results.getCreator(), results.getName()))
-                .setThumbnail(results.getThumbnail()).setFooter("Created by Shindou Mihou @ patreon.com/mihou").build();
+    public static String format(ItemWrapper item, FeedModel feedModel, Server server) {
+        if (item.valid()) {
+            return MessageDB.getFormat(server.getId())
+                    .replaceAll("\\{title}", item.getTitle())
+                    .replaceAll("\\{author}", StoryHandler.getAuthor(item.getAuthor(), feedModel.getId(), feedModel.getFeedURL()))
+                    .replaceAll("\\{link}", item.getLink())
+                    .replaceAll("\\{subscribed}", getMentions(feedModel.getMentions(), server));
+        } else {
+            log.error("Title and link is not present on {}, full item: {}", feedModel.getFeedURL(), item);
+            return "";
+        }
     }
 
     public static String getMentions(ArrayList<Long> roles, Server server) {
         return roles.stream()
                 .map(aLong -> server.getRoleById(aLong)
-                .map(Role::getMentionTag)
-                .orElse("[Vanished Role]"))
+                        .map(Role::getMentionTag)
+                        .orElse("[Vanished Role]"))
                 .collect(Collectors.joining());
     }
 
@@ -169,6 +135,20 @@ public class Amelia {
         api.addListener(new PingCommand());
         api.addListener(new AuthorCommand());
         api.addListener(new IAmCommand());
+    }
+
+    private static String banner(){
+        return  "y         _                  _   _         _            _              _          _          \n" +
+                "y        / /\\               /\\_\\/\\_\\ _    /\\ \\         _\\ \\           /\\ \\       / /\\        \n" +
+                "y       / /  \\             / / / / //\\_\\ /  \\ \\       /\\__ \\          \\ \\ \\     / /  \\       \n" +
+                "y      / / /\\ \\           /\\ \\/ \\ \\/ / // /\\ \\ \\     / /_ \\_\\         /\\ \\_\\   / / /\\ \\      \n" +
+                "y     / / /\\ \\ \\         /  \\____\\__/ // / /\\ \\_\\   / / /\\/_/        / /\\/_/  / / /\\ \\ \\     \n" +
+                "y    / / /  \\ \\ \\       / /\\/________// /_/_ \\/_/  / / /            / / /    / / /  \\ \\ \\    \n" +
+                "y   / / /___/ /\\ \\     / / /\\/_// / // /____/\\    / / /            / / /    / / /___/ /\\ \\   \n" +
+                "y  / / /_____/ /\\ \\   / / /    / / // /\\____\\/   / / / ____       / / /    / / /_____/ /\\ \\  \n" +
+                "y / /_________/\\ \\ \\ / / /    / / // / /______  / /_/_/ ___/\\ ___/ / /__  / /_________/\\ \\ \\ \n" +
+                "y/ / /_       __\\ \\_\\\\/_/    / / // / /_______\\/_______/\\__\\//\\__\\/_/___\\/ / /_       __\\ \\_\\\n" +
+                "y\\_\\___\\     /____/_/        \\/_/ \\/__________/\\_______\\/    \\/_________/\\_\\___\\     /____/_/re";
     }
 
 }
