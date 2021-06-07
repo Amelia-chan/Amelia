@@ -1,6 +1,6 @@
 # Amelia
 Amelia is a simple Discord bot that is used to fetch RSS feeds, and updates users
-about a certain author updating their stories.
+about a certain author updating their stories or to receive trending notifications whenever your story trends.
 
 ## Requirements
 The specification requirements for Amelia are as of follows:
@@ -72,3 +72,7 @@ For information about setting environmental variables on Windows:
 https://docs.oracle.com/en/database/oracle/r-enterprise/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html
 
 https://www.computerhope.com/issues/ch000549.htm
+
+## Contribute
+[Amelia Websocket Repository](https://github.com/ManaNet/Amelia-Websocket)
+[Amelia Client Repository](https://github.com/ManaNet/Amelia)
