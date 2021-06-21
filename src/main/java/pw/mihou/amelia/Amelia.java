@@ -40,6 +40,7 @@ import pw.mihou.amelia.utility.ColorPalette;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Amelia {
@@ -74,8 +75,12 @@ public class Amelia {
         UserDB.load();
         new DiscordApiBuilder()
                 .setToken(token)
-                .setAllIntentsExcept(Intent.GUILD_MESSAGE_TYPING, Intent.DIRECT_MESSAGE_TYPING, Intent.GUILD_INTEGRATIONS, Intent.GUILD_WEBHOOKS,
-                        Intent.GUILD_BANS, Intent.GUILD_EMOJIS, Intent.GUILD_INVITES, Intent.GUILD_VOICE_STATES)
+                .setAllIntentsExcept
+                        (Intent.GUILD_MESSAGE_TYPING, Intent.DIRECT_MESSAGE_TYPING,
+                        Intent.GUILD_INTEGRATIONS, Intent.GUILD_WEBHOOKS,
+                        Intent.GUILD_BANS, Intent.GUILD_EMOJIS,
+                                Intent.GUILD_INVITES, Intent.GUILD_VOICE_STATES,
+                                Intent.GUILD_PRESENCES)
                 .setTotalShards(1)
                 .loginAllShards()
                 .forEach(shard -> shard.
@@ -113,11 +118,8 @@ public class Amelia {
     }
 
     public static String getMentions(ArrayList<Long> roles, Server server) {
-        return roles.stream()
-                .map(aLong -> server.getRoleById(aLong)
-                        .map(Role::getMentionTag)
-                        .orElse("[Vanished Role]"))
-                .collect(Collectors.joining());
+        return roles.stream().map(aLong -> server.getRoleById(aLong).map(Role::getMentionTag))
+                .filter(Optional::isPresent).map(Optional::get).collect(Collectors.joining());
     }
 
     private static void registerAllCommands(DiscordApi api) {

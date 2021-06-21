@@ -12,7 +12,8 @@ import java.util.concurrent.TimeUnit;
 public class ReadRSS {
 
     private static final LoadingCache<String, ItemWrapper> feeds = Caffeine.newBuilder()
-            .expireAfterWrite(2, TimeUnit.MINUTES).refreshAfterWrite(9, TimeUnit.MINUTES)
+            .expireAfterWrite(2, TimeUnit.MINUTES)
+            .refreshAfterWrite(9, TimeUnit.MINUTES)
             .build(key -> request(key).orElse(null));
     private static final RssReader reader = new RssReader().setUserAgent("Amelia/1.0r1 (Language=Java/1.8, Developer=Shindou Mihou)");
 
