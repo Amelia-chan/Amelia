@@ -23,17 +23,17 @@ public class ListenerManager {
         attach(new TrendingNotification());
     }
 
-    public static void attach(Listener listener){
+    public static void attach(Listener listener) {
         listeners.add(listener);
     }
 
-    public static void dispatch(JSONObject message){
-        if(message.getString("payload_type").equalsIgnoreCase("trending")){
+    public static void dispatch(JSONObject message) {
+        if (message.getString("payload_type").equalsIgnoreCase("trending")) {
             listeners.stream().filter(listener -> listener.type().equalsIgnoreCase("trending"))
                     .map(listener -> (TrendingListener) listener)
                     .forEachOrdered(listener -> Scheduler.getExecutorService().submit(() -> listener
                             .onEvent(Amelia.gson.fromJson(message.getString("payload"), AmeliaTrendingPayload.class))));
-        } else if(message.getString("payload_type").equalsIgnoreCase("feed")){
+        } else if (message.getString("payload_type").equalsIgnoreCase("feed")) {
             listeners.stream().filter(listener -> listener.type().equalsIgnoreCase("feed"))
                     .map(listener -> (FeedListener) listener)
                     .forEachOrdered(listener -> Scheduler.getExecutorService().submit(() -> listener

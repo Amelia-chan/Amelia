@@ -1,29 +1,28 @@
 package pw.mihou.amelia.commands.miscellanous;
 
-import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
-import pw.mihou.amelia.commands.base.Command;
 import pw.mihou.amelia.templates.Embed;
+import pw.mihou.velen.interfaces.VelenEvent;
 
 import java.lang.management.ManagementFactory;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
-public class PingCommand extends Command {
-
-    public PingCommand() {
-        super("ping", "Pings the bot to test if it is alive.", "ping", false);
-    }
+public class Ping implements VelenEvent {
 
     @Override
-    protected void runCommand(MessageCreateEvent event, User user, Server server, String[] args) {
+    public void onEvent(MessageCreateEvent event, Message msg, User user, String[] args) {
         long start = Instant.now().toEpochMilli();
         String uptime = uptime();
         event.getApi().measureRestLatency().thenAccept(rest -> {
             long gateway = event.getApi().getLatestGatewayLatency().toMillis();
-            event.getMessage().reply(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
-                    .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " + (Instant.now().toEpochMilli() - start) + "ms" +
+            msg.reply(new Embed().setTitle("Ping! Pong!")
+                    .setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png")
+                    .build()
+                    .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " +
+                            (Instant.now().toEpochMilli() - start) + "ms" +
                             "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
                             "\n<:latency:778551868301246485> Rest Latency: " + rest.toMillis() + "ms" +
                             "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards" +
@@ -41,7 +40,7 @@ public class PingCommand extends Command {
         });
     }
 
-    private long getUsedMemory(){
+    private long getUsedMemory() {
         return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1000 * 1000);
     }
 

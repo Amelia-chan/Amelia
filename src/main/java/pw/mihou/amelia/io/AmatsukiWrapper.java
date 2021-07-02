@@ -20,7 +20,7 @@ public class AmatsukiWrapper {
         return connector.getUserFromUrl(String.format(base_user, id)).join();
     }
 
-    public static Amatsuki getConnector(){
+    public static Amatsuki getConnector() {
         return connector;
     }
 

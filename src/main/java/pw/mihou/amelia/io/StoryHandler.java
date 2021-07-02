@@ -15,7 +15,7 @@ public class StoryHandler {
 
 
         if (syndAuthor.isEmpty() || syndAuthor.isBlank()) {
-            if(url.contains("author"))
+            if (url.contains("author"))
                 return AmatsukiWrapper.getUserById(id).getName();
 
             return AmatsukiWrapper.getStoryById(id).getCreator();

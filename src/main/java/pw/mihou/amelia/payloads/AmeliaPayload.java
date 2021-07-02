@@ -11,7 +11,7 @@ public class AmeliaPayload {
     @SerializedName("model")
     public final FeedModel model;
 
-    public AmeliaPayload(ItemWrapper wrapper, FeedModel model){
+    public AmeliaPayload(ItemWrapper wrapper, FeedModel model) {
         this.wrapper = wrapper;
         this.model = model;
     }

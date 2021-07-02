@@ -38,27 +38,27 @@ public class ItemWrapper {
         this.description = description;
     }
 
-    public Optional<Date> getPubDate(){
+    public Optional<Date> getPubDate() {
         return Optional.ofNullable(date);
     }
 
-    public String getTitle(){
+    public String getTitle() {
         return title;
     }
 
-    public String getAuthor(){
+    public String getAuthor() {
         return Optional.ofNullable(author).orElse("");
     }
 
-    public boolean valid(){
+    public boolean valid() {
         return link != null && title != null && !link.isEmpty() && !link.isBlank() && !title.isEmpty() && !title.isBlank();
     }
 
-    public String getLink(){
+    public String getLink() {
         return link;
     }
 
-    public String getDescription(){
+    public String getDescription() {
         return description;
     }
 

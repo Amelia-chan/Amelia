@@ -11,25 +11,25 @@ public class SHUser {
     private final String url;
     private final String name;
 
-    public SHUser(String url, int unique, String name){
+    public SHUser(String url, int unique, String name) {
         this.unique = unique;
         this.url = url;
         this.name = name;
     }
 
-    public int getUnique(){
+    public int getUnique() {
         return unique;
     }
 
-    public String getUrl(){
+    public String getUrl() {
         return url;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    public CompletableFuture<User> asUser(){
+    public CompletableFuture<User> asUser() {
         return AmatsukiWrapper.getConnector().getUserFromUrl(url);
     }
 

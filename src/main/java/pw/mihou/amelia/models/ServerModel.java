@@ -8,8 +8,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class ServerModel {
 
-    private String prefix;
     private final long id;
+    private String prefix;
     private boolean limit;
     private long role;
 

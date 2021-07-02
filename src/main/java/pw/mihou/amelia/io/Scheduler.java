@@ -1,6 +1,6 @@
 package pw.mihou.amelia.io;
 
-import org.javacord.core.util.concurrent.ThreadFactory;
+import pw.mihou.velen.utils.ThreadFactory;
 
 import java.util.concurrent.*;
 

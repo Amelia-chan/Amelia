@@ -7,7 +7,7 @@ public interface FeedListener extends Listener {
     void onEvent(AmeliaPayload payload);
 
     @Override
-    default String type(){
+    default String type() {
         return "feed";
     }
 }

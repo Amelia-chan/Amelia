@@ -12,7 +12,7 @@ import java.net.URI;
 
 public class MainClient extends WebSocketClient {
 
-    public MainClient(URI serverUri){
+    public MainClient(URI serverUri) {
         super(serverUri);
     }
 
@@ -26,10 +26,10 @@ public class MainClient extends WebSocketClient {
     public void onMessage(String s) {
         try {
             JSONObject object = new JSONObject(s);
-            if(object.isNull("session"))
+            if (object.isNull("session"))
                 ListenerManager.dispatch(object);
-        } catch (JSONException e){
-            if(!s.equalsIgnoreCase("The handshake was accepted.")) {
+        } catch (JSONException e) {
+            if (!s.equalsIgnoreCase("The handshake was accepted.")) {
                 Amelia.log.error("An error occurred, the server sent this request: {}", s);
             }
         }
@@ -37,7 +37,7 @@ public class MainClient extends WebSocketClient {
 
     @Override
     public void onClose(int i, String s, boolean b) {
-        if(i != -1) {
+        if (i != -1) {
             Amelia.connected = false;
             Amelia.log.error("Amelia has disconnected from websocket with status code {} and reason {}, attempting to reconnect...", i, s);
             ClientHandler.connect();

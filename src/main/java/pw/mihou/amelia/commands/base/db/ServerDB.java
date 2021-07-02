@@ -2,6 +2,7 @@ package pw.mihou.amelia.commands.base.db;
 
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
+import pw.mihou.amelia.Amelia;
 import pw.mihou.amelia.db.MongoDB;
 import pw.mihou.amelia.models.ServerModel;
 
@@ -39,7 +40,7 @@ public class ServerDB {
             servers.put(model.getId(), model);
         }
 
-        // Return back the model.
+        Amelia.velen.getPrefixManager().reloadPrefix(model.getId());
         return model;
     }
 

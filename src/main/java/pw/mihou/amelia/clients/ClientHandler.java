@@ -9,13 +9,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientHandler {
 
-    private static MainClient client;
     private static final AtomicBoolean attempted = new AtomicBoolean(false);
+    private static MainClient client;
 
-    public static void connect(){
+    public static void connect() {
         CompletableFuture.runAsync(() -> {
             try {
-                if(!attempted.get()) {
+                if (!attempted.get()) {
                     createSocket();
                     if (!Amelia.connected)
                         attempted.set(true);
@@ -34,14 +34,14 @@ public class ClientHandler {
         });
     }
 
-    private static void createSocket(){
+    private static void createSocket() {
         String address = System.getenv("amelia_websocket");
         address = address == null || address.isEmpty() || address.isBlank() ? "ws://127.0.0.1:3201" : address;
         client = new MainClient(URI.create(address));
         client.addHeader("Authorization", System.getenv("amelia_auth"));
     }
 
-    private static void attemptConnect(int i){
+    private static void attemptConnect(int i) {
         CompletableFuture.runAsync(() -> {
             try {
                 createSocket();
@@ -60,7 +60,7 @@ public class ClientHandler {
                         }
                     }
                 }
-            } catch (InterruptedException e){
+            } catch (InterruptedException e) {
                 try {
                     Amelia.log.error("Attempt to connect to websocket was interrupted, retrying in {} seconds...", i + 1);
                     Thread.sleep((i + 1) * 1000);
@@ -73,7 +73,7 @@ public class ClientHandler {
         });
     }
 
-    public static void close(){
+    public static void close() {
         client.close(-1, "The client is shutting down (no refresh).");
     }
 
