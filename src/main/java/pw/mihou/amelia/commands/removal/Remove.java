@@ -4,7 +4,6 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
-import pw.mihou.amelia.commands.Limitations;
 import pw.mihou.amelia.commands.db.FeedDB;
 import pw.mihou.velen.interfaces.VelenEvent;
 
@@ -16,11 +15,6 @@ public class Remove implements VelenEvent {
             return;
 
         Server server = event.getServer().get();
-        if (!Limitations.isLimited(server, user)) {
-            pw.mihou.amelia.templates.Message.msg("You do not have permission to use this command, required permission: " +
-                    "Manage Server, or lacking the required role to modify feeds.").send(event.getChannel());
-            return;
-        }
 
         if (args.length > 0) {
             try {

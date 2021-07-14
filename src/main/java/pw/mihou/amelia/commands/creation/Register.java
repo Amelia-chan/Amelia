@@ -7,9 +7,9 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import org.javacord.api.util.DiscordRegexPattern;
 import org.javacord.api.util.logging.ExceptionLogger;
-import pw.mihou.amelia.commands.Limitations;
 import pw.mihou.amelia.commands.base.db.ServerDB;
 import pw.mihou.amelia.commands.db.FeedDB;
 import pw.mihou.amelia.io.AmatsukiWrapper;
@@ -21,12 +21,13 @@ import pw.mihou.amelia.utility.StringUtils;
 import pw.mihou.velen.interfaces.VelenEvent;
 import pw.mihou.velen.pagination.Paginate;
 import pw.mihou.velen.pagination.entities.Paginator;
-import pw.mihou.velen.pagination.events.PaginateEvent;
+import pw.mihou.velen.pagination.events.PaginateButtonEvent;
 import tk.mihou.amatsuki.entities.story.lower.StoryResults;
 import tk.mihou.amatsuki.entities.user.lower.UserResults;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Register implements VelenEvent {
 
@@ -50,11 +51,6 @@ public class Register implements VelenEvent {
             return;
 
         Server server = event.getServer().get();
-        if (!Limitations.isLimited(server, user)) {
-            pw.mihou.amelia.templates.Message.msg("You do not have permission to use this command, required permission: " +
-                    "Manage Server, or lacking the required role to modify feeds.").send(event.getChannel());
-            return;
-        }
 
         if (args.length > 2) {
             if (!message.getMentionedChannels().isEmpty()
@@ -65,15 +61,18 @@ public class Register implements VelenEvent {
                     if (args[0].equalsIgnoreCase("story")) {
                         AmatsukiWrapper.getConnector().searchStory(content)
                                 .thenAccept(storyResults -> new Paginate<>(storyResults)
-                                        .paginate(event, new PaginateEvent<>() {
+                                        .paginateWithButtons(UUID.randomUUID().toString().replaceAll("-", ""), event,
+                                                new PaginateButtonEvent<StoryResults>() {
                                             @Override
                                             public MessageBuilder onInit(MessageCreateEvent event, StoryResults currentItem, int arrow, Paginator<StoryResults> paginator) {
                                                 return new MessageBuilder().setEmbed(embed(currentItem, arrow, paginator.size()));
                                             }
 
                                             @Override
-                                            public void onPaginate(MessageCreateEvent event, Message paginateMessage, StoryResults currentItem, int arrow, Paginator<StoryResults> paginator) {
+                                            public void onPaginate(InteractionImmediateResponseBuilder responder, MessageCreateEvent event, Message paginateMessage,
+                                                                   StoryResults currentItem, int arrow, Paginator<StoryResults> paginator) {
                                                 paginateMessage.edit(embed(currentItem, arrow, paginator.size()));
+                                                responder.respond();
                                             }
 
                                             @Override
@@ -82,7 +81,8 @@ public class Register implements VelenEvent {
                                             }
 
                                             @Override
-                                            public void onSelect(MessageCreateEvent event, Message paginateMessage, StoryResults itemSelected, int arrow, Paginator<StoryResults> paginator) {
+                                            public void onSelect(InteractionImmediateResponseBuilder responder, MessageCreateEvent event,
+                                                                 Message paginateMessage, StoryResults itemSelected, int arrow, Paginator<StoryResults> paginator) {
                                                 itemSelected.transformToStory().thenAccept(story -> ReadRSS.getLatest(story.getRSS()).ifPresentOrElse(item -> item.getPubDate().ifPresentOrElse(date -> {
                                                             FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), story.getSID(), story.getRSS(),
                                                                     channel.getId(), user.getId(), story.getTitle(), date, new ArrayList<>()));
@@ -91,19 +91,23 @@ public class Register implements VelenEvent {
                                                         }, () -> event.getMessage().reply("**ERROR**: An error occurred while attempting to retrieve date or parse the date of feed.")),
                                                         () -> event.getMessage().reply("**ERROR**: An error occurred while retrieving RSS feed, " +
                                                                 "**this usually happens when the story has no chapters posted.**")));
+                                                responder.respond();
                                             }
                                         }, Duration.ofMinutes(5))).exceptionally(ExceptionLogger.get());
                     } else {
                         AmatsukiWrapper.getConnector().searchUser(content)
-                                .thenAccept(userResults -> new Paginate<>(userResults).paginate(event, new PaginateEvent<>() {
+                                .thenAccept(userResults -> new Paginate<>(userResults).paginateWithButtons(UUID.randomUUID().toString().replaceAll("-", ""), event,
+                                        new PaginateButtonEvent<UserResults>() {
                                     @Override
                                     public MessageBuilder onInit(MessageCreateEvent event, UserResults currentItem, int arrow, Paginator<UserResults> paginator) {
                                         return new MessageBuilder().setEmbed(embed(currentItem, arrow, paginator.size()));
                                     }
 
                                     @Override
-                                    public void onPaginate(MessageCreateEvent event, Message paginateMessage, UserResults currentItem, int arrow, Paginator<UserResults> paginator) {
+                                    public void onPaginate(InteractionImmediateResponseBuilder responder, MessageCreateEvent event, Message paginateMessage,
+                                                           UserResults currentItem, int arrow, Paginator<UserResults> paginator) {
                                         paginateMessage.edit(embed(currentItem, arrow, paginator.size()));
+                                        responder.respond();
                                     }
 
                                     @Override
@@ -112,7 +116,8 @@ public class Register implements VelenEvent {
                                     }
 
                                     @Override
-                                    public void onSelect(MessageCreateEvent event, Message paginateMessage, UserResults itemSelected, int arrow, Paginator<UserResults> paginator) {
+                                    public void onSelect(InteractionImmediateResponseBuilder responder, MessageCreateEvent event,
+                                                         Message paginateMessage, UserResults itemSelected, int arrow, Paginator<UserResults> paginator) {
                                         itemSelected.transformToUser().thenAccept(u -> ReadRSS.getLatest(u.getRSS())
                                                 .ifPresentOrElse(item -> item.getPubDate().ifPresentOrElse(date -> {
                                                             FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(),
@@ -123,6 +128,7 @@ public class Register implements VelenEvent {
                                                         }, () -> event.getMessage().reply("**ERROR**: An error occurred while attempting to retrieve date or parse the date of feed.")),
                                                         () -> event.getMessage().reply("**ERROR**: An error occurred while retrieving RSS feed, " +
                                                                 "**this usually happens when the user has no stories published.**")));
+                                        responder.respond();
                                     }
                                 }, Duration.ofMinutes(5)));
                     }

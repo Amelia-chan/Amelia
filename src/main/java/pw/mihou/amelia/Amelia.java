@@ -13,6 +13,7 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.slf4j.LoggerFactory;
 import pw.mihou.amelia.clients.ClientHandler;
+import pw.mihou.amelia.commands.Limitations;
 import pw.mihou.amelia.commands.base.db.ServerDB;
 import pw.mihou.amelia.commands.creation.Register;
 import pw.mihou.amelia.commands.db.FeedDB;
@@ -135,6 +136,10 @@ public class Amelia {
                 .setCategory("Feeds")
                 .addShortcuts("add", "reg", "create")
                 .setServerOnly(true)
+                .addCondition(event -> event.getServer().isPresent() && event.getMessageAuthor().asUser().isPresent() &&
+                        Limitations.isLimited(event.getServer().get(), event.getMessageAuthor().asUser().get()))
+                .setConditionalMessage((user, channel, command) -> "You do not have permission to use this command, required permission: " +
+                        "Manage Server, or lacking the required role to modify feeds.")
                 .attach();
 
         VelenCommand.of("feeds", "Returns back all the feeds on the server.", velen, new Feeds())
@@ -149,6 +154,10 @@ public class Amelia {
                 .setServerOnly(true)
                 .addShortcut("sub")
                 .setCategory("Feeds")
+                .addCondition(event -> event.getServer().isPresent() && event.getMessageAuthor().asUser().isPresent() &&
+                        Limitations.isLimited(event.getServer().get(), event.getMessageAuthor().asUser().get()))
+                .setConditionalMessage((user, channel, command) -> "You do not have permission to use this command, required permission: " +
+                        "Manage Server, or lacking the required role to modify feeds.")
                 .attach();
 
         VelenCommand.of("unsubscribe", "Unsubscribes a role to the feed.", velen, new Modify(false))
@@ -156,6 +165,10 @@ public class Amelia {
                 .setServerOnly(true)
                 .addShortcut("unsub")
                 .setCategory("Feeds")
+                .addCondition(event -> event.getServer().isPresent() && event.getMessageAuthor().asUser().isPresent() &&
+                        Limitations.isLimited(event.getServer().get(), event.getMessageAuthor().asUser().get()))
+                .setConditionalMessage((user, channel, command) -> "You do not have permission to use this command, required permission: " +
+                        "Manage Server, or lacking the required role to modify feeds.")
                 .attach();
 
         VelenCommand.of("invite", "Want an invitation link for the bot?", velen, new Invite())
@@ -168,6 +181,7 @@ public class Amelia {
         VelenCommand.of("ping", "Pings the bot to test if it is alive.", velen, new Ping())
                 .setCategory("Miscellaneous")
                 .setServerOnly(false)
+                .addShortcuts("pong")
                 .setUsage("ping")
                 .attach();
 
@@ -184,6 +198,10 @@ public class Amelia {
                 .setServerOnly(true)
                 .setCategory("Feeds")
                 .addShortcuts("rm", "rem")
+                .addCondition(event -> event.getServer().isPresent() && event.getMessageAuthor().asUser().isPresent() &&
+                        Limitations.isLimited(event.getServer().get(), event.getMessageAuthor().asUser().get()))
+                .setConditionalMessage((user, channel, command) -> "You do not have permission to use this command, required permission: " +
+                        "Manage Server, or lacking the required role to modify feeds.")
                 .attach();
 
         VelenCommand.of("author", "Retrieve or manage all the accounts associated with your Discord.", velen, new Author())
@@ -204,12 +222,14 @@ public class Amelia {
         VelenCommand.of("test", "Test run a feed.", velen, new Test())
                 .setUsage("test [feed id]")
                 .setCategory("Feeds")
+                .addShortcuts("run")
                 .setServerOnly(true)
                 .attach();
 
         VelenCommand.of("help", "The general command point of Amelia.", velen, new Help())
                 .setUsage("help, help [command]")
                 .setServerOnly(false)
+                .addShortcuts("hel")
                 .setCategory("Help")
                 .attach();
     }

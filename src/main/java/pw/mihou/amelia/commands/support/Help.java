@@ -19,6 +19,7 @@ public class Help implements VelenEvent {
                     .findFirst().ifPresentOrElse(cmd -> message.reply(new Embed().setTitle(cmd.getName())
                             .setDescription(cmd.getDescription())
                             .build().addInlineField("Usage", cmd.getUsage())
+                    .addInlineField("Alias", String.join(", ", cmd.getShortcuts()))
                             .addInlineField("Cooldown", cmd.getCooldown().toSeconds() + " seconds")),
                     () -> message.reply("**ERROR**: We couldn't find any command that is named [" + args[0] + "], " +
                             "do you possibly mean `" + VelenUtils.getCommandSuggestion(Amelia.velen, args[0]) + "`?"));
