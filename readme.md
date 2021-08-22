@@ -11,7 +11,7 @@ The specification requirements for Amelia are as of follows:
 ## How to install, public bot.
 
 The Amelia bot is already hosted publicly on our servers, as such, you can add it to your own
-discord server by inviting it from our website. [Invite the bot now](https://discord.com/oauth2/authorize?client_id=786464598835986483&scope=bot&permissions=67488832)
+discord server by inviting it from our website. [Invite the bot now](https://discord.com/api/oauth2/authorize?client_id=786464598835986483&permissions=67488832&scope=bot%20applications.commands)
 
 ## How to install, self-hosting.
 If you want to install this on your own server, first, create a Discord bot application on https://discordapp.com/developers,
