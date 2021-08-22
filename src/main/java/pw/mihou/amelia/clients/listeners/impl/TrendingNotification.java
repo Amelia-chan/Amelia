@@ -1,5 +1,6 @@
 package pw.mihou.amelia.clients.listeners.impl;
 
+import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import pw.mihou.amelia.Amelia;
 import pw.mihou.amelia.clients.listeners.interfaces.TrendingListener;
@@ -29,7 +30,7 @@ public class TrendingNotification implements TrendingListener {
         if (!Amelia.shards.containsKey(0)) {
             Scheduler.schedule(() -> send(payload), 2, TimeUnit.SECONDS);
         } else {
-            Amelia.shards.get(0).getUserById(payload.user).thenAccept(user -> user.sendMessage(notificationEmbed(payload.story)));
+            Amelia.shards.get(0).getUserById(payload.user).thenAccept(user -> new MessageBuilder().setEmbed(notificationEmbed(payload.story)).send(user));
         }
     }
 

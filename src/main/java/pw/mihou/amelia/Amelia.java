@@ -7,9 +7,10 @@ import com.google.gson.GsonBuilder;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
-import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
+import org.javacord.api.interaction.SlashCommandOption;
+import org.javacord.api.interaction.SlashCommandOptionType;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.slf4j.LoggerFactory;
 import pw.mihou.amelia.clients.ClientHandler;
@@ -39,11 +40,18 @@ import pw.mihou.amelia.models.FeedModel;
 import pw.mihou.amelia.utility.ColorPalette;
 import pw.mihou.velen.interfaces.Velen;
 import pw.mihou.velen.interfaces.VelenCommand;
+import pw.mihou.velen.interfaces.messages.types.VelenConditionalMessage;
+import pw.mihou.velen.interfaces.messages.types.VelenPermissionMessage;
+import pw.mihou.velen.interfaces.messages.types.VelenRatelimitMessage;
+import pw.mihou.velen.interfaces.messages.types.VelenRoleMessage;
+import pw.mihou.velen.modules.core.SlashCommandChecker;
+import pw.mihou.velen.modules.modes.SlashCommandCheckerMode;
 import pw.mihou.velen.prefix.VelenPrefixManager;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -55,8 +63,8 @@ public class Amelia {
     public static final HashMap<Integer, DiscordApi> shards = new HashMap<>();
     public static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
     private static final String token = System.getenv("amelia_token");
-    private static final String version = "1.5";
-    private static final String build = "BETA";
+    private static final String version = "1.5.5";
+    private static final String build = "STATIC";
     public static boolean connected = false;
     public static Velen velen;
 
@@ -83,25 +91,24 @@ public class Amelia {
         velen = Velen.builder()
                 .setPrefixManager(new VelenPrefixManager("a.", key -> ServerDB.getServer(key).getPrefix()))
                 .setDefaultCooldownTime(Duration.ofSeconds(5))
-                .setNoPermissionMessage((permission, user, channel, command) -> "You do not have permission to use this command, required permissions: " +
-                        permission.stream().map(Enum::name).collect(Collectors.joining(", ")))
-                .setNoRoleMessage((roles, user, channel, command) -> "You need to have either of the roles: " + roles + " to use this command!")
-                .setRatelimitedMessage((remainingSeconds, user, channel, command) -> "You are currently on cooldown, please wait " + remainingSeconds + " seconds!")
+                .setNoPermissionMessage(VelenPermissionMessage.ofNormal((list, user, textChannel, s) -> "You do not have permission to use this command, required permissions: " +
+                        list.stream().map(Enum::name).collect(Collectors.joining(", "))))
+                .setNoRoleMessage(VelenRoleMessage.ofNormal((roles, user, channel, command) -> "You need to have either of the roles: " + roles + " to use this command!"))
+                .setRatelimitedMessage(VelenRatelimitMessage.ofNormal((remainingSeconds, user, channel, command) -> "You are currently on cooldown, please wait " + remainingSeconds + " seconds!"))
                 .build();
 
         registerAllCommands();
         new DiscordApiBuilder()
                 .setToken(token)
-                .setAllIntentsExcept
-                        (Intent.GUILD_MESSAGE_TYPING, Intent.DIRECT_MESSAGE_TYPING,
-                                Intent.GUILD_INTEGRATIONS, Intent.GUILD_WEBHOOKS,
-                                Intent.GUILD_BANS, Intent.GUILD_EMOJIS,
-                                Intent.GUILD_INVITES, Intent.GUILD_VOICE_STATES,
-                                Intent.GUILD_PRESENCES)
+                .setAllNonPrivilegedIntents()
+                .setUserCacheEnabled(true)
                 .addListener(velen)
                 .addListener(new BotJoinCommand())
                 .addListener(new BotLeaveListener())
-                .setTotalShards(1)
+                .addReconnectListener(e -> {
+                    // This is to keep this adorable little activity message.
+                    e.getApi().updateActivity(ActivityType.WATCHING, "People read stories!");
+                }).setTotalShards(1)
                 .loginAllShards()
                 .forEach(shard -> shard.
                         thenAccept(Amelia::onShardLogin)
@@ -110,6 +117,12 @@ public class Amelia {
 
     private static void onShardLogin(DiscordApi api) {
         shards.put(api.getCurrentShard(), api);
+
+        if(shards.size() == 1) {
+            new SlashCommandChecker(api, SlashCommandCheckerMode.NORMAL)
+                    .run(velen).thenAccept(integer -> Amelia.log.info("Successfully updated {} slash commands!", integer));
+        }
+
         api.setAutomaticMessageCacheCleanupEnabled(true);
         api.setMessageCacheSize(10, 1);
         api.setReconnectDelay(attempt -> attempt * 2);
@@ -131,44 +144,64 @@ public class Amelia {
     }
 
     private static void registerAllCommands() {
-        VelenCommand.of("register", "Registers either a user or a story's RSS feed.", velen, new Register())
-                .setUsage("register [story/user] [#channel] [query]")
+        VelenCommand.ofHybrid("register", "Registers either a user or a story's RSS feed.", velen, new Register(), new Register())
+                .addOptions(SlashCommandOption.createWithOptions(SlashCommandOptionType.SUB_COMMAND, "user", "You are registering a ScribbleHub user for RSS updates.",
+                                Arrays.asList(
+                                        SlashCommandOption.create(SlashCommandOptionType.CHANNEL, "channel", "Where should the updates be sent towards?", true),
+                                        SlashCommandOption.create(SlashCommandOptionType.STRING, "name", "The name of the user on ScribbleHub.", true)
+                                )
+                        ),
+                        SlashCommandOption.createWithOptions(SlashCommandOptionType.SUB_COMMAND, "story", "You are registering a ScribbleHub story for RSS updates.",
+                                Arrays.asList(
+                                        SlashCommandOption.create(SlashCommandOptionType.CHANNEL, "channel", "Where should the updates be sent towards?", true),
+                                        SlashCommandOption.create(SlashCommandOptionType.STRING, "name", "The name of the story on ScribbleHub.", true)
+                                )
+                        )
+                ).setUsage("register [story/user] [#channel] [query]")
                 .setCategory("Feeds")
                 .addShortcuts("add", "reg", "create")
                 .setServerOnly(true)
                 .addCondition(event -> event.getServer().isPresent() && event.getMessageAuthor().asUser().isPresent() &&
                         Limitations.isLimited(event.getServer().get(), event.getMessageAuthor().asUser().get()))
-                .setConditionalMessage((user, channel, command) -> "You do not have permission to use this command, required permission: " +
-                        "Manage Server, or lacking the required role to modify feeds.")
+                .setConditionalMessage(VelenConditionalMessage.ofNormal((user, textChannel, s) -> "You do not have permission to use this command, required permission: " +
+                        "Manage Server, or lacking the required role to modify feeds."))
                 .attach();
 
-        VelenCommand.of("feeds", "Returns back all the feeds on the server.", velen, new Feeds())
+        VelenCommand.ofHybrid("feeds", "Returns back all the feeds on the server.", velen, new Feeds(), new Feeds())
                 .setUsage("feeds")
                 .setCategory("Feeds")
                 .setServerOnly(true)
                 .addShortcuts("feed", "fe")
                 .attach();
 
-        VelenCommand.of("subscribe", "Subscribes a role to the feed.", velen, new Modify(true))
+        VelenCommand.ofHybrid("subscribe", "Subscribe a role to the feed.", velen, new Modify(true), new Modify(true))
                 .setUsage("subscribe [feed unique id] [roles]")
+                .addOptions(
+                        SlashCommandOption.create(SlashCommandOptionType.INTEGER, "feed", "The UNIQUE ID of the feed to modify.", true),
+                        SlashCommandOption.create(SlashCommandOptionType.ROLE, "role", "The role to subscribe from the feed.", true)
+                )
                 .setServerOnly(true)
                 .addShortcut("sub")
                 .setCategory("Feeds")
                 .addCondition(event -> event.getServer().isPresent() && event.getMessageAuthor().asUser().isPresent() &&
                         Limitations.isLimited(event.getServer().get(), event.getMessageAuthor().asUser().get()))
-                .setConditionalMessage((user, channel, command) -> "You do not have permission to use this command, required permission: " +
-                        "Manage Server, or lacking the required role to modify feeds.")
+                .setConditionalMessage(VelenConditionalMessage.ofNormal((user, textChannel, s) -> "You do not have permission to use this command, required permission: " +
+                        "Manage Server, or lacking the required role to modify feeds."))
                 .attach();
 
-        VelenCommand.of("unsubscribe", "Unsubscribes a role to the feed.", velen, new Modify(false))
+        VelenCommand.ofHybrid("unsubscribe", "Unsubscribe a role to the feed.", velen, new Modify(false), new Modify(false))
+                .addOptions(
+                        SlashCommandOption.create(SlashCommandOptionType.INTEGER, "feed", "The UNIQUE ID of the feed to modify.", true),
+                        SlashCommandOption.create(SlashCommandOptionType.ROLE, "role", "The role to unsubscribe from the feed.", true)
+                        )
                 .setUsage("unsubscribe [feed unique id] [roles]")
                 .setServerOnly(true)
                 .addShortcut("unsub")
                 .setCategory("Feeds")
                 .addCondition(event -> event.getServer().isPresent() && event.getMessageAuthor().asUser().isPresent() &&
                         Limitations.isLimited(event.getServer().get(), event.getMessageAuthor().asUser().get()))
-                .setConditionalMessage((user, channel, command) -> "You do not have permission to use this command, required permission: " +
-                        "Manage Server, or lacking the required role to modify feeds.")
+                .setConditionalMessage(VelenConditionalMessage.ofNormal((user, textChannel, s) -> "You do not have permission to use this command, required permission: " +
+                        "Manage Server, or lacking the required role to modify feeds."))
                 .attach();
 
         VelenCommand.of("invite", "Want an invitation link for the bot?", velen, new Invite())
@@ -200,8 +233,8 @@ public class Amelia {
                 .addShortcuts("rm", "rem")
                 .addCondition(event -> event.getServer().isPresent() && event.getMessageAuthor().asUser().isPresent() &&
                         Limitations.isLimited(event.getServer().get(), event.getMessageAuthor().asUser().get()))
-                .setConditionalMessage((user, channel, command) -> "You do not have permission to use this command, required permission: " +
-                        "Manage Server, or lacking the required role to modify feeds.")
+                .setConditionalMessage(VelenConditionalMessage.ofNormal((user, textChannel, s) -> "You do not have permission to use this command, required permission: " +
+                        "Manage Server, or lacking the required role to modify feeds."))
                 .attach();
 
         VelenCommand.of("author", "Retrieve or manage all the accounts associated with your Discord.", velen, new Author())
@@ -211,8 +244,9 @@ public class Amelia {
                 .addShortcuts("auth", "writer")
                 .attach();
 
-        VelenCommand.of("iam", "Associate your ScribbleHub account to your Discord account to notify you whenever you trend.", velen,
-                new IAm())
+        VelenCommand.ofHybrid("iam", "Associate your ScribbleHub account to your Discord account to notify you whenever you trend (top 9).", velen,
+                new IAm(), new IAm())
+                .addOption(SlashCommandOption.create(SlashCommandOptionType.STRING, "name", "The name of your account.", true))
                 .setUsage("iam [username]")
                 .setServerOnly(false)
                 .setCategory("Trending Notifications")
@@ -221,16 +255,17 @@ public class Amelia {
 
         VelenCommand.of("test", "Test run a feed.", velen, new Test())
                 .setUsage("test [feed id]")
-                .setCategory("Feeds")
+                .setCategory("Miscellaneous")
                 .addShortcuts("run")
                 .setServerOnly(true)
                 .attach();
 
-        VelenCommand.of("help", "The general command point of Amelia.", velen, new Help())
+        VelenCommand.ofHybrid("help", "The general help command of Amelia.", velen, new Help(), new Help())
+                .addOption(SlashCommandOption.create(SlashCommandOptionType.STRING, "command", "The command to search for.", false))
                 .setUsage("help, help [command]")
                 .setServerOnly(false)
                 .addShortcuts("hel")
-                .setCategory("Help")
+                .setCategory("Miscellaneous")
                 .attach();
     }
 

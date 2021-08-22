@@ -8,7 +8,10 @@ import java.util.concurrent.TimeUnit;
 
 public class AmatsukiWrapper {
 
-    private static final Amatsuki connector = new Amatsuki().setLifespan(24, TimeUnit.HOURS).setCache(true);
+    private static final Amatsuki connector = new Amatsuki()
+            .setLifespan(24, TimeUnit.HOURS)
+            .setUserAgent("Amatsuki-library/1.0.7 (Language=Java/1.8)")
+            .setCache(true);
     private static final String base_story = "https://scribblehub.com/series/%d/amelia-discord-bot/";
     private static final String base_user = "https://scribblehub.com/profile/%d/amelia-discord-bot/";
 

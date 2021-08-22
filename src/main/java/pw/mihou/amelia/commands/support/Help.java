@@ -4,13 +4,40 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
+import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.interaction.SlashCommandInteraction;
+import org.javacord.api.interaction.SlashCommandInteractionOption;
+import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import pw.mihou.amelia.Amelia;
 import pw.mihou.amelia.templates.Embed;
+import pw.mihou.velen.interfaces.VelenArguments;
+import pw.mihou.velen.interfaces.VelenCommand;
 import pw.mihou.velen.interfaces.VelenEvent;
+import pw.mihou.velen.interfaces.VelenSlashEvent;
 import pw.mihou.velen.utils.VelenUtils;
 
-public class Help implements VelenEvent {
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Help implements VelenEvent, VelenSlashEvent {
+
+    private EmbedBuilder helpEmbed;
+
+    @Override
+    public void onEvent(SlashCommandCreateEvent originalEvent, SlashCommandInteraction event, User user, VelenArguments args,
+                        List<SlashCommandInteractionOption> options, InteractionImmediateResponseBuilder firstResponder) {
+        event.getOptionStringValueByName("command").ifPresentOrElse(s -> {
+            Amelia.velen.getCommands().stream().filter(velenCommand -> velenCommand.getName().equalsIgnoreCase(s))
+                    .findFirst().ifPresentOrElse(cmd -> firstResponder.addEmbed(new Embed().setTitle(cmd.getName())
+                                    .setDescription(cmd.getDescription())
+                                    .build().addInlineField("Usage", cmd.getUsage())
+                                    .addInlineField("Alias", String.join(", ", cmd.getShortcuts()))
+                                    .addInlineField("Cooldown", cmd.getCooldown().toSeconds() + " seconds")).respond(),
+                            () -> firstResponder.setContent("**ERROR**: We couldn't find any command that is named [" + s + "], " +
+                                    "do you possibly mean `" + VelenUtils.getCommandSuggestion(Amelia.velen, s) + "`?").respond());
+        }, () -> firstResponder.addEmbed(helpEmbed(event.getApi())).respond());
+    }
 
     @Override
     public void onEvent(MessageCreateEvent event, Message message, User user, String[] args) {
@@ -29,11 +56,14 @@ public class Help implements VelenEvent {
     }
 
     private EmbedBuilder helpEmbed(DiscordApi api) {
-        return new Embed().setThumbnail(api.getYourself().getAvatar())
-                .build()
-                .addInlineField("Feeds", "`feeds`\n`subscribe`\n`unsubscribe`\n`register`\n`remove`")
-                .addInlineField("Miscellaneous", "`ping`\n`invite`\n`test`\n`settings`")
-                .addInlineField("Trending Notifications", "`iam`\n`author`");
-    }
+        if(helpEmbed == null) {
+            EmbedBuilder embed = new Embed().setThumbnail(api.getYourself().getAvatar()).build();
+            Amelia.velen.getCategories().forEach((s, velenCommands) -> embed.addInlineField(s, velenCommands.stream().map(VelenCommand::getName)
+                    .map(s2 -> "`" + s2 + "`").collect(Collectors.joining("\n"))));
 
+            helpEmbed = embed;
+        }
+
+        return helpEmbed;
+    }
 }
