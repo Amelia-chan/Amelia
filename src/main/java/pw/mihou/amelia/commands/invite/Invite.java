@@ -10,6 +10,7 @@ import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.SlashCommandInteractionOption;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import pw.mihou.amelia.templates.Embed;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import pw.mihou.velen.interfaces.VelenArguments;
 import pw.mihou.velen.interfaces.VelenEvent;
 import pw.mihou.velen.interfaces.VelenSlashEvent;
