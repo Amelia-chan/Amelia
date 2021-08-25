@@ -204,14 +204,14 @@ public class Amelia {
                         "Manage Server, or lacking the required role to modify feeds."))
                 .attach();
 
-        VelenCommand.of("invite", "Want an invitation link for the bot?", velen, new Invite())
+        VelenCommand.ofHybrid("invite", "Want an invitation link for the bot?", velen, new Invite(), new Invite())
                 .setCategory("Miscellaneous")
                 .setServerOnly(false)
                 .addShortcut("inv")
                 .setUsage("invite")
                 .attach();
 
-        VelenCommand.of("ping", "Pings the bot to test if it is alive.", velen, new Ping())
+        VelenCommand.ofHybrid("ping", "Pings the bot to test if it is alive.", velen, new Ping(), new Ping())
                 .setCategory("Miscellaneous")
                 .setServerOnly(false)
                 .addShortcuts("pong")
@@ -253,8 +253,9 @@ public class Amelia {
                 .addShortcut("ami")
                 .attach();
 
-        VelenCommand.of("test", "Test run a feed.", velen, new Test())
+        VelenCommand.ofHybrid("test", "Test run a feed.", velen, new Test(), new Test())
                 .setUsage("test [feed id]")
+                .addOption(SlashCommandOption.create(SlashCommandOptionType.INTEGER, "feedId", "The feed id to test", true))
                 .setCategory("Miscellaneous")
                 .addShortcuts("run")
                 .setServerOnly(true)
