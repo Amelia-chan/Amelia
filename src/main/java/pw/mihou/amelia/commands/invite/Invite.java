@@ -18,24 +18,19 @@ import java.util.List;
 
 public class Invite implements VelenEvent, VelenSlashEvent {
 
+    private static final EmbedBuilder embed = new Embed().setTitle("Your Majesty wishes to invite me?")
+            .setThumbnail(event.getApi().getYourself().getAvatar())
+            .setDescription("You can invite me freely by pressing the button below!").build();
+
     @Override
     public void onEvent(MessageCreateEvent event, Message message, User user, String[] args) {
-        new MessageBuilder().setEmbed(new Embed().setTitle("Your Majesty wishes to invite me?")
-                .setThumbnail(event.getApi().getYourself().getAvatar())
-                .setDescription("You can invite me freely by pressing the button below!").build())
-                .replyTo(message)
-                .addActionRow(Button.link("https://discord.com/api/oauth2/authorize?client_id=786464598835986483&permissions=67488832&scope=bot%20applications.commands",
-                        "Invite me", "\uD83D\uDC9D"))
-                .send(event.getChannel());
+        new MessageBuilder().setEmbed(embed).send(event.getChannel());
     }
 
     @Override
-    public void onEvent(SlashCommandCreateEvent slashCommandCreateEvent, SlashCommandInteraction slashCommandInteraction, User user, VelenArguments velenArguments, List<SlashCommandInteractionOption> list, InteractionImmediateResponseBuilder interactionImmediateResponseBuilder) {
-        new MessageBuilder().setEmbed(new Embed().setTitle("Your Majesty wishes to invite me?")
-                .setThumbnail(slashCommandCreateEvent.getApi().getYourself().getAvatar())
-                .setDescription("You can invite me freely by pressing the button below!").build())
-                .addActionRow(Button.link("https://discord.com/api/oauth2/authorize?client_id=786464598835986483&permissions=67488832&scope=bot%20applications.commands",
-                        "Invite me", "\uD83D\uDC9D"))
-                .send(slashCommandInteraction.getChannel().get());
+    public void onEvent(SlashCommandCreateEvent originalEvent, SlashCommandInteraction event, User user, VelenArguments args,
+                        List<SlashCommandInteractionOption> options, InteractionImmediateResponseBuilder firstResponder) {
+        firstResponder.addEmbed(embed).respond();
     }
+
 }

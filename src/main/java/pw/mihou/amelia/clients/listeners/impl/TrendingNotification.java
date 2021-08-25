@@ -6,6 +6,7 @@ import pw.mihou.amelia.Amelia;
 import pw.mihou.amelia.clients.listeners.interfaces.TrendingListener;
 import pw.mihou.amelia.io.Scheduler;
 import pw.mihou.amelia.payloads.AmeliaTrendingPayload;
+import pw.mihou.amelia.session.AmeliaSession;
 import pw.mihou.amelia.templates.Embed;
 import tk.mihou.amatsuki.entities.story.lower.StoryResults;
 
@@ -27,6 +28,8 @@ public class TrendingNotification implements TrendingListener {
     }
 
     public void send(AmeliaTrendingPayload payload) {
+        AmeliaSession.trendingNotified.incrementAndGet();
+
         if (!Amelia.shards.containsKey(0)) {
             Scheduler.schedule(() -> send(payload), 2, TimeUnit.SECONDS);
         } else {

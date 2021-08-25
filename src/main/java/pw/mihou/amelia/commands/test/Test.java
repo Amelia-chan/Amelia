@@ -29,85 +29,63 @@ public class Test implements VelenEvent, VelenSlashEvent {
             if (args.length > 0) {
                 try {
                     long id = Long.parseLong(args[0]);
-                    if (FeedDB.validate(id)) {
-                        m.reply("Attempting to perform test fetch...")
-                                .thenAccept(message -> FeedDB.getServer(server.getId())
-                                        .getFeedModel(id).ifPresent(feedModel -> server.getTextChannelById(feedModel.getChannel())
-                                                .ifPresentOrElse(textChannel -> ReadRSS.getLatest(feedModel.getFeedURL())
-                                                                .ifPresentOrElse(itemWrapper -> itemWrapper.getPubDate()
-                                                                        .ifPresentOrElse(date ->
-                                                                                pw.mihou.amelia.templates.Message.msg(Amelia.format(itemWrapper, feedModel, textChannel.getServer())).send(textChannel)
-                                                                                        .whenComplete((msg, throwable) -> {
-                                                                                            if (throwable != null) {
-                                                                                                message.edit("An exception was thrown, is it possible that the bot cannot write on the channel?");
-                                                                                                message.reply("Exception: \n```" + throwable.getMessage() + "```");
-                                                                                            } else {
-                                                                                                message.edit("Amelia was able to deliver the feed!");
-                                                                                            }
-                                                                                        }), () -> message.edit("We were unable to fetch the date of the feeds...")), () -> message.edit("Amelia was not able to retrieve the RSS feed from ScribbleHub...")),
-                                                        () -> message.edit("We were unable to find the text channel (" + feedModel.getChannel() + "), " +
-                                                                "please verify it exists and the bot can see and write on it!"))));
-                    } else {
-                        m.reply("Error: We couldn't find the feed, are you sure you are using the feed's unique id." +
-                                "\nPlease verify using `feeds`");
-                    }
+                    m.reply(NEUTRAL_LOADING)
+                            .thenAccept(message -> FeedDB.getServer(server.getId())
+                                    .getFeedModel(id).ifPresent(feedModel -> server.getTextChannelById(feedModel.getChannel())
+                                            .ifPresentOrElse(textChannel -> ReadRSS.getLatest(feedModel.getFeedURL())
+                                                            .ifPresentOrElse(itemWrapper -> itemWrapper.getPubDate()
+                                                                    .ifPresentOrElse(date -> pw.mihou.amelia.templates.Message.msg(Amelia.format(itemWrapper, feedModel, textChannel.getServer()))
+                                                                            .send(textChannel).whenComplete((msg, throwable) -> {
+                                                                                if (throwable != null) {
+                                                                                    message.edit("❌ An exception was thrown, is it possible that I can't **write on the channel?**" +
+                                                                                            "\n```java\n" + throwable.getMessage()+ "\n```");
+                                                                                } else {
+                                                                                    message.edit("✔ The test completed successfully, you can find the test results on <#"+ textChannel.getId()+">");
+                                                                                }
+                                                                            }), () -> message.edit(ERROR_DATE_NOT_FOUND)),
+                                                                    () -> message.edit(ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)),
+                                                    () -> message.edit(ERROR_CHANNEL_NOT_FOUND))));
                 } catch (NumberFormatException | ArithmeticException e) {
-                    m.reply("Error: Number format exception, or arithmetic exception.");
+                    m.reply("❌ The feed number provided is not valid, please use `feeds` command to find the correct feed!");
                 }
             } else {
-                m.reply("Error: Lacking arguments [feed id]");
+                m.reply("❌ Missing arguments: `[feed id]`.");
             }
         }
     }
 
     @Override
-    public void onEvent(SlashCommandCreateEvent originalEvent,
-                        SlashCommandInteraction event,
-                        User user,
-                        VelenArguments velenArguments,
-                        List<SlashCommandInteractionOption> list,
-                        InteractionImmediateResponseBuilder interactionImmediateResponseBuilder) {
-        if (event.getServer().isEmpty()) {
+    public void onEvent(SlashCommandCreateEvent originalEvent, SlashCommandInteraction event, User user, VelenArguments args,
+                        List<SlashCommandInteractionOption> options, InteractionImmediateResponseBuilder firstResponder) {
+        if (event.getServer().isEmpty())
             return;
-        }
 
-        int feedId = event.getOptionIntValueByName("feedId").orElseThrow();
         Server server = event.getServer().get();
+        int feed = event.getOptionIntValueByName("feed").orElseThrow();
 
         if (server.isAdmin(user) || server.canCreateChannels(user) || server.canManage(user) || server.canManageRoles(user)) {
-            if (!list.isEmpty()) {
-                try {
-                    if (FeedDB.validate(feedId)) {
-                        event.respondLater().thenAccept(updater -> {
-                            updater.setContent("Attempting to perform test fetch...")
-                                    .update()
-                                    .thenAccept(message -> FeedDB.getServer(server.getId())
-                                            .getFeedModel(feedId).ifPresent(feedModel -> server.getTextChannelById(feedModel.getChannel())
-                                                    .ifPresentOrElse(textChannel -> ReadRSS.getLatest(feedModel.getFeedURL())
-                                                                    .ifPresentOrElse(itemWrapper -> itemWrapper.getPubDate()
-                                                                            .ifPresentOrElse(date ->
-                                                                                    pw.mihou.amelia.templates.Message.msg(Amelia.format(itemWrapper, feedModel, textChannel.getServer())).send(textChannel)
-                                                                                            .whenComplete((msg, throwable) -> {
-                                                                                                if (throwable != null) {
-                                                                                                    message.edit("An exception was thrown, is it possible that the bot cannot write on the channel?");
-                                                                                                    message.reply("Exception: \n```" + throwable.getMessage() + "```");
-                                                                                                } else {
-                                                                                                    message.edit("Amelia was able to deliver the feed!");
-                                                                                                }
-                                                                                            }), () -> message.edit("We were unable to fetch the date of the feeds...")), () -> message.edit("Amelia was not able to retrieve the RSS feed from ScribbleHub...")),
-                                                            () -> message.edit("We were unable to find the text channel (" + feedModel.getChannel() + "), " +
-                                                                    "please verify it exists and the bot can see and write on it!"))));
-                        });
-                    } else {
-                        event.respondLater().thenAccept(updater -> updater.setContent("Error: We couldn't find the feed, are you sure you are using the feed's unique id." +
-                                "\nPlease verify using `feeds`").update());
-                    }
-                } catch (NumberFormatException | ArithmeticException e) {
-                    event.respondLater().thenAccept(updater -> updater.setContent("Error: Number format exception, or arithmetic exception."));
-                }
-            } else {
-                event.respondLater().thenAccept(updater -> updater.setContent("Error: Lacking arguments [feed id]").update());
-            }
+            event.respondLater().thenAccept(updater -> updater.setContent(NEUTRAL_LOADING).update()
+                    .thenAccept(message -> FeedDB.getServer(server.getId())
+                            .getFeedModel(feed).ifPresentOrElse(feedModel -> server.getTextChannelById(feedModel.getChannel())
+                                            .ifPresentOrElse(textChannel -> ReadRSS.getLatest(feedModel.getFeedURL()).ifPresentOrElse(itemWrapper -> itemWrapper.getPubDate()
+                                                                    .ifPresentOrElse(date -> pw.mihou.amelia.templates.Message.msg(Amelia.format(itemWrapper, feedModel, server)).send(textChannel)
+                                                                                    .whenComplete((m, throwable) -> {
+                                                                                        if (throwable != null) {
+                                                                                            message.edit("❌ An exception was thrown, is it possible that I can't **write on the channel?**" +
+                                                                                                    "\n```java\n" + throwable.getMessage()+ "\n```");
+                                                                                        } else {
+                                                                                            message.edit("✔ The test completed successfully, you can find the test results on <#"+ textChannel.getId()+">");
+                                                                                        }
+                                                                                    }), () -> message.edit(ERROR_DATE_NOT_FOUND)),
+                                                            () -> message.edit(ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)),
+                                                    () -> message.edit(ERROR_CHANNEL_NOT_FOUND)),
+                                    () -> message.edit(ERROR_FEED_NOT_FOUND))));
         }
     }
+
+    private static final String NEUTRAL_LOADING = "<a:manaWinterLoading:880162110947094628> Please wait...";
+    private static final String ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE = "❌ Amelia was unable to fetch the RSS feed from ScribbleHub, is it down?";
+    private static final String ERROR_CHANNEL_NOT_FOUND = "❌ Amelia was unable to find the text channel, are you sure that I can **see**, **write** and **read** on the channel?";
+    private static final String ERROR_FEED_NOT_FOUND = "❌ We were unable to find the feed, are you sure it exists?";
+    private static final String ERROR_DATE_NOT_FOUND = "❌ Amelia was unable to fetch the date of the feed, please try contacting our support team if it still doesn't work at https://manabot.fun/support";
 }

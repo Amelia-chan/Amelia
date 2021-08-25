@@ -14,6 +14,16 @@ public class StringUtils {
     }
 
     /**
+     * Quickly transforms a line of text that requires to be embedded in a Discord embed's field.
+     *
+     * @param text The text to trasnform.
+     * @return The embedded format text.
+     */
+    public static String createEmbeddedFormat(String... text) {
+        return String.join("\n", text);
+    }
+
+    /**
      * Strips the string into the character limit, whilst counting spacing.
      *
      * @param content the content to strip.

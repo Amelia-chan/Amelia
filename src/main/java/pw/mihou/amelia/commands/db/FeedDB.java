@@ -85,7 +85,12 @@ public class FeedDB {
         if (doc.getLong("server") != server)
             return Optional.empty();
 
-        FeedModel model = new FeedModel(doc.getLong("unique"), doc.getInteger("id"), doc.getString("url"), doc.getLong("channel"), doc.getLong("user"), doc.getString("name"), doc.getDate("date"),
+        FeedModel model = new FeedModel(doc.getLong("unique"),
+                doc.getInteger("id"),
+                doc.getString("url"),
+                doc.getLong("channel"), doc.getLong("user"),
+                doc.getString("name"),
+                doc.getDate("date"),
                 doc.get("mentions", new ArrayList<>()));
 
         getServer(server).addFeed(model);

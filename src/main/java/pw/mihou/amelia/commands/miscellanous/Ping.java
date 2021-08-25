@@ -1,52 +1,83 @@
 package pw.mihou.amelia.commands.miscellanous;
 
-import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.SlashCommandInteractionOption;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
+import pw.mihou.amelia.session.AmeliaSession;
 import pw.mihou.amelia.templates.Embed;
+import pw.mihou.amelia.utility.StringUtils;
 import pw.mihou.velen.interfaces.VelenArguments;
 import pw.mihou.velen.interfaces.VelenEvent;
 import pw.mihou.velen.interfaces.VelenSlashEvent;
 
 import java.lang.management.ManagementFactory;
-import java.time.Instant;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class Ping implements VelenEvent, VelenSlashEvent {
 
+    private static final com.sun.management.OperatingSystemMXBean os = (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+
     @Override
     public void onEvent(MessageCreateEvent event, Message msg, User user, String[] args) {
-        long start = Instant.now().toEpochMilli();
-        String uptime = uptime();
-        event.getApi().measureRestLatency().thenAccept(rest -> {
+        event.getApi().measureRestLatency().thenAccept(duration -> {
             long gateway = event.getApi().getLatestGatewayLatency().toMillis();
-            msg.reply(new Embed().setTitle("Ping! Pong!")
-                    .setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png")
-                    .build()
-                    .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " +
-                            (Instant.now().toEpochMilli() - start) + "ms" +
-                            "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
-                            "\n<:latency:778551868301246485> Rest Latency: " + rest.toMillis() + "ms" +
-                            "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards" +
-                            "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers" +
-                            "\n<:uptime:778552145406459924> Uptime: " + uptime +
-                            "\n<:memory:778552648029831208> RAM: " + getUsedMemory() + " MB").setAuthor(user))
-                    .thenAccept(message -> message.edit(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
-                            .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " + (Instant.now().toEpochMilli() - start) + "ms" +
-                                    "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
-                                    "\n<:latency:778551868301246485> Rest Latency: " + rest.toMillis() + "ms" +
-                                    "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards" +
-                                    "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers" +
-                                    "\n<:uptime:778552145406459924> Uptime: " + uptime +
-                                    "\n<:memory:778552648029831208> RAM: " + getUsedMemory() + " MB").setAuthor(user)));
+            msg.reply(
+                    new Embed()
+                            .setTitle("Pang! Pong!")
+                            .setDescription("Here is the current information of Amelia.")
+                            .setThumbnail(event.getApi().getYourself().getAvatar().getUrl().toExternalForm())
+                            .build()
+                            .addField("Latency", StringUtils.createEmbeddedFormat(
+                                    "⏰ Gateway: `" + format(gateway) + "ms`",
+                                    "🕚 REST: `" + format(duration.toMillis()) + "ms`"
+                            ))
+                            .addField("Bot Information", StringUtils.createEmbeddedFormat(
+                                    "🕰 Uptime: `" + uptime() + "`",
+                                    "💻 Servers: `" + event.getApi().getServers().size() + " servers`",
+                                    "💿 Memory: `" + format(getUsedMemory()) + " MB / " + format(os.getTotalPhysicalMemorySize() / (1000 * 1000)) + " MB`"
+                            ))
+                            .addField("Session Information", StringUtils.createEmbeddedFormat(
+                                    "☁ Total updates sent: `" + format(AmeliaSession.feedsUpdated.get()) + " chapters notified to servers`",
+                                    "🌩 Total trending notifications: `" + format(AmeliaSession.trendingNotified.get()) + " users notified`"
+                            ))
+                            .addField("Support Amelia", "You can support Amelia through [Patreon](https://patreon.com/manabot)")
+            );
         });
+    }
+
+    @Override
+    public void onEvent(SlashCommandCreateEvent originalEvent, SlashCommandInteraction event, User user, VelenArguments args,
+                        List<SlashCommandInteractionOption> options, InteractionImmediateResponseBuilder firstResponder) {
+        event.respondLater().thenAccept(updater -> event.getApi().measureRestLatency().thenAccept(duration -> {
+            long gateway = event.getApi().getLatestGatewayLatency().toMillis();
+            updater.addEmbed(
+                    new Embed()
+                            .setTitle("Pang! Pong!")
+                            .setDescription("Here is the current information of Amelia.")
+                            .setThumbnail(event.getApi().getYourself().getAvatar().getUrl().toExternalForm())
+                            .build()
+                            .addField("Latency", StringUtils.createEmbeddedFormat(
+                                    "⏰ Gateway: `" + format(gateway) + "ms`",
+                                    "🕚 REST: `" + format(duration.toMillis()) + "ms`"
+                            ))
+                            .addField("Bot Information", StringUtils.createEmbeddedFormat(
+                                    "🕰 Uptime: `" + uptime() + "`",
+                                    "💻 Servers: `" + event.getApi().getServers().size() + " servers`",
+                                    "💿 Memory: `" + format(getUsedMemory()) + " MB / " + format(os.getTotalPhysicalMemorySize() / (1000 * 1000)) + " MB`"
+                            ))
+                            .addField("Session Information", StringUtils.createEmbeddedFormat(
+                                    "☁ Total updates sent: `" + format(AmeliaSession.feedsUpdated.get()) + " chapters notified to servers`",
+                                    "🌩 Total trending notifications: `" + format(AmeliaSession.trendingNotified.get()) + " users notified`"
+                            ))
+                            .addField("Support Amelia", "You can support Amelia through [Patreon](https://patreon.com/manabot)")
+            ).update();
+        }));
     }
 
     private long getUsedMemory() {
@@ -63,39 +94,13 @@ public class Ping implements VelenEvent, VelenSlashEvent {
         );
     }
 
-
-    @Override
-    public void onEvent(SlashCommandCreateEvent slashCommandCreateEvent,
-                        SlashCommandInteraction event,
-                        User user, VelenArguments velenArguments,
-                        List<SlashCommandInteractionOption> list,
-                        InteractionImmediateResponseBuilder interactionImmediateResponseBuilder) {
-        event.respondLater().thenAccept(updater -> {
-            long start = Instant.now().toEpochMilli();
-            String uptime = uptime();
-            event.getApi().measureRestLatency().thenAccept(rest -> {
-                long gateway = event.getApi().getLatestGatewayLatency().toMillis();
-                updater.addEmbed(new Embed().setTitle("Ping! Pong!")
-                                .setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png")
-                                .build()
-                                .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " +
-                                        (Instant.now().toEpochMilli() - start) + "ms" +
-                                        "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
-                                        "\n<:latency:778551868301246485> Rest Latency: " + rest.toMillis() + "ms" +
-                                        "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards" +
-                                        "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers" +
-                                        "\n<:uptime:778552145406459924> Uptime: " + uptime +
-                                        "\n<:memory:778552648029831208> RAM: " + getUsedMemory() + " MB").setAuthor(user))
-                        .update()
-                        .thenAccept(message -> message.edit(new Embed().setTitle("Ping! Pong!").setThumbnail("https://miro.medium.com/max/256/1*dKSSlnsTw2M-VJMl_ROSdA.png").build()
-                                .addField("Statistics", "<:download:778447509684748288> Ping: Average latency is " + (Instant.now().toEpochMilli() - start) + "ms" +
-                                        "\n<:upload:778550310347997194> Gateway Latency: " + gateway + "ms" +
-                                        "\n<:latency:778551868301246485> Rest Latency: " + rest.toMillis() + "ms" +
-                                        "\n<:shards:778551235551690752> Total Shards: " + event.getApi().getTotalShards() + " shards" +
-                                        "\n<:server:778550786518548481> Total Servers: " + event.getApi().getServers().size() + " servers" +
-                                        "\n<:uptime:778552145406459924> Uptime: " + uptime +
-                                        "\n<:memory:778552648029831208> RAM: " + getUsedMemory() + " MB").setAuthor(user)));
-            });
-        });
+    /**
+     * Formats the number into human readable content.
+     *
+     * @param number The number to format.
+     * @return The formatted string.
+     */
+    private static String format(long number) {
+        return NumberFormat.getInstance().format(number);
     }
 }
