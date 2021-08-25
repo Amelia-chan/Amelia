@@ -142,7 +142,6 @@ public class Feeds implements VelenEvent, VelenSlashEvent {
                 embed.addField("[" + object.getUnique() + "] " + object.getName(), "\n" +
                         "\nLink: " + object.getFeedURL() +
                         "\nFeed Unique ID: `" + object.getUnique() +
-                        "`\nFeed ID: `" + object.getId() +
                         "`\nFeed Name: `" + object.getName() +
                         "`\nRoles Subscribed: " + Amelia.getMentions(object.getMentions(), server) +
                         "\nLast Update: `" + object.getDate().toString() +
