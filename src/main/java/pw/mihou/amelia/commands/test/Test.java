@@ -17,6 +17,8 @@ import pw.mihou.velen.interfaces.VelenSlashEvent;
 
 import java.util.List;
 
+import static pw.mihou.amelia.templates.TemplateMessages.*;
+
 public class Test implements VelenEvent, VelenSlashEvent {
 
     @Override
@@ -46,7 +48,7 @@ public class Test implements VelenEvent, VelenSlashEvent {
                                                                     () -> message.edit(ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)),
                                                     () -> message.edit(ERROR_CHANNEL_NOT_FOUND))));
                 } catch (NumberFormatException | ArithmeticException e) {
-                    m.reply("❌ The feed number provided is not valid, please use `feeds` command to find the correct feed!");
+                    m.reply(ERROR_INT_ABOVE_LIMIT);
                 }
             } else {
                 m.reply("❌ Missing arguments: `[feed id]`.");
@@ -82,10 +84,4 @@ public class Test implements VelenEvent, VelenSlashEvent {
                                     () -> message.edit(ERROR_FEED_NOT_FOUND))));
         }
     }
-
-    private static final String NEUTRAL_LOADING = "<a:manaWinterLoading:880162110947094628> Please wait...";
-    private static final String ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE = "❌ Amelia was unable to fetch the RSS feed from ScribbleHub, is it down?";
-    private static final String ERROR_CHANNEL_NOT_FOUND = "❌ Amelia was unable to find the text channel, are you sure that I can **see**, **write** and **read** on the channel?";
-    private static final String ERROR_FEED_NOT_FOUND = "❌ We were unable to find the feed, are you sure it exists?";
-    private static final String ERROR_DATE_NOT_FOUND = "❌ Amelia was unable to fetch the date of the feed, please try contacting our support team if it still doesn't work at https://manabot.fun/support";
 }
