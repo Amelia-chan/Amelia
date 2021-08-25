@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class ServerFeeds {
 
@@ -26,15 +27,17 @@ public class ServerFeeds {
     public void addFeed(FeedModel model) {
         if (!feeds.containsKey(model.getUnique())) {
             feeds.put(model.getUnique(), model);
-        } else {
-            feeds.replace(model.getUnique(), model);
+            return;
         }
+
+        feeds.replace(model.getUnique(), model);
     }
 
     public void removeFeed(long id) {
-        // Removes it from both the database and the db.
-        feeds.remove(id);
-        FeedDB.removeModel(id);
+        CompletableFuture.runAsync(() -> {
+            feeds.remove(id);
+            FeedDB.removeModel(id);
+        });
     }
 
     public ArrayList<FeedModel> getModels() {

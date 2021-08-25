@@ -23,14 +23,16 @@ public class FeedDB {
      * @param model The feed model to store.
      */
     public static void addModel(long server, FeedModel model) {
-        servers.get(server).addFeed(model);
+        CompletableFuture.runAsync(() -> {
+            servers.get(server).addFeed(model);
 
-        if (validate(model.getUnique())) {
-            db.replaceOne(Filters.eq("unique", model.getUnique()), model.toDocument(server));
-            return;
-        }
+            if (validate(model.getUnique())) {
+                db.replaceOne(Filters.eq("unique", model.getUnique()), model.toDocument(server));
+                return;
+            }
 
-        db.insertOne(model.toDocument(server));
+            db.insertOne(model.toDocument(server));
+        });
     }
 
     /**
@@ -40,8 +42,10 @@ public class FeedDB {
      * @param server The server to delete.
      */
     public static void deleteServer(long server) {
-        db.deleteMany(Filters.eq("server", server));
-        servers.remove(server);
+        CompletableFuture.runAsync(() -> {
+            db.deleteMany(Filters.eq("server", server));
+            servers.remove(server);
+        });
     }
 
     /**
@@ -99,7 +103,7 @@ public class FeedDB {
      * @param unique The unique id of the feed.
      */
     public static void removeModel(long unique) {
-        db.deleteOne(Filters.eq("unique", unique));
+        CompletableFuture.runAsync(() -> db.deleteOne(Filters.eq("unique", unique)));
     }
 
     /**
@@ -110,6 +114,7 @@ public class FeedDB {
      */
     public static long generateUnique() {
         long x = rand.nextInt(9999);
+
         return validate(x) ? generateUnique() : x;
     }
 
