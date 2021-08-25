@@ -60,8 +60,8 @@ public class Amelia {
     public static final HashMap<Integer, DiscordApi> shards = new HashMap<>();
     public static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
     private static final String token = System.getenv("amelia_token");
-    private static final String version = "1.5.5";
-    private static final String build = "STATIC";
+    private static final String version = "1.6";
+    private static final String build = "STATE ZERO";
     public static boolean connected = false;
     public static Velen velen;
 
