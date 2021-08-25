@@ -75,7 +75,7 @@ public class Feeds implements VelenEvent, VelenSlashEvent {
                                 navigator.reset();
                             }
                             
-                            e.getINteraction().createImmediateResponder().respond();
+                            e.getInteraction().createImmediateResponder().respond();
                         }).removeAfter(5, TimeUnit.MINUTES)
                                 .addRemoveHandler(() -> new MessageUpdater(message).removeAllComponents().applyChanges()));
             } else {
@@ -128,7 +128,7 @@ public class Feeds implements VelenEvent, VelenSlashEvent {
                                     navigator.reset();
                                 }
 
-                                e.getINteraction().createImmediateResponder().respond();
+                                e.getInteraction().createImmediateResponder().respond();
                             }).removeAfter(5, TimeUnit.MINUTES)
                             .addRemoveHandler(() -> new MessageUpdater(message).removeAllComponents().applyChanges()));
         } else {
