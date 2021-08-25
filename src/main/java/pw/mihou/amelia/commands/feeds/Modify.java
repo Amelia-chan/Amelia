@@ -20,6 +20,8 @@ import pw.mihou.velen.interfaces.VelenSlashEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static pw.mihou.amelia.templates.TemplateMessages.*;
+
 public class Modify implements VelenEvent, VelenSlashEvent {
 
     private final boolean subscribe;
@@ -37,39 +39,30 @@ public class Modify implements VelenEvent, VelenSlashEvent {
         Server server = event.getServer().get();
 
         if(!Limitations.isLimited(server, user)) {
-            firstResponder
-                    .setContent("You do not have permission to use this command, required permission: " +
-                    "Manage Server, or lacking the required role to modify feeds.")
-                    .setFlags(MessageFlag.EPHEMERAL)
-                    .respond();
+            firstResponder.setContent(ERROR_MISSING_PERMISSIONS).setFlags(MessageFlag.EPHEMERAL).respond();
             return;
         }
 
         int feedId = event.getOptionIntValueByName("feed").orElseThrow();
         Role role = event.getOptionRoleValueByName("role").orElseThrow();
 
-        event.respondLater().thenAccept(updater -> {
-            // We can safely ignore the boolean subscribe on slash commands now.
-            FeedDB.getServer(server.getId()).getFeedModel(feedId).ifPresentOrElse(feedModel -> {
-                if(subscribe) {
-                    feedModel.subscribeRole(role.getId());
-                }
+        event.respondLater().thenAccept(updater -> FeedDB.getServer(server.getId()).getFeedModel(feedId).ifPresentOrElse(feedModel -> {
+            if(subscribe) {
+                feedModel.subscribeRole(role.getId());
+            }
 
-                if(!subscribe) {
-                    feedModel.unsubscribeRole(role.getId());
-                }
+            if(!subscribe) {
+                feedModel.unsubscribeRole(role.getId());
+            }
 
-                feedModel.update(server.getId());
-                updater.setContent("**SUCCESS**: We have " + (subscribe ? "subscribed" :
-                        "unsubscribed") + " the following roles: " + role.getMentionTag())
-                        .setAllowedMentions(new AllowedMentionsBuilder()
-                                .setMentionRoles(false)
-                                .setMentionEveryoneAndHere(false)
-                                .setMentionUsers(false).build())
-                        .update();
-            }, () -> updater.setContent("**ERROR**: We couldn't find the feed with the unique id [" + feedId + "]." +
-                    "\nPlease verify the unique id through `feeds`").update());
-        });
+            feedModel.update(server.getId());
+            updater.setContent("✔ We have " + (subscribe ? "subscribed" : "unsubscribed") + " the following roles: " + role.getMentionTag())
+                    .setAllowedMentions(new AllowedMentionsBuilder()
+                            .setMentionRoles(false)
+                            .setMentionEveryoneAndHere(false)
+                            .setMentionUsers(false).build())
+                    .update();
+        }, () -> updater.setContent(ERROR_FEED_NOT_FOUND).update()));
     }
 
     @Override
@@ -85,27 +78,26 @@ public class Modify implements VelenEvent, VelenSlashEvent {
                     long i = Long.parseLong(args[0]);
                     FeedDB.getServer(server.getId()).getFeedModel(i).ifPresentOrElse(feedModel -> {
                         message.getMentionedRoles().forEach(role -> {
-                            if (subscribe)
+                            if(subscribe) {
                                 feedModel.subscribeRole(role.getId());
-                            else
+                            }
+
+                            if(!subscribe) {
                                 feedModel.unsubscribeRole(role.getId());
+                            }
                         });
 
                         feedModel.update(server.getId());
-                        pw.mihou.amelia.templates.Message.msg("**SUCCESS**: We have " + (subscribe ? "subscribed" :
-                                        "unsubscribed") + " the following roles: " +
-                                        message.getMentionedRoles().stream().map(Role::getMentionTag)
-                                                .collect(Collectors.joining(" ")))
+                        pw.mihou.amelia.templates.Message.msg("✔ We have " + (subscribe ? "subscribed" : "unsubscribed") + " the following roles: " +
+                                        message.getMentionedRoles().stream().map(Role::getMentionTag).collect(Collectors.joining(" ")))
                                 .setAllowedMentions(new AllowedMentionsBuilder()
                                         .setMentionRoles(false)
                                         .setMentionEveryoneAndHere(false)
                                         .setMentionUsers(false).build())
                                 .send(event.getChannel());
-                    }, () -> message.reply("**ERROR**: We couldn't find the feed with the unique id [" + i + "]." +
-                            "\nPlease verify the unique id through `feeds`"));
+                    }, () -> message.reply(ERROR_FEED_NOT_FOUND));
                 } catch (NumberFormatException | ArithmeticException e) {
-                    message.reply("**ERROR**: Arithmetic or " +
-                            "NumberFormatException occurred. Are you sure you giving the proper value for parameter [" + args[0] + "]?");
+                    message.reply(ERROR_INT_ABOVE_LIMIT);
                 }
             }
         }

@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static pw.mihou.amelia.templates.TemplateMessages.*;
+
 // We're using Slash Event to make it easier to remove Velen Event once the
 // message intents thingy is out.
 public class Register implements VelenEvent, VelenSlashEvent {
@@ -67,11 +69,7 @@ public class Register implements VelenEvent, VelenSlashEvent {
         Server server = event.getServer().get();
 
         if(!Limitations.isLimited(server, user)) {
-            firstResponder
-                    .setContent("You do not have permission to use this command, required permission: " +
-                            "Manage Server, or lacking the required role to modify feeds.")
-                    .setFlags(MessageFlag.EPHEMERAL)
-                    .respond();
+            firstResponder.setContent(ERROR_MISSING_PERMISSIONS).setFlags(MessageFlag.EPHEMERAL).respond();
             return;
         }
 
@@ -81,9 +79,7 @@ public class Register implements VelenEvent, VelenSlashEvent {
         String query = event.getFirstOption().orElseThrow().getSecondOptionStringValue().orElseThrow();
 
         if (c.asServerTextChannel().isEmpty()) {
-            firstResponder.setContent("**ERROR**: Please use a **TEXT CHANNEL** for the channel argument!")
-                    .setFlags(MessageFlag.EPHEMERAL)
-                    .respond();
+            firstResponder.setContent(ERROR_OPTION_TEXT_CHANNEL_REQUIRED).setFlags(MessageFlag.EPHEMERAL).respond();
             return;
         }
 
@@ -98,18 +94,15 @@ public class Register implements VelenEvent, VelenSlashEvent {
                                             @Override
                                             public void onSelect(InteractionImmediateResponseBuilder responder, Interaction event, Message paginateMessage,
                                                                  UserResults itemSelected, int arrow, Paginator<UserResults> paginator) {
-                                                paginateMessage.delete().thenAccept(unused -> channel.sendMessage("Please wait while we fetch data from ScribbleHub...")
-                                                        .thenAccept(m -> {
-                                                            int uid = Integer.parseInt(itemSelected.getUrl().replaceAll("[^\\d]", ""));
-                                                            String rss = "https://www.scribblehub.com/rssfeed.php?type=author&uid=" + uid;
-                                                            ReadRSS.getLatest(rss).ifPresentOrElse(item -> item.getPubDate().ifPresentOrElse(date -> {
-                                                                        FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(),
-                                                                                uid, rss, channel.getId(), user.getId(), itemSelected.getName() + "'s stories", date, new ArrayList<>()));
-                                                                        m.edit("**SUCCESS**: The bot will now send updates for the user's stories on the channel, " + channel.getMentionTag());
-                                                                    }, () -> m.edit("**ERROR**: An error occurred while attempting to retrieve date or parse the date of feed.")),
-                                                                    () -> m.edit("**ERROR**: An error occurred while retrieving RSS feed, " +
-                                                                            "**this usually happens when the user has no stories published.**"));
-                                                        }));
+                                                paginateMessage.delete().thenAccept(unused -> channel.sendMessage(NEUTRAL_LOADING).thenAccept(m -> {
+                                                    int uid = Integer.parseInt(itemSelected.getUrl().replaceAll("[^\\d]", ""));
+                                                    String rss = "https://www.scribblehub.com/rssfeed.php?type=author&uid=" + uid;
+                                                    ReadRSS.getLatest(rss).ifPresentOrElse(item -> item.getPubDate().ifPresentOrElse(date -> {
+                                                        FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(),
+                                                                uid, rss, channel.getId(), user.getId(), itemSelected.getName() + "'s stories", date, new ArrayList<>()));
+                                                        m.edit(SUCCESS_STORY + channel.getMentionTag());
+                                                        }, () -> m.edit(ERROR_DATE_NOT_FOUND)), () -> m.edit(ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE));
+                                                }));
                                                 responder.respond();
                                             }
 
@@ -126,7 +119,7 @@ public class Register implements VelenEvent, VelenSlashEvent {
 
                                             @Override
                                             public InteractionOriginalResponseUpdater onEmptyPaginator(Interaction event) {
-                                                return updater.setContent("**ERROR**: No results found, maybe try a deeper query?");
+                                                return updater.setContent("❌ No results found, maybe try a more detailed query?");
                                             }
                                         }, Duration.ofMinutes(5)));
             }
@@ -140,18 +133,15 @@ public class Register implements VelenEvent, VelenSlashEvent {
                                             @Override
                                             public void onSelect(InteractionImmediateResponseBuilder responder, Interaction event, Message paginateMessage,
                                                                  StoryResults itemSelected, int arrow, Paginator<StoryResults> paginator) {
-                                                paginateMessage.delete().thenAccept(unused -> channel.sendMessage("Please wait while we fetch data from ScribbleHub...")
-                                                        .thenAccept(m -> {
-                                                            int uid = Integer.parseInt(itemSelected.getUrl().replaceAll("[^\\d]", ""));
-                                                            String rss = "https://www.scribblehub.com/rssfeed.php?type=series&sid=" + uid;
-                                                            ReadRSS.getLatest(rss).ifPresentOrElse(item -> item.getPubDate().ifPresentOrElse(date -> {
-                                                                        FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), uid, rss,
+                                                paginateMessage.delete().thenAccept(unused -> channel.sendMessage("Please wait while we fetch data from ScribbleHub...").thenAccept(m -> {
+                                                    int uid = Integer.parseInt(itemSelected.getUrl().replaceAll("[^\\d]", ""));
+                                                    String rss = "https://www.scribblehub.com/rssfeed.php?type=series&sid=" + uid;
+                                                    ReadRSS.getLatest(rss).ifPresentOrElse(item -> item.getPubDate().ifPresentOrElse(date -> {
+                                                        FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), uid, rss,
                                                                                 channel.getId(), user.getId(), itemSelected.getName(), date, new ArrayList<>()));
-                                                                        m.edit("**SUCCESS**: The bot will now send updates for the story on the channel, " + channel.getMentionTag());
-                                                                    }, () -> m.edit("**ERROR**: An error occurred while attempting to retrieve date or parse the date of feed.")),
-                                                                    () -> m.edit("**ERROR**: An error occurred while retrieving RSS feed, " +
-                                                                            "**this usually happens when the story has no chapters posted.**"));
-                                                        }));
+                                                        m.edit(SUCCESS_STORY + channel.getMentionTag());
+                                                        }, () -> m.edit(ERROR_DATE_NOT_FOUND)), () -> m.edit(ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE));
+                                                }));
                                                 responder.respond();
                                             }
 
@@ -168,7 +158,7 @@ public class Register implements VelenEvent, VelenSlashEvent {
 
                                             @Override
                                             public InteractionOriginalResponseUpdater onEmptyPaginator(Interaction event) {
-                                                return updater.setContent("**ERROR**: No results found, maybe try a deeper query?");
+                                                return updater.setContent("❌ No results found, maybe try a more detailed query?");
                                             }
                                         }, Duration.ofMinutes(5)));
             }
@@ -207,24 +197,22 @@ public class Register implements VelenEvent, VelenSlashEvent {
 
                                                     @Override
                                                     public MessageBuilder onEmptyPaginator(MessageCreateEvent event) {
-                                                        return new MessageBuilder().setContent("**ERROR**: No results found, maybe try a deeper query?");
+                                                        return new MessageBuilder().setContent("❌ No results found, maybe try a more detailed query?");
                                                     }
 
                                                     @Override
                                                     public void onSelect(InteractionImmediateResponseBuilder responder, MessageCreateEvent event,
                                                                          Message paginateMessage, StoryResults itemSelected, int arrow, Paginator<StoryResults> paginator) {
-                                                        paginateMessage.delete().thenAccept(unused -> event.getMessage().reply("Please wait while we fetch data from ScribbleHub...")
-                                                                .thenAccept(m -> {
-                                                                    int uid = Integer.parseInt(itemSelected.getUrl().replaceAll("[^\\d]", ""));
-                                                                    String rss = "https://www.scribblehub.com/rssfeed.php?type=series&sid=" + uid;
-                                                                    ReadRSS.getLatest(rss).ifPresentOrElse(item -> item.getPubDate().ifPresentOrElse(date -> {
-                                                                                FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), uid, rss,
-                                                                                        channel.getId(), user.getId(), itemSelected.getName(), date, new ArrayList<>()));
-                                                                                m.edit("**SUCCESS**: The bot will now send updates for the story on the channel, " + channel.getMentionTag());
-                                                                            }, () -> m.edit("**ERROR**: An error occurred while attempting to retrieve date or parse the date of feed.")),
-                                                                            () -> m.edit("**ERROR**: An error occurred while retrieving RSS feed, " +
-                                                                                    "**this usually happens when the story has no chapters posted.**"));
-                                                                }));
+                                                        paginateMessage.delete().thenAccept(unused -> event.getMessage().reply(NEUTRAL_LOADING).thenAccept(m -> {
+                                                            int uid = Integer.parseInt(itemSelected.getUrl().replaceAll("[^\\d]", ""));
+                                                            String rss = "https://www.scribblehub.com/rssfeed.php?type=series&sid=" + uid;
+                                                            ReadRSS.getLatest(rss).ifPresentOrElse(item -> item.getPubDate().ifPresentOrElse(date -> {
+                                                                FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(), uid, rss,
+                                                                        channel.getId(), user.getId(), itemSelected.getName(), date, new ArrayList<>()));
+                                                                m.edit(SUCCESS_STORY + channel.getMentionTag());
+                                                                }, () -> m.edit(ERROR_DATE_NOT_FOUND)),
+                                                                    () -> m.edit(ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE));
+                                                        }));
                                                         responder.respond();
                                                     }
                                                 }, Duration.ofMinutes(5))).exceptionally(ExceptionLogger.get());
@@ -246,36 +234,35 @@ public class Register implements VelenEvent, VelenSlashEvent {
 
                                             @Override
                                             public MessageBuilder onEmptyPaginator(MessageCreateEvent event) {
-                                                return new MessageBuilder().setContent("**ERROR**: No results found, maybe try a deeper query?");
+                                                return new MessageBuilder().setContent("❌ No results found, maybe try a more detailed query?");
                                             }
 
                                             @Override
                                             public void onSelect(InteractionImmediateResponseBuilder responder, MessageCreateEvent event,
                                                                  Message paginateMessage, UserResults itemSelected, int arrow, Paginator<UserResults> paginator) {
-                                                paginateMessage.delete().thenAccept(unused -> event.getMessage().reply("Please wait while we fetch data from ScribbleHub...")
-                                                        .thenAccept(m -> {
-                                                            int uid = Integer.parseInt(itemSelected.getUrl().replaceAll("[^\\d]", ""));
-                                                            String rss = "https://www.scribblehub.com/rssfeed.php?type=author&uid=" + uid;
-                                                            ReadRSS.getLatest(rss).ifPresentOrElse(item -> item.getPubDate().ifPresentOrElse(date -> {
-                                                                        FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(),
-                                                                                uid, rss, channel.getId(), user.getId(), itemSelected.getName() + "'s stories", date, new ArrayList<>()));
-                                                                        m.edit("**SUCCESS**: The bot will now send updates for the user's stories on the channel, " + channel.getMentionTag());
-                                                                    }, () -> m.edit("**ERROR**: An error occurred while attempting to retrieve date or parse the date of feed.")),
-                                                                    () -> m.edit("**ERROR**: An error occurred while retrieving RSS feed, " +
-                                                                            "**this usually happens when the user has no stories published.**"));
-                                                        }));
+                                                paginateMessage.delete().thenAccept(unused -> event.getMessage().reply(NEUTRAL_LOADING).thenAccept(m -> {
+                                                    int uid = Integer.parseInt(itemSelected.getUrl().replaceAll("[^\\d]", ""));
+                                                    String rss = "https://www.scribblehub.com/rssfeed.php?type=author&uid=" + uid;
+                                                    ReadRSS.getLatest(rss).ifPresentOrElse(item -> item.getPubDate().ifPresentOrElse(date -> {
+                                                        FeedDB.addModel(server.getId(), new FeedModel(FeedDB.generateUnique(),uid, rss, channel.getId(), user.getId(),
+                                                                itemSelected.getName() + "'s stories", date, new ArrayList<>()));
+
+                                                        m.edit(SUCCESS_USER + channel.getMentionTag());
+                                                        }, () -> m.edit(ERROR_DATE_NOT_FOUND)), () -> m.edit(ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE));
+                                                }));
+
                                                 responder.respond();
                                             }
                                         }, Duration.ofMinutes(5)));
                     }
                 } else {
-                    message.reply("**ERROR**: Invalid usage, please refer to `help register`.");
+                    message.reply(REFER_USAGE);
                 }
             } else {
-                message.reply("**ERROR**: There are no channels mentioned or the bot cannot write on the channel mentioned!");
+                message.reply(ERROR_OPTION_CHANNEL_NOT_FOUND);
             }
         } else {
-            message.reply("**ERROR**: Invalid usage, please refer to `help register`.");
+            message.reply(REFER_USAGE);
         }
     }
 
@@ -310,4 +297,8 @@ public class Register implements VelenEvent, VelenSlashEvent {
         return new Embed().setTitle(result.getName() + "(" + (arrow + 1) + "/" + maximum + ")").setDescription("[Click here to redirect](" + result.getUrl() + ")")
                 .attachImage(result.getAvatar()).build();
     }
+
+    private static final String SUCCESS_USER = "✔ The bot will now send updates for the user's stories on the channel, ";
+    private static final String SUCCESS_STORY = "✔ The bot will now send updates for the story on the channel, ";
+    private static final String REFER_USAGE = "❌ Invalid usage, please refer to `help register`.";
 }

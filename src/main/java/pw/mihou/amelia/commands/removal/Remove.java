@@ -57,11 +57,7 @@ public class Remove implements VelenEvent, VelenSlashEvent {
         int id = event.getOptionIntValueByName("feed").orElseThrow();
 
         if(!Limitations.isLimited(server, user)) {
-            firstResponder
-                    .setContent("You do not have permission to use this command, required permission: " +
-                            "Manage Server, or lacking the required role to modify feeds.")
-                    .setFlags(MessageFlag.EPHEMERAL)
-                    .respond();
+            firstResponder.setContent(ERROR_MISSING_PERMISSIONS).setFlags(MessageFlag.EPHEMERAL).respond();
             return;
         }
 

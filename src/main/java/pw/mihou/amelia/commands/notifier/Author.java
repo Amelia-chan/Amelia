@@ -3,15 +3,25 @@ package pw.mihou.amelia.commands.notifier;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
+import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.interaction.SlashCommandInteraction;
+import org.javacord.api.interaction.SlashCommandInteractionOption;
+import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import pw.mihou.amelia.db.UserDB;
 import pw.mihou.amelia.models.SHUser;
 import pw.mihou.amelia.templates.Embed;
+import pw.mihou.amelia.utility.StringUtils;
+import pw.mihou.velen.interfaces.VelenArguments;
 import pw.mihou.velen.interfaces.VelenEvent;
+import pw.mihou.velen.interfaces.VelenSlashEvent;
 
 import java.util.Collection;
+import java.util.List;
 
-public class Author implements VelenEvent {
+import static pw.mihou.amelia.templates.TemplateMessages.*;
+
+public class Author implements VelenEvent, VelenSlashEvent {
 
     public EmbedBuilder userEmbed(Collection<SHUser> users) {
         EmbedBuilder embed = new Embed().setTitle("Your Associated Accounts")
@@ -21,7 +31,11 @@ public class Author implements VelenEvent {
                     " gets to the top 9 trending on ScribbleHub!");
 
         users.forEach(shUser -> embed.addField(String.format("[ID: %d] %s", shUser.getUnique(), shUser.getName()),
-                String.format("**Username**: %s\n**ID**: %d", shUser.getName(), shUser.getUnique())));
+                StringUtils.createEmbeddedFormat(
+                        "**Username**: " + shUser.getName(),
+                        "**ID**: " + shUser.getUnique()
+                )));
+
         return embed.addField("Note", "The names here may be outdated (since we cache the names from IAm command)" +
                 " but our checks will check the updated name, so don't worry if your name " +
                 "on here is different (after changing usernames) since it won't affect anything.");
@@ -35,17 +49,40 @@ public class Author implements VelenEvent {
                     int unique = Integer.parseInt(args[1]);
                     if (UserDB.doesExist(user.getId(), unique)) {
                         UserDB.remove(user.getId(), unique);
-                        event.getMessage().reply(String.format("**SUCCESS**! The account with the unique id: %d was removed.", unique));
+                        event.getMessage().reply(String.format(SUCCESS_ACCOUNT_REMOVE, unique));
                     } else {
-                        event.getMessage().reply(String.format("**ERROR**: You do not have an account associated with the unique ID as %d, " +
-                                "please check author me for all accounts associated with your Discord account.", unique));
+                        event.getMessage().reply(ERROR_NO_ACCOUNTS_ASSOCIATED);
                     }
                 } catch (NumberFormatException | ArithmeticException e) {
-                    event.getMessage().reply("**ERROR**: Unique Identification must be a number that isn't exceed 4 digits");
+                    event.getMessage().reply(ERROR_INT_ABOVE_LIMIT);
                 }
             } else if (args.length == 1 && args[0].equalsIgnoreCase("me")) {
                 event.getMessage().reply(userEmbed(UserDB.get(user.getId()).getAccounts()));
             }
         }
+    }
+
+
+    @Override
+    public void onEvent(SlashCommandCreateEvent originalEvent, SlashCommandInteraction event, User user, VelenArguments args,
+                        List<SlashCommandInteractionOption> options, InteractionImmediateResponseBuilder firstResponder) {
+        String subcommand = event.getFirstOption().orElseThrow().getName();
+
+        event.respondLater().thenAccept(updater -> {
+            if (subcommand.equalsIgnoreCase("remove")) {
+                int unique = event.getFirstOption().orElseThrow().getOptionIntValueByName("id").orElseThrow();
+
+                if (UserDB.doesExist(user.getId(), unique)) {
+                    UserDB.remove(user.getId(), unique);
+                    updater.setContent(String.format(SUCCESS_ACCOUNT_REMOVE, unique)).update();
+                } else {
+                    updater.setContent(ERROR_NO_ACCOUNTS_ASSOCIATED).update();
+                }
+
+            } else if (subcommand.equalsIgnoreCase("me")) {
+                updater.addEmbed(userEmbed(UserDB.get(user.getId()).getAccounts())).update();
+            }
+        });
+
     }
 }

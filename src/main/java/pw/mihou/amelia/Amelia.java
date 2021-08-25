@@ -50,10 +50,7 @@ import pw.mihou.velen.prefix.VelenPrefixManager;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Amelia {
@@ -238,8 +235,14 @@ public class Amelia {
                         "Manage Server, or lacking the required role to modify feeds."))
                 .attach();
 
-        VelenCommand.of("author", "Retrieve or manage all the accounts associated with your Discord.", velen, new Author())
-                .setUsage("author remove [id], author me")
+        VelenCommand.ofHybrid("author", "Retrieve or manage all the accounts associated with your Discord.", velen, new Author(), new Author())
+                .addOptions(
+                        SlashCommandOption.createWithOptions(SlashCommandOptionType.SUB_COMMAND, "remove", "Stop getting notifications for a certain ScribbleHub account when it's stories goes into trending.",
+                                List.of(
+                                        SlashCommandOption.create(SlashCommandOptionType.INTEGER, "id", "The unique id of the account associated, can be found on author me command.", true)
+                                )),
+                        SlashCommandOption.create(SlashCommandOptionType.SUB_COMMAND, "me", "Retrieves the list of ScribbleHub accounts associated in your Discord account.")
+                ).setUsage("author remove [id], author me")
                 .setServerOnly(false)
                 .setCategory("Trending Notifications")
                 .addShortcuts("auth", "writer")

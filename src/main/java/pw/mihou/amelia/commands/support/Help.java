@@ -27,16 +27,14 @@ public class Help implements VelenEvent, VelenSlashEvent {
     @Override
     public void onEvent(SlashCommandCreateEvent originalEvent, SlashCommandInteraction event, User user, VelenArguments args,
                         List<SlashCommandInteractionOption> options, InteractionImmediateResponseBuilder firstResponder) {
-        event.getOptionStringValueByName("command").ifPresentOrElse(s -> {
-            Amelia.velen.getCommands().stream().filter(velenCommand -> velenCommand.getName().equalsIgnoreCase(s))
-                    .findFirst().ifPresentOrElse(cmd -> firstResponder.addEmbed(new Embed().setTitle(cmd.getName())
-                                    .setDescription(cmd.getDescription())
-                                    .build().addInlineField("Usage", cmd.getUsage())
-                                    .addInlineField("Alias", String.join(", ", cmd.getShortcuts()))
-                                    .addInlineField("Cooldown", cmd.getCooldown().toSeconds() + " seconds")).respond(),
-                            () -> firstResponder.setContent("**ERROR**: We couldn't find any command that is named [" + s + "], " +
-                                    "do you possibly mean `" + VelenUtils.getCommandSuggestion(Amelia.velen, s) + "`?").respond());
-        }, () -> firstResponder.addEmbed(helpEmbed(event.getApi())).respond());
+        event.getOptionStringValueByName("command").ifPresentOrElse(s -> Amelia.velen.getCommands().stream().filter(velenCommand -> velenCommand.getName().equalsIgnoreCase(s))
+                .findFirst().ifPresentOrElse(cmd -> firstResponder.addEmbed(new Embed().setTitle(cmd.getName())
+                                .setDescription(cmd.getDescription())
+                                .build().addInlineField("Usage", cmd.getUsage())
+                                .addInlineField("Alias", String.join(", ", cmd.getShortcuts()))
+                                .addInlineField("Cooldown", cmd.getCooldown().toSeconds() + " seconds")).respond(),
+                        () -> firstResponder.setContent("❌ Amelia couldn't find any command that is named [" + s + "], " +
+                                "do you possibly mean `" + VelenUtils.getCommandSuggestion(Amelia.velen, s) + "`?").respond()), () -> firstResponder.addEmbed(helpEmbed(event.getApi())).respond());
     }
 
     @Override
@@ -48,7 +46,7 @@ public class Help implements VelenEvent, VelenSlashEvent {
                             .build().addInlineField("Usage", cmd.getUsage())
                     .addInlineField("Alias", String.join(", ", cmd.getShortcuts()))
                             .addInlineField("Cooldown", cmd.getCooldown().toSeconds() + " seconds")),
-                    () -> message.reply("**ERROR**: We couldn't find any command that is named [" + args[0] + "], " +
+                    () -> message.reply("❌ Amelia couldn't find any command that is named [" + args[0] + "], " +
                             "do you possibly mean `" + VelenUtils.getCommandSuggestion(Amelia.velen, args[0]) + "`?"));
         } else {
             message.reply(helpEmbed(event.getApi()));
