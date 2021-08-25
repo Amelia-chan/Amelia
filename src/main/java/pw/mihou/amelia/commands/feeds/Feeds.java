@@ -135,8 +135,11 @@ public class Feeds implements VelenEvent, VelenSlashEvent {
     }
 
     private EmbedBuilder embed(Server server, ArrayList<FeedModel> objects, int page) {
-        EmbedBuilder embed = new Embed().setTitle(server.getName() + "'s feeds").setFooter("Page: " + page)
-                .setDescription(!objects.isEmpty() ? "Here are the feeds registered on the server." : "The server has no feeds registered.").build();
+        EmbedBuilder embed = new Embed().setTitle(server.getName() + "'s feeds")
+                .setFooter("Page: " + page)
+                .setDescription(!objects.isEmpty() ? "Here are the feeds registered on the server." : "The server has no feeds registered.")
+                .build();
+
         if (!objects.isEmpty()) {
             for (FeedModel object : objects) {
                 embed.addField("[" + object.getUnique() + "] " + object.getName(), "\n" +
@@ -146,11 +149,11 @@ public class Feeds implements VelenEvent, VelenSlashEvent {
                         "`\nRoles Subscribed: " + Amelia.getMentions(object.getMentions(), server) +
                         "\nLast Update: `" + object.getDate().toString() +
                         "`\nAssigned Channel: " + server.getTextChannelById(object.getChannel())
-                        .map(ServerTextChannel::getMentionTag).orElse("Unknown (possibly deleted?)") +
-                        "\nCreated by: " + server.getMemberById(object.getUser()).map(user -> "<@" + user.getId() + ">").orElse("Unknown (possibly left?)"));
+                        .map(ServerTextChannel::getMentionTag).orElse("❓ Channel Not Found") +
+                        "\nCreated by: " + server.getMemberById(object.getUser()).map(user -> "<@" + user.getId() + ">").orElse("❓ User Not Found (possibly left)."));
             }
         }
 
-        return embed.setFooter("Please use the Unique ID for removing feeds, etc.");
+        return embed;
     }
 }
