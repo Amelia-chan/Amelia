@@ -74,7 +74,8 @@ public class Feeds implements VelenEvent, VelenSlashEvent {
                                 message.delete();
                                 navigator.reset();
                             }
-
+                            
+                            e.getINteraction().createImmediateResponder().respond();
                         }).removeAfter(5, TimeUnit.MINUTES)
                                 .addRemoveHandler(() -> new MessageUpdater(message).removeAllComponents().applyChanges()));
             } else {
@@ -127,6 +128,7 @@ public class Feeds implements VelenEvent, VelenSlashEvent {
                                     navigator.reset();
                                 }
 
+                                e.getINteraction().createImmediateResponder().respond();
                             }).removeAfter(5, TimeUnit.MINUTES)
                             .addRemoveHandler(() -> new MessageUpdater(message).removeAllComponents().applyChanges()));
         } else {
@@ -150,7 +152,7 @@ public class Feeds implements VelenEvent, VelenSlashEvent {
                         "\nLast Update: `" + object.getDate().toString() +
                         "`\nAssigned Channel: " + server.getTextChannelById(object.getChannel())
                         .map(ServerTextChannel::getMentionTag).orElse("❓ Channel Not Found") +
-                        "\nCreated by: " + server.getMemberById(object.getUser()).map(user -> "<@" + user.getId() + ">").orElse("❓ User Not Found (possibly left)."));
+                        "\nCreated by: " + "<@" + object.getUser().getId() + ">");
             }
         }
 
