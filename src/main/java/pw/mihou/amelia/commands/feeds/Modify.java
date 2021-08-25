@@ -83,31 +83,26 @@ public class Modify implements VelenEvent, VelenSlashEvent {
             if (!message.getMentionedRoles().isEmpty()) {
                 try {
                     long i = Long.parseLong(args[0]);
-                    if (FeedDB.validate(i)) {
-                        FeedDB.getServer(server.getId()).getFeedModel(i).ifPresentOrElse(feedModel -> {
-                            message.getMentionedRoles().forEach(role -> {
-                                if (subscribe)
-                                    feedModel.subscribeRole(role.getId());
-                                else
-                                    feedModel.unsubscribeRole(role.getId());
-                            });
+                    FeedDB.getServer(server.getId()).getFeedModel(i).ifPresentOrElse(feedModel -> {
+                        message.getMentionedRoles().forEach(role -> {
+                            if (subscribe)
+                                feedModel.subscribeRole(role.getId());
+                            else
+                                feedModel.unsubscribeRole(role.getId());
+                        });
 
-                            feedModel.update(server.getId());
-                            pw.mihou.amelia.templates.Message.msg("**SUCCESS**: We have " + (subscribe ? "subscribed" :
-                                    "unsubscribed") + " the following roles: " +
-                                    message.getMentionedRoles().stream().map(Role::getMentionTag)
-                                            .collect(Collectors.joining(" ")))
-                                    .setAllowedMentions(new AllowedMentionsBuilder()
-                                            .setMentionRoles(false)
-                                            .setMentionEveryoneAndHere(false)
-                                            .setMentionUsers(false).build())
-                                    .send(event.getChannel());
-                        }, () -> message.reply("**ERROR**: We couldn't find the feed with the unique id [" + i + "]." +
-                                "\nPlease verify the unique id through `feeds`"));
-                    } else {
-                        message.reply("**ERROR**: We couldn't find the feed with the unique id [" + i + "]." +
-                                "\nPlease verify the unique id through `feeds`");
-                    }
+                        feedModel.update(server.getId());
+                        pw.mihou.amelia.templates.Message.msg("**SUCCESS**: We have " + (subscribe ? "subscribed" :
+                                        "unsubscribed") + " the following roles: " +
+                                        message.getMentionedRoles().stream().map(Role::getMentionTag)
+                                                .collect(Collectors.joining(" ")))
+                                .setAllowedMentions(new AllowedMentionsBuilder()
+                                        .setMentionRoles(false)
+                                        .setMentionEveryoneAndHere(false)
+                                        .setMentionUsers(false).build())
+                                .send(event.getChannel());
+                    }, () -> message.reply("**ERROR**: We couldn't find the feed with the unique id [" + i + "]." +
+                            "\nPlease verify the unique id through `feeds`"));
                 } catch (NumberFormatException | ArithmeticException e) {
                     message.reply("**ERROR**: Arithmetic or " +
                             "NumberFormatException occurred. Are you sure you giving the proper value for parameter [" + args[0] + "]?");
