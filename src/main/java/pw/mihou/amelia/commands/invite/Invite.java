@@ -19,7 +19,7 @@ import java.util.List;
 public class Invite implements VelenEvent, VelenSlashEvent {
 
     private static final EmbedBuilder embed = new Embed().setTitle("Your Majesty wishes to invite me?")
-            .setThumbnail(event.getApi().getYourself().getAvatar())
+            .setThumbnail("https://media.discordapp.net/avatars/786464598835986483/8175d0e1793e99b786032be669537a4c.png?size=4096")
             .setDescription("You can invite me freely by pressing the button below!").build();
 
     @Override
