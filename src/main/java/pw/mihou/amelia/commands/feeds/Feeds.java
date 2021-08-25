@@ -152,7 +152,7 @@ public class Feeds implements VelenEvent, VelenSlashEvent {
                         "\nLast Update: `" + object.getDate().toString() +
                         "`\nAssigned Channel: " + server.getTextChannelById(object.getChannel())
                         .map(ServerTextChannel::getMentionTag).orElse("❓ Channel Not Found") +
-                        "\nCreated by: " + "<@" + object.getUser().getId() + ">");
+                        "\nCreated by: " + "<@" + object.getUser() + ">");
             }
         }
 
