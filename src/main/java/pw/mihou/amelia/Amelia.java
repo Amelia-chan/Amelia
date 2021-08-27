@@ -222,8 +222,8 @@ public class Amelia {
                 .setUsage("settings prefix [prefix], settings limit, settings role [@role]")
                 .attach();
 
-        VelenCommand.ofHybrid("remove", "Removes a feed from the server, " +
-                "can only be done by the user who added the feed or a user with Manage Server permission.", velen, new Remove(), new Remove())
+        VelenCommand.ofHybrid("remove", "Removes a feed from the server, this can only be done by the user who added the feed or a user with Manage Server permission.",
+                        velen, new Remove(), new Remove())
                 .setUsage("remove [feed id]")
                 .addOption(SlashCommandOption.create(SlashCommandOptionType.INTEGER, "feed", "The ID of the feed to test, you can find via feeds command.", true))
                 .setServerOnly(true)
