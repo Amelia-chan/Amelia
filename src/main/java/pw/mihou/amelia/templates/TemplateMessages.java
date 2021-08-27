@@ -2,7 +2,7 @@ package pw.mihou.amelia.templates;
 
 public class TemplateMessages {
 
-    public static final String SUCCESS_ACCOUNT_REMOVE = "✔ The account with the unique id: %d was removed.";
+    public static final String SUCCESS_ACCOUNT_REMOVE = "✅ The account with the unique id: %d was removed.";
     public static final String NEUTRAL_LOADING = "<a:manaWinterLoading:880162110947094628> Please wait...";
     public static final String ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE = "❌ Amelia was unable to fetch the RSS feed from ScribbleHub, this can happen because of either the user doesn't have a story published yet or ScribbleHub is down.";
     public static final String ERROR_CHANNEL_NOT_FOUND = "❌ Amelia was unable to find the text channel, are you sure that I can **see**, **write** and **read** on the channel?";

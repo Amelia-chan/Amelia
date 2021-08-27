@@ -298,7 +298,7 @@ public class Register implements VelenEvent, VelenSlashEvent {
                 .attachImage(result.getAvatar()).build();
     }
 
-    private static final String SUCCESS_USER = "✔ The bot will now send updates for the user's stories on the channel, ";
-    private static final String SUCCESS_STORY = "✔ The bot will now send updates for the story on the channel, ";
+    private static final String SUCCESS_USER = "✅ The bot will now send updates for the user's stories on the channel, ";
+    private static final String SUCCESS_STORY = "✅ The bot will now send updates for the story on the channel, ";
     private static final String REFER_USAGE = "❌ Invalid usage, please refer to `help register`.";
 }

@@ -42,7 +42,7 @@ public class Test implements VelenEvent, VelenSlashEvent {
                                                                                     message.edit("❌ An exception was thrown, is it possible that I can't **write on the channel?**" +
                                                                                             "\n```java\n" + throwable.getMessage()+ "\n```");
                                                                                 } else {
-                                                                                    message.edit("✔ The test completed successfully, you can find the test results on <#"+ textChannel.getId()+">");
+                                                                                    message.edit("✅ The test completed successfully, you can find the test results on <#"+ textChannel.getId()+">");
                                                                                 }
                                                                             }), () -> message.edit(ERROR_DATE_NOT_FOUND)),
                                                                     () -> message.edit(ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)),
@@ -76,7 +76,7 @@ public class Test implements VelenEvent, VelenSlashEvent {
                                                                                             message.edit("❌ An exception was thrown, is it possible that I can't **write on the channel?**" +
                                                                                                     "\n```java\n" + throwable.getMessage()+ "\n```");
                                                                                         } else {
-                                                                                            message.edit("✔ The test completed successfully, you can find the test results on <#"+ textChannel.getId()+">");
+                                                                                            message.edit("✅ The test completed successfully, you can find the test results on <#"+ textChannel.getId()+">");
                                                                                         }
                                                                                     }), () -> message.edit(ERROR_DATE_NOT_FOUND)),
                                                             () -> message.edit(ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)),

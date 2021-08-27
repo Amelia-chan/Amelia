@@ -67,5 +67,5 @@ public class Remove implements VelenEvent, VelenSlashEvent {
         }, () -> updater.setContent(ERROR_FEED_NOT_FOUND).update()));
     }
 
-    private static final String SUCCESS = "✔ The feed has been removed!";
+    private static final String SUCCESS = "✅ The feed has been removed!";
 }

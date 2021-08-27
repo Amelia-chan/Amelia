@@ -56,7 +56,7 @@ public class Modify implements VelenEvent, VelenSlashEvent {
             }
 
             feedModel.update(server.getId());
-            updater.setContent("✔ We have " + (subscribe ? "subscribed" : "unsubscribed") + " the following roles: " + role.getMentionTag())
+            updater.setContent("✅ We have " + (subscribe ? "subscribed" : "unsubscribed") + " the following roles: " + role.getMentionTag())
                     .setAllowedMentions(new AllowedMentionsBuilder()
                             .setMentionRoles(false)
                             .setMentionEveryoneAndHere(false)
@@ -88,7 +88,7 @@ public class Modify implements VelenEvent, VelenSlashEvent {
                         });
 
                         feedModel.update(server.getId());
-                        pw.mihou.amelia.templates.Message.msg("✔ We have " + (subscribe ? "subscribed" : "unsubscribed") + " the following roles: " +
+                        pw.mihou.amelia.templates.Message.msg("✅ We have " + (subscribe ? "subscribed" : "unsubscribed") + " the following roles: " +
                                         message.getMentionedRoles().stream().map(Role::getMentionTag).collect(Collectors.joining(" ")))
                                 .setAllowedMentions(new AllowedMentionsBuilder()
                                         .setMentionRoles(false)
