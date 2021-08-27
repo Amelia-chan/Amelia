@@ -62,10 +62,9 @@
             <version>1.7.30</version>
         </dependency>
         <dependency>
-            <groupId>org.javacord</groupId>
+            <groupId>com.github.ShindouMihou</groupId>
             <artifactId>javacord</artifactId>
-            <version>3.4.0-SNAPSHOT</version>
-            <type>pom</type>
+            <version>e147f7f495</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
