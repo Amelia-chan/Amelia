@@ -64,7 +64,7 @@
         <dependency>
             <groupId>com.github.ShindouMihou</groupId>
             <artifactId>javacord</artifactId>
-            <version>e147f7f495</version>
+            <version>d1272ff439</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
