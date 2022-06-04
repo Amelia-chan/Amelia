@@ -1,0 +1,34 @@
+{
+  "name": "akari-chan",
+  "version": "1.0.0",
+  "description": "Akari-chan is a module of Amelia-chan that handles listening to the RSS feeds and handling transactions to the bot application.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "serve": "tsc && node ./build/index.js",
+    "serve-only": "node ./build/index.js",
+    "test": "ts-mocha test/*.spec.ts"
+  },
+  "author": "shindoumihou",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@koa/router": "^10.1.1",
+    "@types/koa__router": "^8.0.11",
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.1",
+    "fast-xml-parser": "^4.0.8",
+    "html-entities": "^2.3.3",
+    "koa": "^2.13.4",
+    "node-html-parser": "^5.3.3",
+    "redis": "^4.1.0",
+    "typescript": "^4.7.3",
+    "winston": "^3.7.2"
+  },
+  "devDependencies": {
+    "@types/expect": "^24.3.0",
+    "@types/koa": "^2.13.4",
+    "@types/mocha": "^9.1.1",
+    "mocha": "^10.0.0",
+    "ts-mocha": "^10.0.0"
+  }
+}

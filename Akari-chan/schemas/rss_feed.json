@@ -1,0 +1,15 @@
+{
+    "lastBuildDate": "{YEAR}-{MONTH}-{DAY}T{HOUR}:{MINUTE}:{SECONDS}.000Z",
+    "chapters": [
+        {
+            "title": "{CHAPTER TITLE}",
+            "link": "{CHAPTER LINK}",
+            "pubDate": "{YEAR}-{MONTH}-{DAY}T{HOUR}:{MINUTE}:{SECONDS}.000Z",
+            "story": {
+                "title": "{STORY TITLE}",
+                "creator": "{STORY AUTHOR}"
+            }
+        }
+    ],
+    "after": "Base64-URL of lastBuildDate"
+}

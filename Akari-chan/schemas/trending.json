@@ -1,0 +1,11 @@
+{
+    "cachedUntil": "{YEAR}-{MONTH}-{DAY}T{HOUR}:{MINUTE}:{SECONDS}.000Z",
+    "stories": [
+        {
+            "id": 0,
+            "title": "{STORY TITLE}",
+            "author": "{STORY AUTHOR}",
+            "cover": "{STORY IMAGE}"
+        }
+    ]   
+}

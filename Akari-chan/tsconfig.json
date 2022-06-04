@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "outDir": "build/",
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,                      
+    "forceConsistentCasingInFileNames": true,        
+    "strict": true,
+    "paths": {
+      "$lib": ["./src/lib"]
+    }
+  },
+  "exclude": [
+    "test/*.spec.ts"
+  ]
+}
