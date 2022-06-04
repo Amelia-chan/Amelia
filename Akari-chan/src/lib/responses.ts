@@ -4,6 +4,15 @@ import { RssFeed } from './scribblehub/rss';
 
 export class AkariResponder {
 
+    /**
+     * Receives and handles the HTTP request from Koa for RSS Feeds. This ensures that all RSS routes indeed meets the given 
+     * RSS route specifications of Akari-chan.
+     * 
+     * @param context The {@link Koa.ParameterizedContext} received from Koa.
+     * @param next The {@link Koa.next} received from Koa.
+     * @param promise A promise to return the {@link RssFeed} that meets the context of the request.
+     * @returns A response to the HTTP request.
+     */
     public static async feed(context: Koa.ParameterizedContext, next: Koa.Next, promise: (id: number) => Promise<RssFeed>): Promise<any> {
         if (Number.isNaN(context.params.id)) {
             context.body = JSON.stringify({

@@ -49,6 +49,12 @@ export class Story {
         this.cover = cover;
     }
 
+    /**
+     * Requests the story information from our Redis cache.
+     * 
+     * @param id The ID of the story to request.
+     * @returns The {@link Story} from our Redis cache if present.
+     */
     private static async cache(id: number): Promise<Story | null> {
         return redis.get(encodeURI(url(id))).then(result => {
             if (result == null) return null;
@@ -58,12 +64,26 @@ export class Story {
         })
     }
 
+    /**
+     * Puts the story information into the Redis cache up to {@link STORY_CACHE_TIME} to reduce 
+     * the total amount of time it takes for a story feed to be received and also to reduce amount of 
+     * requests to ScribbleHub.
+     * 
+     * @param story The {@link Story} to store into the cache.
+     * @returns The {@link Story} provided in the parameters.
+     */
     private static async put(story: Story) {
         redis.setEx(encodeURI(url(story.id)), STORY_CACHE_TIME, JSON.stringify(story));
 
         return story;
     }
 
+    /**
+     * Requests a story's information from ScribbleHub. The result from this method is cached up to {@link STORY_CACHE_TIME}.
+     * 
+     * @param id The id of the story to request from ScribbleHub.
+     * @returns The {@link Story} from ScribbleHub.
+     */
     public static async withId(id: number): Promise<Story> {
         if (redis.isOpen) {
             const cached = await Story.cache(id);
@@ -100,6 +120,12 @@ export class Story {
         })
     }
 
+    /**
+     * Requests the current trending stories from the ScribbleHub website. This is cached till the next GMT+0 1:00 time 
+     * which is the best time to refresh the data from ScribbleHub.
+     * 
+     * @returns All the stories that have reached trending at this moment.
+     */
     public static async trending(): Promise<Story[]> {
         if (redis.isOpen) {
             const cached = await redis.get('trending').then(result => {

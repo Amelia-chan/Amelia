@@ -25,10 +25,26 @@ export class RssFeed {
         this.chapters = chapters;
     }
 
+    /**
+     * Filters all the chapters that was published before or equals the date provided, leaving only the 
+     * latest chapters available to the end-user.
+     * 
+     * @param date The date to reference for filtering.
+     * @returns A new {@link RssFeed} instance but with only the chapters that matches the filter.
+     */
     public after(date: Date): RssFeed {
         return new RssFeed(this.lastBuildDate, this.chapters.filter(chapter => chapter.pubDate.getTime() > date.getTime()));
     }
 
+    /**
+     * Requests a cached value from Redis to ensure performance and reduce the risk of accidental or intentional DoS attacks 
+     * towards ScribbleHub.
+     * 
+     * @param type The type of entity to request from Redis.
+     * @param id The id of the entity to request from Redis.
+     * @returns The value returned from Redis if there is any, this is mapped to an {@link RssFeed} when
+     * there is a value.
+     */
     public static async cache(type: "series" | "author", id: number): Promise<RssFeed | null> {
         return redis.get(encodeURI(feedUrl(type, id))).then(result => {
             if (result == null) return null;
@@ -38,14 +54,31 @@ export class RssFeed {
         });
     }
 
+    /**
+     * Puts a {@link RssFeed} onto the Redis cache to be cached up to {@link CACHE_TIME}.
+     * 
+     * @param type The type of entity to store into Redis.
+     * @param id The id of the entity to store into Redis.
+     * @param feed The {@link RssFeed} to store into the Redis cache.
+     * @returns The same {@link RssFeed} provided in the parameters, reflected.
+     */
     private static put(type: "series" | "author", id: number, feed: RssFeed): RssFeed {
         if (redis.isOpen) {
             redis.setEx(encodeURI(feedUrl(type, id)), CACHE_TIME, JSON.stringify(feed));
         }
-        
+
         return feed;
     }
 
+    /**
+     * Requests from ScribbleHub the RSS feed of the author or user provided. This will cache the result 
+     * up to {@link CACHE_TIME} with Redis which means you could be getting outdated results if anything changes
+     * within those 5 minutes.
+     * 
+     * @param id The ID of the user to request from ScribbleHub.
+     * @returns The full {@link RssFeed} contents of the user from ScribbleHub, this can be 
+     * cached by Redis up to {@link CACHE_TIME}.
+     */
     public static async fromUser(id: number) {
         if (redis.isOpen) {
             const cached = await RssFeed.cache('author', id)
@@ -87,6 +120,15 @@ export class RssFeed {
         }).then(feed => RssFeed.put('author', id, feed));
     }
 
+    /**
+     * Requests from ScribbleHub the RSS feed of the series provided. This will cache the result 
+     * up to {@link CACHE_TIME} with Redis which means you could be getting outdated results if anything changes
+     * within those 5 minutes.
+     * 
+     * @param id The ID of the series to request from ScribbleHub.
+     * @returns The full {@link RssFeed} contents of the series from ScribbleHub, this can be 
+     * cached by Redis up to {@link CACHE_TIME}.
+     */
     public static async fromSeries(id: number) {
         if (redis.isOpen) {
             const cached = await RssFeed.cache('series', id)
