@@ -21,5 +21,5 @@ Amelia-chan follows Apache 2.0 license which allows the following permissions:
 - ✔ Patent use
 - ✔ Private use
 
-The contributors and maintainers of Amelia-chan are not to be held liability over any creations that uses Amaririsu. We also forbid trademark use of
+The contributors and maintainers of Amelia-chan are not to be held liability over any creations that uses Amelia-chan. We also forbid trademark use of
 the library and there is no warranty as stated by Apache 2.0 license. You can read more about the Apache 2.0 license on [GitHub](https://github.com/Amelia-chan/Amelia/blob/master/LICENSE).
