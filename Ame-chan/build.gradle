@@ -1,0 +1,38 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.6.21'
+    id 'java'
+    id 'com.google.devtools.ksp' version '1.6.21-1.0.5'
+}
+
+group 'dev.amelia-chan'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+}
+
+dependencies {
+    implementation 'org.javacord:javacord:3.5.0-SNAPSHOT'
+    implementation 'pw.mihou:Nexus:f238cf1fda'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.17.2'
+    implementation 'io.sentry:sentry:5.7.4'
+    implementation 'pw.mihou:Dotenv:1.0.1'
+    implementation 'org.mongodb:mongodb-driver-sync:4.6.0'
+    implementation 'ch.qos.logback:logback-classic:1.2.11'
+    implementation 'com.squareup.moshi:moshi:1.13.0'
+    implementation 'com.squareup.moshi:moshi-adapters:1.13.0'
+    implementation 'com.google.devtools.ksp:symbol-processing-api:1.6.21-1.0.5'
+    implementation 'org.jsoup:jsoup:1.14.3'
+    implementation 'org.json:json:20220320'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    ksp "com.squareup.moshi:moshi-kotlin-codegen:1.13.0"
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -17,10 +17,12 @@ const CACHE_TIME = 5 * 60;
 const PARSER = new XMLParser();
 
 export class RssFeed {
+    title: string;
     lastBuildDate: Date;
     chapters: RssChapter[];
 
-    constructor(lastBuildDate: Date, chapters: RssChapter[]) {
+    constructor(title: string, lastBuildDate: Date, chapters: RssChapter[]) {
+        this.title = title;
         this.lastBuildDate = lastBuildDate;
         this.chapters = chapters;
     }
@@ -33,7 +35,7 @@ export class RssFeed {
      * @returns A new {@link RssFeed} instance but with only the chapters that matches the filter.
      */
     public after(date: Date): RssFeed {
-        return new RssFeed(this.lastBuildDate, this.chapters.filter(chapter => chapter.pubDate.getTime() > date.getTime()));
+        return new RssFeed(this.title, this.lastBuildDate, this.chapters.filter(chapter => chapter.pubDate.getTime() > date.getTime()));
     }
 
     /**
@@ -63,7 +65,7 @@ export class RssFeed {
                 }
             })
             
-            return new RssFeed(new Date(feed.lastBuildDate), chapters)
+            return new RssFeed(feed.title, new Date(feed.lastBuildDate), chapters)
         });
     }
 
@@ -129,7 +131,7 @@ export class RssFeed {
                 }
             });
 
-            return new RssFeed(new Date(tree.lastBuildDate), chapters);
+            return new RssFeed(tree.description, new Date(tree.lastBuildDate), chapters);
         }).then(feed => RssFeed.put('author', id, feed));
     }
 
@@ -189,7 +191,7 @@ export class RssFeed {
                 lastBuildDate = chapters[0].pubDate;
             }
 
-            return new RssFeed(lastBuildDate, chapters);
+            return new RssFeed(tree.description, lastBuildDate, chapters);
         }).then(feed => RssFeed.put('series', id, feed));
     }
 }

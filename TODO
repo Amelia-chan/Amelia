@@ -1,0 +1,24 @@
+#----------
+# Ame-chan
+#
+# These are all the TODOs that remains for Ame-chan
+#---------
+
+Add implementation for `register` command
+Add models and requests to Akari-chan's user and story search routes.
+Add implementation for `remove` command
+Add implementation for `subscribe` command
+Add implementation for `feeds` command
+Add implementation for `unsubscribe` command
+Add implementation for `ping`, `help` and `invite` command
+Add implementation for `test` command
+Add implementation for `settings` command (`settings format "new_format"`)
+Add implementation for sending feeds onto the given channels.
+
+#----------
+# Akari-chan
+#
+# These are all the TODOs that remains for Akari-chan
+#---------
+
+Add support for searching user and stories from ScribbleHub.
