@@ -50,7 +50,20 @@ export class RssFeed {
             if (result == null) return null;
 
             const feed = JSON.parse(result);
-            return new RssFeed(new Date(feed.lastBuildDate), feed.chapters)
+
+            const chapters: RssChapter[] = (feed.chapters as any[]).map(chapter => {
+                return {
+                    title: chapter.title,
+                    link: chapter.link,
+                    pubDate: new Date(chapter.pubDate),
+                    story: {
+                        title: chapter.story.title,
+                        creator: chapter.story.creator
+                    }
+                }
+            })
+            
+            return new RssFeed(new Date(feed.lastBuildDate), chapters)
         });
     }
 

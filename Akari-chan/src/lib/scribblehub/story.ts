@@ -158,7 +158,7 @@ export class Story {
         }).then(stories => {
             if (redis.isOpen) {
                 const cacheTill = SCRIBBLEHUB_TRENDING_RESET();
-                redis.setEx('trending', cacheTill.getTime() / 1000, JSON.stringify(stories));
+                redis.setEx('trending', Math.floor((cacheTill.valueOf() - new Date().valueOf()) /1000), JSON.stringify(stories));
             }
 
             return stories;
