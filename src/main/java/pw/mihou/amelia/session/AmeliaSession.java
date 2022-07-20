@@ -10,6 +10,4 @@ public class AmeliaSession {
 
     public static final AtomicInteger feedsUpdated = new AtomicInteger(0);
 
-    public static final AtomicInteger trendingNotified = new AtomicInteger(0);
-
 }

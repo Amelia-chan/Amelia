@@ -1,0 +1,11 @@
+.idea/
+.github/
+.classpath
+.project
+.env
+.env.example
+Dockerfile
+docker-compose.yml
+README.md
+build/
+.settings/
