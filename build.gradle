@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id "org.jetbrains.kotlin.jvm" version "1.7.10"
+    id "com.google.devtools.ksp" version "1.7.10-1.0.6"
+    id 'application'
+}
+
+group = 'pw.mihou'
+version = '2.0'
+description = 'Amelia'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri('https://jitpack.io')
+    }
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+application {
+    mainClass = "pw.mihou.amelia.AmeliaKt"
+}
+
+task downloadDependencies(type: Copy) {
+    from sourceSets.test.runtimeClasspath
+    into 'runtime/'
+}
+
+dependencies {
+    implementation 'pw.mihou:Dotenv:1.0.1'
+    implementation 'pw.mihou:Nexus:v1.0.0-alpha5'
+    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
+    implementation 'pw.mihou:amatsuki:4537a90d4f'
+    implementation 'org.java-websocket:Java-WebSocket:1.5.3'
+    implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.17.2'
+    implementation 'org.mongodb:mongodb-driver-sync:4.6.0'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'org.javacord:javacord:3.5.0'
+    implementation 'org.json:json:20220320'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.1'
+    implementation 'pw.mihou:rssreader:82abc60ea1'
+    implementation 'ch.qos.logback:logback-classic:1.2.11'
+}

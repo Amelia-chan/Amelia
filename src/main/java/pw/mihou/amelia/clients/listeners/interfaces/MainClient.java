@@ -4,8 +4,8 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONException;
 import org.json.JSONObject;
-import pw.mihou.amelia.Amelia;
-import pw.mihou.amelia.clients.ClientHandler;
+import pw.mihou.amelia.AmeliaKt;
+import pw.mihou.amelia.clients.WebsocketClient;
 import pw.mihou.amelia.clients.listeners.ListenerManager;
 
 import java.net.URI;
@@ -18,8 +18,8 @@ public class MainClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake serverHandshake) {
-        Amelia.connected = true;
-        Amelia.log.info("Amelia has successfully shook hands with websocket.");
+        WebsocketClient.getConnected().set(true);
+        AmeliaKt.getLogger().info("Amelia has successfully shook hands with websocket.");
     }
 
     @Override
@@ -30,7 +30,7 @@ public class MainClient extends WebSocketClient {
                 ListenerManager.dispatch(object);
         } catch (JSONException e) {
             if (!s.equalsIgnoreCase("The handshake was accepted.")) {
-                Amelia.log.error("An error occurred, the server sent this request: {}", s);
+                AmeliaKt.getLogger().error("An error occurred, the server sent this request: {}", s);
             }
         }
     }
@@ -38,9 +38,9 @@ public class MainClient extends WebSocketClient {
     @Override
     public void onClose(int i, String s, boolean b) {
         if (i != -1) {
-            Amelia.connected = false;
-            Amelia.log.error("Amelia has disconnected from websocket with status code {} and reason {}, attempting to reconnect...", i, s);
-            ClientHandler.connect();
+            WebsocketClient.getConnected().set(true);
+            AmeliaKt.getLogger().error("Amelia has disconnected from websocket with status code {} and reason {}, attempting to reconnect...", i, s);
+            WebsocketClient.INSTANCE.connect();
         }
     }
 
