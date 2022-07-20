@@ -3,6 +3,7 @@ package pw.mihou.amelia.clients
 import pw.mihou.amelia.clients.listeners.interfaces.MainClient
 import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.logger
+import java.lang.Exception
 import java.net.URI
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
@@ -19,10 +20,7 @@ object WebsocketClient {
         if (connecting.get() || connected.get()) return
 
         connecting.set(true)
-        CompletableFuture.runAsync {
-            createSocket()
-            connect(0)
-        }
+        CompletableFuture.runAsync { connect(0) }
     }
 
     private fun createSocket() {
@@ -33,14 +31,20 @@ object WebsocketClient {
     private fun connect(attempt: Int = 0) {
         if (connected.get()) return
 
-        if (client!!.connectBlocking()) {
-            connecting.set(false)
-            return
+        try {
+            createSocket()
+            if (client!!.connectBlocking()) {
+                connecting.set(false)
+                return
+            }
+            logger.error("Failed to connect to the websocket, attempting to retry in a moment...")
+            Thread.sleep((attempt + 1) * 1000L)
+            connect(attempt + 1)
+        } catch (exception: Exception) {
+            logger.error("Failed to connect to the websocket, attempting to retry in a moment...", exception)
+            Thread.sleep((attempt + 1) * 1000L)
+            connect(attempt + 1)
         }
-
-        logger.info("Failed to connect to the websocket, attempting to retry in a moment...")
-        Thread.sleep((attempt + 1) * 1000L)
-        connect(attempt + 1)
     }
 
     fun close() {
