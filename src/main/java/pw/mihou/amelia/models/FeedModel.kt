@@ -7,14 +7,14 @@ import java.util.Date
 
 @Suppress("UNCHECKED_CAST")
 data class FeedModel(
-    val unique: Long, val id: Int, val feedUrl: String, val channel: Long, val server: Long,
+    val unique: Int, val id: Int, val feedUrl: String, val channel: Long, val server: Long,
     val user: Long, val name: String, val date: Date, val mentions: List<Long>
 ): BsonModel {
 
     companion object: ObjectModel<FeedModel> {
         override fun from(bson: Document): FeedModel = FeedModel(
             id = bson.getInteger("id"),
-            unique = bson.getLong("unique"),
+            unique = bson.getInteger("unique"),
             server = bson.getLong("server"),
             feedUrl = bson.getString("url"),
             channel = bson.getLong("channel"),

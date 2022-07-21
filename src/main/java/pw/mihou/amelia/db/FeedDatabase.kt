@@ -12,17 +12,21 @@ object FeedDatabase {
     fun upsert(model: FeedModel) =
         connection.replaceOne(Filters.eq("unique", model.unique), model.bson(), ReplaceOptions().upsert(true))
 
-    fun delete(unique: Long) =
-        connection.deleteOne(Filters.eq("unique", unique))
+    fun delete(unique: Int) = connection.deleteOne(Filters.eq("unique", unique))
 
-    fun get(unique: Long) =
+    fun delete(unique: Long) = delete(unique.toInt())
+
+
+    fun get(unique: Int) =
         connection.find(Filters.eq("unique", unique)).map { FeedModel.from(it) }.first()
+
+    fun get(unique: Long) = get(unique.toInt())
 
     fun all(server: Long) =
         connection.find(Filters.eq("server", server)).map { FeedModel.from(it) }.toList()
 
-    fun unique(): Long {
-        val unique: Long = ThreadLocalRandom.current().nextLong(9999)
+    fun unique(): Int {
+        val unique: Int = ThreadLocalRandom.current().nextInt(9999)
         return if (get(unique) != null) unique() else unique
     }
 }
