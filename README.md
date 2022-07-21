@@ -26,6 +26,20 @@ You can set up Amelia's client by running the simple command below.
 git clone https://github.com/ManaNet/Amelia && cd Amelia && docker build -t amelia .
 ```
 
+> **Warning**
+>
+> This assumes that you have MongoDB setup otherwise please create an instance by running the following command:
+> ```shell
+> docker volume create amelia_db && docker run -d -i -t --name amelia_db --restart=always -e MONGO_INITDB_ROOT_USERNAME=amelia -e MONGO_INITDB_ROOT_PASSWORD=SOME_SECURE_PASSOWORD_HERE_ANYONEEEEEE -p 27017:27017 -v amelia_db:/data/db mongo
+>```
+>
+> If you are using the following command above, then use this as the MongoDB URI: `mongodb://amelia:SOME_SECURE_PASSOWORD_HERE_ANYONEEEEEE@172.17.0.1:27017`
+
+> **Note**
+> 
+> When writing host machine addresses (e.g. 0.0.0.0 or 127.0.0.1), please use the Docker host address instead which should be 172.17.0.1 always.
+> Since Docker is isolated and the original 127.0.0.1 or 0.0.0.0 routes back to the container itself.
+
 Please configure the `.env` file before continuing, here is a shortcut command to creating the .env file:
 ```shell
 cp .env.example .env && nano .env
