@@ -17,6 +17,11 @@ You can set up Amelia's client by running the simple command below.
 > **Warning**
 >
 > This assumes that you have Docker installed otherwise please install Docker first.
+
+> **Note**
+>
+> You can skip the build part if you plan on using the ones produced by GitHub Actions.
+> The builds can be found on [Packages](https://github.com/Amelia-chan/Amelia/pkgs/container/amelia).
 ```shell
 git clone https://github.com/ManaNet/Amelia && cd Amelia && docker build -t amelia .
 ```
