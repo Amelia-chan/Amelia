@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 val nexus: Nexus = Nexus.builder().build()
 val logger = LoggerFactory.getLogger("Amelia Client") as Logger
@@ -119,33 +120,38 @@ private fun onShardLogin(shard: DiscordApi) {
 
         logger.info("Preparing to schedule the feed updater... this will not take long!")
         scheduledExecutorService.scheduleAtFixedRate({
+            // Bucket scheduling works by scheduling every single feeds by an increment of 2 seconds between each other.
+            val bucket = AtomicLong(0)
+
             FeedDatabase.connection.find().map { FeedModel.from(it) }.forEach { feed ->
-                CompletableFuture.runAsync {
-                    val server = nexus.shardManager.getShardOf(feed.server).flatMap { it.getServerById(feed.server) }.orElse(null)
-                        ?: return@runAsync
+                scheduledExecutorService.schedule({
+                    CompletableFuture.runAsync {
+                        val server = nexus.shardManager.getShardOf(feed.server).flatMap { it.getServerById(feed.server) }.orElse(null)
+                            ?: return@runAsync
 
-                    val channel = server.getTextChannelById(feed.channel).orElse(null) ?: return@runAsync
+                        val channel = server.getTextChannelById(feed.channel).orElse(null) ?: return@runAsync
 
-                    val posts = ReadRSS.getLatest(feed.feedUrl).filter { it.date!!.after(feed.date) }
-                    if (posts.isEmpty()) return@runAsync
+                        val posts = ReadRSS.getLatest(feed.feedUrl).filter { it.date!!.after(feed.date) }
+                        if (posts.isEmpty()) return@runAsync
 
-                    val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("date", posts[0].date))
+                        val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("date", posts[0].date))
 
-                    if (!result.wasAcknowledged()) {
-                        logger.error("A feed couldn't be updated in the database. [feed=${feed.feedUrl}, id=${feed.unique}]")
-                        return@runAsync
-                    }
+                        if (!result.wasAcknowledged()) {
+                            logger.error("A feed couldn't be updated in the database. [feed=${feed.feedUrl}, id=${feed.unique}]")
+                            return@runAsync
+                        }
 
-                    for (post in posts) {
-                        channel.sendMessage(Amelia.format(post, feed, channel.server)).thenAccept {
-                            AmeliaSession.feedsUpdated.incrementAndGet()
-                            logger.info("I have sent a feed update to a server with success. [feed=${feed.feedUrl}, server=${channel.server.id}]")
-                        }.exceptionally { exception ->
-                            logger.error("Failed to send update for a feed to a server. [feed=${feed.feedUrl}, server=${channel.server.id}]", exception)
-                            return@exceptionally null
+                        for (post in posts) {
+                            channel.sendMessage(Amelia.format(post, feed, channel.server)).thenAccept {
+                                AmeliaSession.feedsUpdated.incrementAndGet()
+                                logger.info("I have sent a feed update to a server with success. [feed=${feed.feedUrl}, server=${channel.server.id}]")
+                            }.exceptionally { exception ->
+                                logger.error("Failed to send update for a feed to a server. [feed=${feed.feedUrl}, server=${channel.server.id}]", exception)
+                                return@exceptionally null
+                            }
                         }
                     }
-                }
+                }, bucket.addAndGet(2), TimeUnit.SECONDS)
             }
         }, 1, 10, TimeUnit.MINUTES)
     }
