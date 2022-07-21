@@ -54,6 +54,10 @@ object TestCommand: NexusHandler {
 
         if (subcommand.name == "id") {
             feed = FeedDatabase.get(subcommand.getOptionLongValueByName("value").orElseThrow())
+
+            if (feed != null && feed.server != server.id) {
+                feed = null
+            }
         }
 
         if (subcommand.name == "name") {

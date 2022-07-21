@@ -69,6 +69,10 @@ data class FeedSubscriptionCommand(val subscribe: Boolean) : NexusHandler {
 
         if (subcommand.name == "id") {
             feed = FeedDatabase.get(subcommand.getOptionLongValueByName("value").orElseThrow())
+
+            if (feed != null && feed.server != event.serverId.orElseThrow()) {
+                feed = null
+            }
         }
 
         if (subcommand.name == "name") {
