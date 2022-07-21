@@ -126,33 +126,39 @@ private fun onShardLogin(shard: DiscordApi) {
             FeedDatabase.connection.find().map { FeedModel.from(it) }.forEach { feed ->
                 scheduledExecutorService.schedule({
                     CompletableFuture.runAsync {
-                        val server = nexus.shardManager.getShardOf(feed.server).flatMap { it.getServerById(feed.server) }.orElse(null)
-                            ?: return@runAsync
+                        try {
+                            val server = nexus.shardManager.getShardOf(feed.server).flatMap { it.getServerById(feed.server) }.orElse(null)
+                                ?: return@runAsync
 
-                        val channel = server.getTextChannelById(feed.channel).orElse(null) ?: return@runAsync
+                            val channel = server.getTextChannelById(feed.channel).orElse(null) ?: return@runAsync
 
-                        val posts = RssReader.cached(feed.feedUrl).filter { it.date!!.after(feed.date) }
-                        if (posts.isEmpty()) return@runAsync
+                            val posts = RssReader.cached(feed.feedUrl).filter { it.date!!.after(feed.date) }
+                            if (posts.isEmpty()) return@runAsync
 
-                        val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("date", posts[0].date))
+                            val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("date", posts[0].date))
 
-                        if (!result.wasAcknowledged()) {
-                            logger.error("A feed couldn't be updated in the database. [feed=${feed.feedUrl}, id=${feed.unique}]")
-                            return@runAsync
-                        }
-
-                        for (post in posts) {
-                            channel.sendMessage(Amelia.format(post, feed, channel.server)).thenAccept {
-                                AmeliaSession.feedsUpdated.incrementAndGet()
-                                logger.info("I have sent a feed update to a server with success. [feed=${feed.feedUrl}, server=${channel.server.id}]")
-                            }.exceptionally { exception ->
-                                logger.error("Failed to send update for a feed to a server. [feed=${feed.feedUrl}, server=${channel.server.id}]", exception)
-                                return@exceptionally null
+                            if (!result.wasAcknowledged()) {
+                                logger.error("A feed couldn't be updated in the database. [feed=${feed.feedUrl}, id=${feed.unique}]")
+                                return@runAsync
                             }
+
+                            for (post in posts) {
+                                channel.sendMessage(Amelia.format(post, feed, channel.server)).thenAccept {
+                                    AmeliaSession.feedsUpdated.incrementAndGet()
+                                    logger.info("I have sent a feed update to a server with success. [feed=${feed.feedUrl}, server=${channel.server.id}]")
+                                }.exceptionally { exception ->
+                                    logger.error("Failed to send update for a feed to a server. [feed=${feed.feedUrl}, server=${channel.server.id}]", exception)
+                                    return@exceptionally null
+                                }
+                            }
+                        } catch (exception: Exception) {
+                            logger.error("An exception was raised while attempting to send to a server. [feed=${feed.feedUrl}, server=${feed.server}]", exception)
                         }
                     }
                 }, bucket.addAndGet(2), TimeUnit.SECONDS)
             }
+
+            logger.info("A total of ${bucket.get()} feeds are now being queued for look-ups, this will take at least ${bucket.get()} seconds to complete.")
         }, 1, 10, TimeUnit.MINUTES)
     }
 
