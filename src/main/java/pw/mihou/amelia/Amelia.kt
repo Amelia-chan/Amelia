@@ -158,7 +158,7 @@ private fun onShardLogin(shard: DiscordApi) {
                 }, bucket.addAndGet(2), TimeUnit.SECONDS)
             }
 
-            logger.info("A total of ${bucket.get()} feeds are now being queued for look-ups, this will take at least ${bucket.get()} seconds to complete.")
+            logger.info("A total of ${bucket.get() / 2} feeds are now being queued for look-ups, this will take at least ${bucket.get()} seconds to complete.")
         }, 1, 10, TimeUnit.MINUTES)
     }
 
