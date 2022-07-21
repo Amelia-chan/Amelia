@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id "org.jetbrains.kotlin.jvm" version "1.7.10"
-    id "com.google.devtools.ksp" version "1.7.10-1.0.6"
     id 'application'
 }
 
@@ -34,9 +33,7 @@ task downloadDependencies(type: Copy) {
 dependencies {
     implementation 'pw.mihou:Dotenv:1.0.1'
     implementation 'pw.mihou:Nexus:v1.0.0-alpha5'
-    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
     implementation 'pw.mihou:amatsuki:4537a90d4f'
-    implementation 'org.java-websocket:Java-WebSocket:1.5.3'
     implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.17.2'
     implementation 'org.mongodb:mongodb-driver-sync:4.6.0'
     implementation 'org.slf4j:slf4j-api:1.7.36'
