@@ -2,7 +2,6 @@ package pw.mihou.amelia
 
 import ch.qos.logback.classic.Logger
 import com.mongodb.client.model.Filters
-import com.squareup.moshi.Moshi
 import org.javacord.api.DiscordApi
 import org.javacord.api.DiscordApiBuilder
 import org.javacord.api.entity.activity.ActivityType
@@ -129,8 +128,8 @@ private fun onShardLogin(shard: DiscordApi) {
 
 object Amelia {
 
-    val moshi: Moshi = Moshi.Builder().build()
     val formatter = SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss")
+    val websocketFormatter = SimpleDateFormat("MMM dd yyyy, hh:mm:ss a")
 
     fun format(item: ItemWrapper, feedModel: FeedModel, server: Server): String {
         if (item.valid()) return "\uD83D\uDCD6 **{title} by {author}**\n{link}\n\n{subscribed}"

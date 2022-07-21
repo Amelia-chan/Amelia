@@ -30,7 +30,7 @@ public class MainClient extends WebSocketClient {
                 ListenerManager.dispatch(object);
         } catch (JSONException e) {
             if (!s.equalsIgnoreCase("The handshake was accepted.")) {
-                AmeliaKt.getLogger().error("An error occurred, the server sent this request: {}", s);
+                AmeliaKt.getLogger().error("An error occurred, the server sent this request: {}", s, e);
             }
         }
     }

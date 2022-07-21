@@ -1,13 +1,11 @@
 package pw.mihou.amelia.io.rome
 
 import com.apptastic.rssreader.Item
-import com.squareup.moshi.JsonClass
 import pw.mihou.amelia.Amelia.formatter
 import pw.mihou.amelia.logger
 import java.text.ParseException
 import java.util.*
 
-@JsonClass(generateAdapter = true)
 class ItemWrapper {
 
     val title: String

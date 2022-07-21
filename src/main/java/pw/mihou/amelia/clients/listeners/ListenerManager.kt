@@ -14,7 +14,14 @@ object ListenerManager {
         if (message.getString("payload_type").equals("feed", ignoreCase = true)) {
             val payload = JSONObject(message.getString("payload"))
             val feed = FeedDatabase.get(payload.getJSONObject("model").getLong("unique"))!!
-            val item = Amelia.moshi.adapter(ItemWrapper::class.java).fromJson(payload.getString("wrapper"))!!
+            val wrapper = payload.getJSONObject("wrapper")
+            val item = ItemWrapper(
+                title = wrapper.getString("title"),
+                date = Amelia.websocketFormatter.parse(wrapper.getString("date")),
+                author = wrapper.getString("author"),
+                link = wrapper.getString("link"),
+                description = wrapper.getString("description")
+            )
 
             CompletableFuture.runAsync { FeedUpdater.onEvent(item, feed) }
         }
