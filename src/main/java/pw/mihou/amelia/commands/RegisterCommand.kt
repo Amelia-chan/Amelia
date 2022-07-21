@@ -10,7 +10,7 @@ import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.io.AmatsukiWrapper
-import pw.mihou.amelia.io.rome.ReadRSS
+import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.amelia.utility.StringUtils
@@ -107,7 +107,7 @@ object RegisterCommand : NexusHandler {
                                     val id = cursor.item.transformToUser().join().uid
                                     val feed = "https://www.scribblehub.com/rssfeed.php?type=author&uid=$id"
 
-                                    val latestPosts = ReadRSS.getLatest(feed)
+                                    val latestPosts = RssReader.cached(feed)
 
                                     if (latestPosts.isEmpty()) {
                                         message.edit(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)
@@ -186,7 +186,7 @@ object RegisterCommand : NexusHandler {
                                     val id = cursor.item.transformToStory().join().sid
                                     val feed = "https://www.scribblehub.com/rssfeed.php?type=series&sid=$id"
 
-                                    val latestPosts = ReadRSS.getLatest(feed)
+                                    val latestPosts = RssReader.cached(feed)
 
                                     if (latestPosts.isEmpty()) {
                                         message.edit(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)

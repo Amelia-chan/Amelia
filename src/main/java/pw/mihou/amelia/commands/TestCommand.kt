@@ -6,7 +6,7 @@ import org.javacord.api.interaction.SlashCommandOptionType
 import pw.mihou.amelia.Amelia
 import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.db.FeedDatabase
-import pw.mihou.amelia.io.rome.ReadRSS
+import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
@@ -69,7 +69,7 @@ object TestCommand: NexusHandler {
         }
 
         event.respondLater().thenAccept { updater ->
-            val latestPost = ReadRSS.getLatest(feed.feedUrl)
+            val latestPost = RssReader.cached(feed.feedUrl)
 
             if (latestPost.isEmpty()) {
                 updater.setContent(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE).update()

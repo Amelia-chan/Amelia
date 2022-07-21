@@ -20,7 +20,7 @@ import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.MongoDB
 import pw.mihou.amelia.io.StoryHandler
 import pw.mihou.amelia.io.rome.ItemWrapper
-import pw.mihou.amelia.io.rome.ReadRSS
+import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.session.AmeliaSession
 import pw.mihou.dotenv.Dotenv
@@ -131,7 +131,7 @@ private fun onShardLogin(shard: DiscordApi) {
 
                         val channel = server.getTextChannelById(feed.channel).orElse(null) ?: return@runAsync
 
-                        val posts = ReadRSS.getLatest(feed.feedUrl).filter { it.date!!.after(feed.date) }
+                        val posts = RssReader.cached(feed.feedUrl).filter { it.date!!.after(feed.date) }
                         if (posts.isEmpty()) return@runAsync
 
                         val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("date", posts[0].date))
