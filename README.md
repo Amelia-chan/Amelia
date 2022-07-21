@@ -17,7 +17,6 @@ You can set up Amelia's client by running the simple command below.
 > **Warning**
 >
 > This assumes that you have Docker installed otherwise please install Docker first.
-> Also assuming that you have her websocket client installed.
 ```shell
 git clone https://github.com/ManaNet/Amelia && cd Amelia && docker build -t amelia .
 ```
