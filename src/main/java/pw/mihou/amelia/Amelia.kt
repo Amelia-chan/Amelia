@@ -2,6 +2,7 @@ package pw.mihou.amelia
 
 import ch.qos.logback.classic.Logger
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
 import org.javacord.api.DiscordApi
 import org.javacord.api.DiscordApiBuilder
 import org.javacord.api.entity.activity.ActivityType
@@ -12,23 +13,29 @@ import org.javacord.api.event.message.MessageCreateEvent
 import org.javacord.api.event.server.ServerLeaveEvent
 import org.javacord.api.util.logging.ExceptionLogger
 import org.slf4j.LoggerFactory
-import pw.mihou.amelia.clients.WebsocketClient
 import pw.mihou.amelia.commands.*
 import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.configuration.Configuration
+import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.MongoDB
 import pw.mihou.amelia.io.StoryHandler
 import pw.mihou.amelia.io.rome.ItemWrapper
+import pw.mihou.amelia.io.rome.ReadRSS
 import pw.mihou.amelia.models.FeedModel
+import pw.mihou.amelia.session.AmeliaSession
 import pw.mihou.dotenv.Dotenv
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
 import java.io.File
 import java.text.SimpleDateFormat
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 val nexus: Nexus = Nexus.builder().build()
 val logger = LoggerFactory.getLogger("Amelia Client") as Logger
+val scheduledExecutorService = Executors.newScheduledThreadPool(1)
 
 fun main() {
     Dotenv.asReflective(File(".env"), true).reflectTo(Configuration::class.java)
@@ -37,13 +44,6 @@ fun main() {
 
     // This is to trigger the initial init from the database.
     MongoDB.client.listDatabaseNames()
-
-    logger.info("Preparing to connect to the websocket... this may take a moment.")
-    WebsocketClient.connect()
-
-    Runtime.getRuntime().addShutdownHook(Thread {
-        WebsocketClient.close()
-    })
 
     nexus.listenMany(
         FeedsCommand,
@@ -116,6 +116,38 @@ private fun onShardLogin(shard: DiscordApi) {
             .thenAccept {
                 logger.info("Synchronized ${commands.size} commands with Discord!")
             }.exceptionally(ExceptionLogger.get())
+
+        logger.info("Preparing to schedule the feed updater... this will not take long!")
+        scheduledExecutorService.scheduleAtFixedRate({
+            FeedDatabase.connection.find().map { FeedModel.from(it) }.forEach { feed ->
+                CompletableFuture.runAsync {
+                    val server = nexus.shardManager.getShardOf(feed.server).flatMap { it.getServerById(feed.server) }.orElse(null)
+                        ?: return@runAsync
+
+                    val channel = server.getTextChannelById(feed.channel).orElse(null) ?: return@runAsync
+
+                    val posts = ReadRSS.getLatest(feed.feedUrl).filter { it.date!!.after(feed.date) }
+                    if (posts.isEmpty()) return@runAsync
+
+                    val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("date", posts[0].date))
+
+                    if (!result.wasAcknowledged()) {
+                        logger.error("A feed couldn't be updated in the database. [feed=${feed.feedUrl}, id=${feed.unique}]")
+                        return@runAsync
+                    }
+
+                    for (post in posts) {
+                        channel.sendMessage(Amelia.format(post, feed, channel.server)).thenAccept {
+                            AmeliaSession.feedsUpdated.incrementAndGet()
+                            logger.info("I have sent a feed update to a server with success. [feed=${feed.feedUrl}, server=${channel.server.id}]")
+                        }.exceptionally { exception ->
+                            logger.error("Failed to send update for a feed to a server. [feed=${feed.feedUrl}, server=${channel.server.id}]", exception)
+                            return@exceptionally null
+                        }
+                    }
+                }
+            }
+        }, 1, 10, TimeUnit.MINUTES)
     }
 
     shard.setAutomaticMessageCacheCleanupEnabled(true)
@@ -129,7 +161,6 @@ private fun onShardLogin(shard: DiscordApi) {
 object Amelia {
 
     val formatter = SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss")
-    val websocketFormatter = SimpleDateFormat("MMM dd yyyy, hh:mm:ss a")
 
     fun format(item: ItemWrapper, feedModel: FeedModel, server: Server): String {
         if (item.valid()) return "\uD83D\uDCD6 **{title} by {author}**\n{link}\n\n{subscribed}"

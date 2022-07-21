@@ -107,12 +107,14 @@ object RegisterCommand : NexusHandler {
                                     val id = cursor.item.transformToUser().join().uid
                                     val feed = "https://www.scribblehub.com/rssfeed.php?type=author&uid=$id"
 
-                                    val latestPost = ReadRSS.getLatest(feed).orElse(null)
+                                    val latestPosts = ReadRSS.getLatest(feed)
 
-                                    if (latestPost == null) {
+                                    if (latestPosts.isEmpty()) {
                                         message.edit(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)
                                         return@update
                                     }
+
+                                    val latestPost = latestPosts[0]
 
                                     if (latestPost.date == null) {
                                         message.edit(TemplateMessages.ERROR_DATE_NOT_FOUND)
@@ -184,12 +186,14 @@ object RegisterCommand : NexusHandler {
                                     val id = cursor.item.transformToStory().join().sid
                                     val feed = "https://www.scribblehub.com/rssfeed.php?type=series&sid=$id"
 
-                                    val latestPost = ReadRSS.getLatest(feed).orElse(null)
+                                    val latestPosts = ReadRSS.getLatest(feed)
 
-                                    if (latestPost == null) {
+                                    if (latestPosts.isEmpty()) {
                                         message.edit(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)
                                         return@update
                                     }
+
+                                    val latestPost = latestPosts[0]
 
                                     if (latestPost.date == null) {
                                         message.edit(TemplateMessages.ERROR_DATE_NOT_FOUND)

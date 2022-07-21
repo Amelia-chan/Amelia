@@ -69,9 +69,9 @@ object TestCommand: NexusHandler {
         }
 
         event.respondLater().thenAccept { updater ->
-            val latestPost = ReadRSS.getLatest(feed.feedUrl).orElse(null)
+            val latestPost = ReadRSS.getLatest(feed.feedUrl)
 
-            if (latestPost == null) {
+            if (latestPost.isEmpty()) {
                 updater.setContent(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE).update()
                 return@thenAccept
             }
@@ -83,7 +83,7 @@ object TestCommand: NexusHandler {
                 return@thenAccept
             }
 
-            channel.sendMessage(Amelia.format(latestPost, feed, server)).thenAccept messageAccept@{
+            channel.sendMessage(Amelia.format(latestPost[0], feed, server)).thenAccept messageAccept@{
                 updater.setContent("✅ Amelia was able to complete the testing of feed without a problem, you can find the message on ${channel.mentionTag}!").update()
                 return@messageAccept
             }.exceptionally { exception ->

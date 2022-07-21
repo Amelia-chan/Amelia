@@ -32,19 +32,6 @@ Afterwards, you can run the following command:
 docker run --name amelia-client --env-file .env amelia:latest
 ```
 
-### ⚙️ Websocket Installation
-Amelia Websocket, which is a new addition implemented on Amelia 2.0, is a separate process of Amelia which can be said as the heart or the brain
-of the Discord bot. The websocket handles the checking for updates on RSS Feeds and also Trending Notifications.
-
-To install the websocket, you need to download the websocket jar from the [weboscket repository's releases page](https://github.com/ManaNet/Amelia-Websocket/releases) and then setup the following environment variables:
-```
-amelia_auth=AUTHENTICATION
-amelia_db=mongodb://user:pass@ip:port
-(OPTIONAL) amelia_websocket=ws://ip:3201/
-```
-
-After the environment variables are set, you can now start up the websocket with no configuration via: `java -jar Amelia-Websocket.jar`
-
 # 📚 License
 Amelia follows Apache 2.0 license which allows the following permissions:
 - ✔ Commercial Use
