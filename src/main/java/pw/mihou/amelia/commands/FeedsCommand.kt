@@ -7,6 +7,7 @@ import org.javacord.api.event.interaction.ButtonClickEvent
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.models.FeedModel
+import pw.mihou.amelia.scheduledExecutorService
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler
 import pw.mihou.nexus.features.paginator.NexusPaginatorBuilder
@@ -14,6 +15,7 @@ import pw.mihou.nexus.features.paginator.enums.NexusPaginatorButtonAssignment
 import pw.mihou.nexus.features.paginator.facade.NexusPaginatorCursor
 import pw.mihou.nexus.features.paginator.facade.NexusPaginatorEvents
 import java.awt.Color
+import java.util.concurrent.TimeUnit
 
 @Suppress("UNUSED")
 object FeedsCommand: NexusHandler {
@@ -51,6 +53,14 @@ object FeedsCommand: NexusHandler {
             })
             .build()
             .send(event.baseEvent.interaction, event.respondLater().join())
+            .thenAccept {  instance ->
+                scheduledExecutorService.schedule({
+                    instance.parent.destroy(instance.uuid)
+                    instance.parent.destroy()
+
+                    instance.message.thenAccept { message -> message.createUpdater().removeAllComponents().replaceMessage() }
+                }, 5, TimeUnit.MINUTES)
+            }
     }
 
     private fun embed(server: Server, cursor: NexusPaginatorCursor<List<FeedModel>>): EmbedBuilder {
