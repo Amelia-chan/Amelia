@@ -18,7 +18,7 @@ import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.MongoDB
-import pw.mihou.amelia.io.StoryHandler
+import pw.mihou.amelia.io.Amatsuki
 import pw.mihou.amelia.io.rome.ItemWrapper
 import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.models.FeedModel
@@ -171,7 +171,7 @@ object Amelia {
     fun format(item: ItemWrapper, feedModel: FeedModel, server: Server): String {
         if (item.valid()) return "\uD83D\uDCD6 **{title} by {author}**\n{link}\n\n{subscribed}"
             .replace("{title}", item.title)
-            .replace("{author}", StoryHandler.getAuthor(item.author, feedModel.id, feedModel.feedUrl))
+            .replace("{author}", Amatsuki.authorFrom(item, feedModel))
             .replace("{link}", item.link)
             .replace("{subscribed}", feedModel.mentions.joinToString(" ") { role ->
                 server.getRoleById(role).map { it.mentionTag }.orElse("")

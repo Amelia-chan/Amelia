@@ -9,7 +9,7 @@ import org.javacord.api.interaction.SlashCommandOptionType
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.db.FeedDatabase
-import pw.mihou.amelia.io.AmatsukiWrapper
+import pw.mihou.amelia.io.Amatsuki
 import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.templates.TemplateMessages
@@ -71,7 +71,7 @@ object RegisterCommand : NexusHandler {
 
         event.respondLater().thenAccept { updater ->
             if (subcommand.name == "user") {
-                AmatsukiWrapper.getConnector().searchUser(_name).thenAccept connector@{ results ->
+                Amatsuki.connector.searchUser(_name).thenAccept connector@{ results ->
                     if (results.isEmpty()) {
                         event.respondNow().setContent("❌ Amelia cannot found any users that matches the query, how about trying something else?").respond()
                         return@connector
@@ -150,7 +150,7 @@ object RegisterCommand : NexusHandler {
             }
 
             if (subcommand.name == "story") {
-                AmatsukiWrapper.getConnector().searchStory(_name).thenAccept connector@{ results ->
+                Amatsuki.connector.searchStory(_name).thenAccept connector@{ results ->
                     if (results.isEmpty()) {
                         event.respondNow().setContent("❌ Amelia cannot found any stories that matches the query, how about trying something else?").respond()
                         return@connector
