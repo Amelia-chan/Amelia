@@ -25,6 +25,15 @@ object FeedTask: Runnable {
         }
 
         lock.withLock {
+            val testAuthorPosts = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=author&uid=24680")
+            val testStoryPosts = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=series&sid=216494")
+
+            if (testAuthorPosts.isEmpty() && testStoryPosts.isEmpty()) {
+                logger.error("Failed to connect into author and story test feeds, possible ScribbleHub issue. " +
+                        "The task has been discarded until either one does not result in an empty result.")
+                return@withLock
+            }
+
             val feeds = FeedDatabase.connection.find().map { FeedModel.from(it) }.toList()
             logger.info("A total of ${feeds.size} feeds are now being queued for look-ups.")
 
