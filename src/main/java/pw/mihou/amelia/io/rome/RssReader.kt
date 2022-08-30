@@ -34,8 +34,8 @@ object RssReader {
             future.complete(reader.read(url).map { item -> ItemWrapper(item) }.toList())
             logger.info("Successfully connected to $url after $attempts attempts!")
         } catch (exception: Exception) {
-            if (attempts > 10){
-                logger.error("Failed to connect to $url after 10 attempts, discarding request...", exception)
+            if (attempts > 3){
+                logger.error("Failed to connect to $url after 3 attempts, discarding request...", exception)
                 future.complete(emptyList())
                 return
             }
