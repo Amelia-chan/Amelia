@@ -9,7 +9,6 @@ import pw.mihou.amelia.logger
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.nexus
 import pw.mihou.amelia.session.AmeliaSession
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.system.measureTimeMillis
@@ -67,8 +66,6 @@ object FeedTask: Runnable {
                     } catch (exception: Exception) {
                         logger.error("An exception was raised while attempting to send to a server. [feed=${feed.feedUrl}, server=${feed.server}]", exception)
                     }
-
-                    TimeUnit.SECONDS.sleep(5L)
                 }
             }
 
