@@ -9,14 +9,15 @@ import pw.mihou.amelia.logger
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.nexus
 import pw.mihou.amelia.session.AmeliaSession
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
-import kotlin.system.measureTimeMillis
 
 object FeedTask: Runnable {
 
     private val lock = ReentrantLock()
+    private val completedCounter = AtomicInteger(0)
 
     override fun run() {
         if (lock.isLocked) {
@@ -24,46 +25,50 @@ object FeedTask: Runnable {
             return
         }
 
-        lock.withLock {
-            val feeds = FeedDatabase.connection.find().map { FeedModel.from(it) }.toList()
-            logger.info("A total of ${feeds.size} feeds are now being queued for look-ups.")
+        lock.lock()
+        completedCounter.set(0)
 
-            val totalFeedTime = measureTimeMillis {
-                for (feed in feeds) {
-                    try {
-                        val server = nexus.shardManager.getShardOf(feed.server).flatMap { it.getServerById(feed.server) }.orElse(null)
-                            ?: return
+        val feeds = FeedDatabase.connection.find().map { FeedModel.from(it) }.toList()
+        logger.info("A total of ${feeds.size} feeds are now being queued for look-ups.")
 
-                        val channel = server.getTextChannelById(feed.channel).orElse(null) ?: continue
+        for (feed in feeds) {
+            CompletableFuture.runAsync {
+                try {
+                    val server = nexus.shardManager.getShardOf(feed.server).flatMap { it.getServerById(feed.server) }.orElse(null)
+                        ?: return@runAsync
 
-                        val posts = RssReader.cached(feed.feedUrl).filter { it.date!!.after(feed.date) }
-                        if (posts.isEmpty()) continue
+                    val channel = server.getTextChannelById(feed.channel).orElse(null) ?: return@runAsync
 
-                        val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("date", posts[0].date))
+                    val posts = RssReader.cached(feed.feedUrl).filter { it.date!!.after(feed.date) }
+                    if (posts.isEmpty()) return@runAsync
 
-                        if (!result.wasAcknowledged()) {
-                            logger.error("A feed couldn't be updated in the database. [feed=${feed.feedUrl}, id=${feed.unique}]")
-                            continue
-                        }
+                    val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("date", posts[0].date))
 
-                        for (post in posts) {
-                            channel.sendMessage(Amelia.format(post, feed, channel.server)).thenAccept {
-                                AmeliaSession.feedsUpdated.incrementAndGet()
-                                logger.info("I have sent a feed update to a server with success. [feed=${feed.feedUrl}, server=${channel.server.id}]")
-                            }.exceptionally { exception ->
-                                logger.error("Failed to send update for a feed to a server. [feed=${feed.feedUrl}, server=${channel.server.id}]", exception)
-                                return@exceptionally null
-                            }
-                        }
-                    } catch (exception: Exception) {
-                        logger.error("An exception was raised while attempting to send to a server. [feed=${feed.feedUrl}, server=${feed.server}]", exception)
+                    if (!result.wasAcknowledged()) {
+                        logger.error("A feed couldn't be updated in the database. [feed=${feed.feedUrl}, id=${feed.unique}]")
+                        return@runAsync
                     }
 
-                    TimeUnit.SECONDS.sleep(5L)
+                    for (post in posts) {
+                        channel.sendMessage(Amelia.format(post, feed, channel.server)).thenAccept {
+                            AmeliaSession.feedsUpdated.incrementAndGet()
+                            logger.info("I have sent a feed update to a server with success. [feed=${feed.feedUrl}, server=${channel.server.id}]")
+                        }.exceptionally { exception ->
+                            logger.error("Failed to send update for a feed to a server. [feed=${feed.feedUrl}, server=${channel.server.id}]", exception)
+                            return@exceptionally null
+                        }
+                    }
+                } catch (exception: Exception) {
+                    logger.error("An exception was raised while attempting to send to a server. [feed=${feed.feedUrl}, server=${feed.server}]", exception)
+                } finally {
+                    if (completedCounter.addAndGet(1) == feeds.size) {
+                        lock.unlock()
+                        logger.info("Reentrant lock has been unlocked for feed task after completing all the tasks.")
+                    }
                 }
             }
 
-            logger.info("All ${feeds.size} has been viewed under $totalFeedTime milliseconds (or ${totalFeedTime / feeds.size} milliseconds per feed).")
+            TimeUnit.SECONDS.sleep(4L)
         }
     }
 }
