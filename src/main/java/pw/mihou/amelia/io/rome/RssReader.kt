@@ -4,12 +4,14 @@ import com.apptastic.rssreader.RssReader
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.LoadingCache
 import pw.mihou.amelia.logger
-import pw.mihou.amelia.scheduledExecutorService
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 object RssReader {
 
+    private val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
     private val reader = RssReader().setUserAgent("Amelia/2.0.0-luminous (Language=Kotlin/1.7.10, Developer=Shindou Mihou)")
 
     private val cache: LoadingCache<String, List<ItemWrapper>> = Caffeine.newBuilder()
@@ -30,6 +32,7 @@ object RssReader {
     private fun retry(url: String, attempts: Int, future: CompletableFuture<List<ItemWrapper>>) {
         try {
             future.complete(reader.read(url).map { item -> ItemWrapper(item) }.toList())
+            logger.info("Successfully connected to $url after $attempts attempts!")
         } catch (exception: Exception) {
             if (attempts > 10){
                 logger.error("Failed to connect to $url after 10 attempts, discarding request...", exception)

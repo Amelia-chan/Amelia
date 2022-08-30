@@ -32,10 +32,7 @@ import java.util.concurrent.TimeUnit
 
 val nexus: Nexus = Nexus.builder().build()
 val logger = LoggerFactory.getLogger("Amelia Client") as Logger
-val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors() / 2).also {
-    logger.info("A scheduler has been created with a total core count of ${Runtime.getRuntime().availableProcessors() / 2}.")
-}
-
+val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 fun main() {
     Dotenv.asReflective(File(".env"), true).reflectTo(Configuration::class.java)
     logger.info("Amelia Client" + "\nby Shindou Mihou")
