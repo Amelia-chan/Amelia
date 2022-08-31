@@ -12,15 +12,14 @@ import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.io.Amatsuki
 import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.models.FeedModel
+import pw.mihou.amelia.templates.TemplateAnnouncements
 import pw.mihou.amelia.templates.TemplateMessages
-import pw.mihou.amelia.utility.StringUtils
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler
 import pw.mihou.nexus.features.paginator.NexusPaginatorBuilder
 import pw.mihou.nexus.features.paginator.enums.NexusPaginatorButtonAssignment
 import pw.mihou.nexus.features.paginator.facade.NexusPaginatorCursor
 import pw.mihou.nexus.features.paginator.facade.NexusPaginatorEvents
-import tk.mihou.amatsuki.entities.story.lower.StoryResults
 import tk.mihou.amatsuki.entities.user.lower.UserResults
 import java.awt.Color
 
@@ -61,6 +60,12 @@ object RegisterCommand : NexusHandler {
 
     override fun onEvent(event: NexusCommandEvent) {
         val subcommand = event.options.first()
+
+        if (subcommand.name == "story") {
+            event.respondNowAsEphemeral().addEmbed(TemplateAnnouncements.UNSUPPORTED_STORY_FEEDS).respond()
+            return
+        }
+
         val _name = subcommand.getOptionStringValueByName("name").orElseThrow()
         val channel = subcommand.getOptionChannelValueByName("channel").flatMap { it.asServerTextChannel() }.orElseThrow()
 
@@ -148,85 +153,6 @@ object RegisterCommand : NexusHandler {
                 }
                 return@thenAccept
             }
-
-            if (subcommand.name == "story") {
-                Amatsuki.connector.searchStory(_name).thenAccept connector@{ results ->
-                    if (results.isEmpty()) {
-                        event.respondNow().setContent("❌ Amelia cannot found any stories that matches the query, how about trying something else?").respond()
-                        return@connector
-                    }
-
-                    buttons(NexusPaginatorBuilder(results)).setEventHandler(object : NexusPaginatorEvents<StoryResults> {
-                        override fun onInit(
-                            updater: InteractionOriginalResponseUpdater,
-                            cursor: NexusPaginatorCursor<StoryResults>
-                        ) = updater.addEmbed(story(cursor))
-
-                        override fun onPageChange(
-                            cursor: NexusPaginatorCursor<StoryResults>,
-                            event: ButtonClickEvent
-                        ) {
-                            event.buttonInteraction.message.edit(story(cursor))
-                        }
-
-                        override fun onCancel(cursor: NexusPaginatorCursor<StoryResults>?, event: ButtonClickEvent) {
-                            event.buttonInteraction.message.delete()
-                        }
-
-                        override fun onSelect(
-                            cursor: NexusPaginatorCursor<StoryResults>,
-                            buttonEvent: ButtonClickEvent
-                        ) {
-                            buttonEvent.buttonInteraction.message.createUpdater()
-                                .removeAllComponents()
-                                .removeAllEmbeds()
-                                .setContent(TemplateMessages.NEUTRAL_LOADING)
-                                .replaceMessage()
-                                .thenAccept update@{ message ->
-                                    val id = cursor.item.transformToStory().join().sid
-                                    val feed = "https://www.scribblehub.com/rssfeed.php?type=series&sid=$id"
-
-                                    val latestPosts = RssReader.cached(feed)
-
-                                    if (latestPosts.isEmpty()) {
-                                        message.edit(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)
-                                        return@update
-                                    }
-
-                                    val latestPost = latestPosts[0]
-
-                                    if (latestPost.date == null) {
-                                        message.edit(TemplateMessages.ERROR_DATE_NOT_FOUND)
-                                        return@update
-                                    }
-
-                                    val result = FeedDatabase.upsert(
-                                        FeedModel(
-                                            id = id,
-                                            unique = FeedDatabase.unique(),
-                                            channel = channel.id,
-                                            user = event.user.id,
-                                            date = latestPost.date,
-                                            name = cursor.item.name,
-                                            feedUrl = feed,
-                                            mentions = emptyList(),
-                                            server = event.server.orElseThrow().id
-                                        )
-                                    )
-
-                                    if (result.wasAcknowledged()) {
-                                        message.edit("✅ I will try my best to send updates for ${cursor.item.name} in ${channel.mentionTag}!")
-                                        return@update
-                                    }
-
-                                    message.edit(TemplateMessages.ERROR_DATABASE_FAILED)
-                                }
-                            cursor.parent().parent.destroy()
-                        }
-                    }).build().send(event.baseEvent.interaction, updater)
-                }
-                return@thenAccept
-            }
         }
     }
 
@@ -246,17 +172,5 @@ object RegisterCommand : NexusHandler {
             )
             .setFooter("You are looking at ${cursor.displayablePosition} out of ${cursor.maximumPages} pages")
             .setImage(cursor.item.avatar)
-
-    private fun story(cursor: NexusPaginatorCursor<StoryResults>) =
-        EmbedBuilder().setTimestampToNow().setColor(Color.YELLOW).setTitle(cursor.item.name)
-            .setDescription(
-                "You can create a notification listener for this story by pressing the **Select** button below, "
-                        + "please make sure that this is the correct story. "
-                        + "If you need to look at their full story page to be sure, "
-                        + "you may visit the link ${cursor.item.url}."
-            )
-            .addField("Synopsis", StringUtils.stripToLengthWhileDotsEnd(cursor.item.fullSynopsis, 512))
-            .setFooter("You are looking at ${cursor.displayablePosition} out of ${cursor.maximumPages} pages")
-            .setThumbnail(cursor.item.thumbnail)
 
 }

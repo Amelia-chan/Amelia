@@ -15,11 +15,13 @@ import org.slf4j.LoggerFactory
 import pw.mihou.amelia.commands.*
 import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.configuration.Configuration
+import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.MongoDB
 import pw.mihou.amelia.io.Amatsuki
 import pw.mihou.amelia.io.rome.ItemWrapper
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.tasks.FeedTask
+import pw.mihou.amelia.templates.TemplateAnnouncements
 import pw.mihou.dotenv.Dotenv
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.features.command.facade.NexusCommand
@@ -85,6 +87,35 @@ fun main() {
                             "\n\nIf you have any inquiries (e.g. custom bot instance) then " +
                             "please contact my developer at **amelia@mihou.pw**!"
                 )
+                return@addMessageCreateListener
+            }
+
+            // TODO: Remove this after sending the announcement.
+            if (event.messageContent.equals("\$unsupportStoryFeedAnnouncement") && event.messageAuthor.isBotOwner) {
+                val seriesFeedsGroupedByServer = FeedDatabase.connection.find()
+                    .map { FeedModel.from(it) }
+                    .filter { it.feedUrl.contains("?type=series&sid=") }
+                    .groupBy { it.server }
+
+                var channels = 0
+
+                for ((serverId, feeds) in seriesFeedsGroupedByServer) {
+                    val feedChannels = feeds.groupBy { it.channel }.keys
+                    channels += feedChannels.size
+
+                    nexus.shardManager.getShardOf(serverId)
+                        .flatMap { it.getServerById(serverId) }
+                        .ifPresent { server ->
+                            for (channelId in feedChannels) {
+                                server.getTextChannelById(channelId).ifPresent { channel ->
+                                    channel.sendMessage(TemplateAnnouncements.UNSUPPORTED_STORY_FEEDS)
+                                }
+                            }
+                        }
+                }
+
+                event.message.reply("A total of ${seriesFeedsGroupedByServer.size} servers and $channels channels have been sent an announcement message.")
+                return@addMessageCreateListener
             }
         }
         .addResumeListener { event: ResumeEvent ->
