@@ -3,6 +3,7 @@ package pw.mihou.amelia.commands
 import com.sun.management.OperatingSystemMXBean
 import org.javacord.api.entity.message.embed.EmbedBuilder
 import pw.mihou.amelia.session.AmeliaSession
+import pw.mihou.amelia.tasks.FeedTask
 import pw.mihou.amelia.utility.StringUtils
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler
@@ -39,12 +40,18 @@ object PingCommand: NexusHandler {
                             "💻 Servers: `" + event.api.servers.size + " servers`",
                             "💿 Memory: `" + format(getUsedMemory()) + " MB / " + format(os.totalMemorySize / (1000 * 1000)) + " MB`"
                         ))
+                        .addField("ScribbleHub Status", StringUtils.createEmbeddedFormat(
+                            "\uD83D\uDD8B️ Author Feeds: ${booleanToEmoji(FeedTask.canAccessAuthor())}",
+                            "\uD83D\uDCD6 Story Feeds: ${booleanToEmoji(FeedTask.canAccessStory())}"
+                        ))
                         .addField("Session Information", "☁ Total updates sent: `" + format(AmeliaSession.feedsUpdated.get().toLong()) + " chapters notified to servers`")
                         .addField("Inquiries", "You can send inquiries about Amelia like custom private bot, etc. on our email at **amelia@mihou.pw**!")
                 ).update()
             }
         }
     }
+
+    private fun booleanToEmoji(boolean: Boolean) = if (boolean) "✅" else "❌"
 
 
     private fun getUsedMemory(): Long {

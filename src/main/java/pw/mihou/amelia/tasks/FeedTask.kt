@@ -17,6 +17,12 @@ object FeedTask: Runnable {
 
     private val lock = ReentrantLock()
 
+    @Volatile private var canAccessStory = false
+    @Volatile private var canAccessAuthor = false
+
+    fun canAccessStory() = canAccessStory
+    fun canAccessAuthor() = canAccessAuthor
+
     override fun run() {
         if (lock.isLocked) {
             logger.warn("A thread has locked onto the feed task, discarding further execution.")
@@ -24,16 +30,29 @@ object FeedTask: Runnable {
         }
 
         lock.withLock {
-            val testAuthorPosts = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=author&uid=24680")
-            val testStoryPosts = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=series&sid=216494")
+            canAccessAuthor = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=author&uid=24680").isNotEmpty()
+            canAccessStory = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=series&sid=216494").isNotEmpty()
 
-            if (testAuthorPosts.isEmpty() && testStoryPosts.isEmpty()) {
+            if (!canAccessAuthor && !canAccessStory) {
                 logger.error("Failed to connect into author and story test feeds, possible ScribbleHub issue. " +
                         "The task has been discarded until either one does not result in an empty result.")
                 return@withLock
             }
 
-            val feeds = FeedDatabase.connection.find().map { FeedModel.from(it) }.toList()
+            val feeds = FeedDatabase.connection.find()
+                .map { FeedModel.from(it) }
+                .filter {
+                    if (canAccessAuthor && canAccessStory) {
+                        return@filter true
+                    }
+
+                    if (canAccessAuthor && !canAccessStory) {
+                        return@filter it.feedUrl.contains("?type=author&uid=")
+                    }
+
+                    return@filter it.feedUrl.contains("?type=series&sid=")
+                }
+                .toList()
             logger.info("A total of ${feeds.size} feeds are now being queued for look-ups.")
 
             val totalFeedTime = measureTimeMillis {
