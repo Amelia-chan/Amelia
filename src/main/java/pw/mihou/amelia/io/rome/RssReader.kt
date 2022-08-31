@@ -1,52 +1,38 @@
 package pw.mihou.amelia.io.rome
 
-import com.apptastic.rssreader.RssReader
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.LoadingCache
+import org.w3c.dom.NodeList
+import pw.mihou.amelia.io.xml.SimpleXmlClient
 import pw.mihou.amelia.logger
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 object RssReader {
 
-    private val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
-    private val reader = RssReader().setUserAgent("Amelia/2.0.0-luminous (Language=Kotlin/1.7.10, Developer=Shindou Mihou)")
-
-    private val cache: LoadingCache<String, List<ItemWrapper>> = Caffeine.newBuilder()
+    private val cache: LoadingCache<String, List<FeedItem>> = Caffeine.newBuilder()
         .expireAfterWrite(2, TimeUnit.MINUTES)
         .build(this::request)
 
-    private fun request(url: String): List<ItemWrapper> {
+    private fun nodeListToFeedItems(nodeList: NodeList): List<FeedItem> {
+        val mutableList = mutableListOf<FeedItem>()
+        for (i in 0 until nodeList.length) {
+            val node = nodeList.item(i)
+            mutableList.add(FeedItem(node))
+        }
+
+        return mutableList.toList()
+    }
+
+    private fun request(url: String): List<FeedItem> {
         return try {
-            reader.read(url).map { item -> ItemWrapper(item) }.toList()
+            nodeListToFeedItems(SimpleXmlClient.read(url).getElementsByTagName("item"))
         } catch (exception: Exception) {
-            val future: CompletableFuture<List<ItemWrapper>> = CompletableFuture()
-            retry(url = url, attempts = 1, future = future)
-
-            future.join()
+            logger.error("Failed to connect to $url, discarding request...", exception)
+            return emptyList()
         }
     }
 
-    private fun retry(url: String, attempts: Int, future: CompletableFuture<List<ItemWrapper>>) {
-        try {
-            future.complete(reader.read(url).map { item -> ItemWrapper(item) }.toList())
-            logger.info("Successfully connected to $url after $attempts attempts!")
-        } catch (exception: Exception) {
-            if (attempts > 3){
-                logger.error("Failed to connect to $url after 3 attempts, discarding request...", exception)
-                future.complete(emptyList())
-                return
-            }
-
-            logger.error("Attempting to reconnect to $url in $attempts second(s) from now.", exception)
-            scheduledExecutorService.schedule({ retry(url, attempts + 1, future) }, attempts.toLong(),
-                TimeUnit.SECONDS)
-        }
-    }
-
-    fun cached(url: String): List<ItemWrapper> {
+    fun cached(url: String): List<FeedItem> {
         synchronized(url) {
             return cache.get(url)
         }

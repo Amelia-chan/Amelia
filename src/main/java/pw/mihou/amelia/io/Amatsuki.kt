@@ -1,6 +1,6 @@
 package pw.mihou.amelia.io
 
-import pw.mihou.amelia.io.rome.ItemWrapper
+import pw.mihou.amelia.io.rome.FeedItem
 import pw.mihou.amelia.logger
 import pw.mihou.amelia.models.FeedModel
 import tk.mihou.amatsuki.api.Amatsuki
@@ -11,21 +11,21 @@ object Amatsuki {
     val connector = Amatsuki()
         .setLifespan(24, TimeUnit.HOURS)
         .setUserAgent("Amelia/2.0.0-luminous (Language=Kotlin/1.7.10)")
-        .setCache(true)
+        .setCache(true)!!
 
     private val BASE_STORY_URL: (Int) -> String = { id -> "https://scribblehub.com/series/$id/amelia-discord-bot/" }
     private val BASE_USER_URL: (Int) -> String = { id -> "https://scribblehub.com/profile/$id/amelia-discord-bot/" }
 
-    fun authorFrom(item: ItemWrapper, feed: FeedModel): String {
+    fun authorFrom(item: FeedItem, feed: FeedModel): String {
         try {
-            if (item.author.isNotEmpty()) return item.author
+            if (item.author != null) return item.author
 
             if (feed.feedUrl.contains("type=author")) {
                 return connector.getUserFromUrl(BASE_USER_URL.invoke(feed.id)).join().name
             }
 
             if (item.category != null) {
-                return connector.getStoryFromUrl(BASE_STORY_URL.invoke(item.category.toInt())).join().creator
+                return connector.getStoryFromUrl(BASE_STORY_URL.invoke(item.category)).join().creator
             }
 
             return connector.getStoryFromUrl(BASE_STORY_URL.invoke(feed.id)).join().creator

@@ -17,12 +17,11 @@ import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.MongoDB
 import pw.mihou.amelia.io.Amatsuki
-import pw.mihou.amelia.io.rome.ItemWrapper
+import pw.mihou.amelia.io.rome.FeedItem
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.tasks.FeedTask
 import pw.mihou.dotenv.Dotenv
 import pw.mihou.nexus.Nexus
-import pw.mihou.nexus.features.command.facade.NexusCommand
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
 import java.io.File
 import java.text.SimpleDateFormat
@@ -35,7 +34,7 @@ val logger = LoggerFactory.getLogger("Amelia Client") as Logger
 val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 fun main() {
     Dotenv.asReflective(File(".env"), true).reflectTo(Configuration::class.java)
-    logger.info("Amelia Client" + "\nby Shindou Mihou")
+    logger.info("Amelia Client by Shindou Mihou")
     logger.info("Preparing to connect to the database... this may take a moment.")
 
     // This is to trigger the initial init from the database.
@@ -104,15 +103,9 @@ private fun onShardLogin(shard: DiscordApi) {
 
     if (shard.currentShard == 0) {
         val commands = nexus.commandManager.commands
-            .filter { nexusCommand: NexusCommand -> nexusCommand.serverIds.isEmpty() }
-            .map { obj: NexusCommand -> obj.asSlashCommand() }
-            .toList()
-
+        
         logger.info("Attempting to synchronize ${commands.size} commands to Discord... this may take a moment")
-        shard.bulkOverwriteGlobalApplicationCommands(commands)
-            .thenAccept {
-                logger.info("Synchronized ${commands.size} commands with Discord!")
-            }.exceptionally(ExceptionLogger.get())
+        nexus.synchronizer.synchronize(1).join()
 
         logger.info("Preparing to schedule the feed updater... this will not take long!")
         scheduledExecutorService.scheduleAtFixedRate(FeedTask, 1, 10, TimeUnit.MINUTES)
@@ -130,17 +123,21 @@ object Amelia {
 
     val formatter = SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss")
 
-    fun format(item: ItemWrapper, feedModel: FeedModel, server: Server): String {
-        if (item.valid()) return "\uD83D\uDCD6 **{title} by {author}**\n{link}\n\n{subscribed}"
-            .replace("{title}", item.title)
-            .replace("{author}", Amatsuki.authorFrom(item, feedModel))
-            .replace("{link}", item.link)
-            .replace("{subscribed}", feedModel.mentions.joinToString(" ") { role ->
-                server.getRoleById(role).map { it.mentionTag }.orElse("")
-            })
+    fun format(item: FeedItem, feedModel: FeedModel, server: Server): String {
+        if (item.title == null || item.link == null) {
+            logger.error("The title and link is not present on ${feedModel.feedUrl} with full item: $item")
+            return ""
+        }
 
-        logger.error("The title and link is not present on ${feedModel.feedUrl} with full item: $item")
-        return ""
+        val author = Amatsuki.authorFrom(item, feedModel)
+        val subscribed = feedModel.mentions.joinToString(" ") { role ->
+            server.getRoleById(role).map { it.mentionTag }.orElse("")
+        }
+
+        return "\uD83D\uDCD6 **${item.title} by $author**\n" +
+                "${item.link}\n" +
+                "\n\n" +
+                subscribed
     }
 
 }
