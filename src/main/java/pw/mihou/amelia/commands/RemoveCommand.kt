@@ -9,6 +9,7 @@ import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.amelia.utility.confirmationMenu
+import pw.mihou.amelia.utility.redactListLink
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler
 import java.awt.Color
@@ -73,16 +74,22 @@ object RemoveCommand: NexusHandler {
         }
 
         event.respondLater().thenAccept { updater ->
+            var link = feed.feedUrl
+
+            if (link.contains("unq=")) {
+                link = redactListLink(link)
+            }
+
             updater.confirmationMenu(
                 event.user,
-                "Are you sure you want to remove **${feed.name}** (${feed.feedUrl}), please note that this action is irreversible."
+                "Are you sure you want to remove **${feed.name}** ($link), please note that this action is irreversible."
             ) { _, _, messageUpdater ->
                 val result = FeedDatabase.delete(feed.unique)
 
                 if (result.wasAcknowledged()) {
                     messageUpdater.setEmbed(EmbedBuilder().setTimestampToNow().setColor(Color.YELLOW)
                         .setAuthor(event.user)
-                        .setDescription("I have removed **${feed.name}** (${feed.feedUrl}) from this server's feeds!"))
+                        .setDescription("I have removed **${feed.name}** ($link) from this server's feeds!"))
                         .replaceMessage()
                     return@confirmationMenu
                 }

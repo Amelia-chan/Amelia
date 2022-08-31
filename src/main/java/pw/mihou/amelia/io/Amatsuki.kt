@@ -24,6 +24,10 @@ object Amatsuki {
                 return connector.getUserFromUrl(BASE_USER_URL.invoke(feed.id)).join().name
             }
 
+            if (item.category != null) {
+                return connector.getStoryFromUrl(BASE_STORY_URL.invoke(item.category.toInt())).join().creator
+            }
+
             return connector.getStoryFromUrl(BASE_STORY_URL.invoke(feed.id)).join().creator
         } catch (exception: Exception) {
             logger.error("Failed to propagate author from the ${feed.feedUrl}, an exception was raised.", exception)

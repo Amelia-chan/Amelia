@@ -6,15 +6,16 @@ import pw.mihou.amelia.logger
 import java.text.ParseException
 import java.util.*
 
-class ItemWrapper {
+class ItemWrapper(item: Item) {
 
     val title: String
     val date: Date?
     val author: String
     val link: String
+    val category: String?
     private val description: String
 
-    constructor(item: Item) {
+    init {
         title = item.title.orElse("")
         description = item.description.orElse("")
         author = item.author.orElse("")
@@ -27,17 +28,14 @@ class ItemWrapper {
                 return@map null
             }
         }.orElse(null)
-    }
-
-    constructor(title: String, date: Date?, author: String, link: String, description: String) {
-        this.title = title
-        this.date = date
-        this.author = author
-        this.link = link
-        this.description = description
+        category = item.category.orElse(null)
     }
 
     fun valid(): Boolean {
         return link.isNotEmpty() && link.isNotBlank() && title.isNotEmpty() && title.isNotBlank()
+    }
+
+    override fun toString(): String {
+        return "{title=$title, date=$date, author=$author, link=$link, description=$description, category=$category}"
     }
 }
