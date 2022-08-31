@@ -55,7 +55,9 @@ object FeedTask: Runnable {
                         }
 
                         for (post in posts) {
-                            channel.sendMessage(Amelia.format(post, feed, channel.server)).thenAccept {
+                            val contents = Amelia.format(post, feed, channel.server) ?: return
+
+                            channel.sendMessage(contents).thenAccept {
                                 AmeliaSession.feedsUpdated.incrementAndGet()
                                 logger.info("I have sent a feed update to a server with success. [feed=${feed.feedUrl}, server=${channel.server.id}]")
                             }.exceptionally { exception ->

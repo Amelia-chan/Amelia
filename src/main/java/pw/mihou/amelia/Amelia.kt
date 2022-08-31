@@ -123,10 +123,10 @@ object Amelia {
 
     val formatter = SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss")
 
-    fun format(item: FeedItem, feedModel: FeedModel, server: Server): String {
+    fun format(item: FeedItem, feedModel: FeedModel, server: Server): String? {
         if (item.title == null || item.link == null) {
             logger.error("The title and link is not present on ${feedModel.feedUrl} with full item: $item")
-            return ""
+            return null
         }
 
         val author = Amatsuki.authorFrom(item, feedModel)

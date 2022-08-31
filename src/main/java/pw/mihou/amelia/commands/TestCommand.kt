@@ -87,7 +87,15 @@ object TestCommand: NexusHandler {
                 return@thenAccept
             }
 
-            channel.sendMessage(Amelia.format(latestPost[0], feed, server)).thenAccept messageAccept@{
+            val contents = Amelia.format(latestPost[0], feed, server)
+
+            if (contents == null) {
+                updater.setContent("❌ Amelia encountered a problem while trying to send to ${channel.mentionTag}: Amelia failed to format the contents for some reason.")
+                    .update()
+                return@thenAccept
+            }
+
+            channel.sendMessage(contents).thenAccept messageAccept@{
                 updater.setContent("✅ Amelia was able to complete the testing of feed without a problem, you can find the message on ${channel.mentionTag}!").update()
                 return@messageAccept
             }.exceptionally { exception ->
