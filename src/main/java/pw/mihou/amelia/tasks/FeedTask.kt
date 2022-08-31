@@ -29,15 +29,9 @@ object FeedTask: Runnable {
         lock.withLock {
             canAccessAuthor = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=author&uid=24680").isNotEmpty()
 
-            if (!canAccessAuthor) {
-                logger.error("Failed to connect into author test feeds, possible ScribbleHub issue. " +
-                        "The task has been discarded until either one does not result in an empty result.")
-                return@withLock
-            }
-
             val feeds = FeedDatabase.connection.find()
                 .map { FeedModel.from(it) }
-                .filter { it.feedUrl.contains("?type=author&uid=") }
+                .filter { !it.feedUrl.contains("?type=series&sid=") }
                 .toList()
 
             logger.info("A total of ${feeds.size} feeds are now being queued for look-ups.")
