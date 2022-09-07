@@ -99,6 +99,10 @@ object RegisterAuthorSubcommand {
                                     message.edit(TemplateMessages.ERROR_DATABASE_FAILED)
                                 }.exceptionally {
                                     it.printStackTrace()
+
+                                    buttonEvent.buttonInteraction.message
+                                        .edit(TemplateMessages.ERROR_FAILED_TO_PERFORM_ACTION)
+
                                     return@exceptionally null
                                 }
                             cursor.parent().parent.destroy()
