@@ -7,8 +7,16 @@ import java.util.Date
 
 @Suppress("UNCHECKED_CAST")
 data class FeedModel(
-    val unique: Int, val id: Int, val feedUrl: String, val channel: Long, val server: Long,
-    val user: Long, val name: String, val date: Date, val mentions: List<Long>
+    val unique: Int,
+    val id: Int,
+    val feedUrl: String,
+    val channel: Long,
+    val server: Long,
+    val user: Long,
+    val name: String,
+    val date: Date,
+    val mentions: List<Long>,
+    val accessible: Boolean = true
 ): BsonModel {
 
     companion object: ObjectModel<FeedModel> {
@@ -21,7 +29,8 @@ data class FeedModel(
             user = bson.getLong("user"),
             name = bson.getString("name"),
             date = bson.getDate("date"),
-            mentions = bson["mentions"] as List<Long>
+            mentions = bson["mentions"] as List<Long>,
+            accessible = bson.getBoolean("accessible", true)
         )
     }
 
@@ -34,7 +43,8 @@ data class FeedModel(
         "user" to user,
         "name" to name,
         "date" to date,
-        "mentions" to mentions
+        "mentions" to mentions,
+        "accessible" to accessible
     ))
 
 }

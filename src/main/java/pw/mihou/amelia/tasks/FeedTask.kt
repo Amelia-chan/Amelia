@@ -47,7 +47,12 @@ object FeedTask: Runnable {
                         val posts = RssReader.cached(feed.feedUrl).filter { it.date!!.after(feed.date) }
                         if (posts.isEmpty()) continue
 
-                        val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("date", posts[0].date))
+                        val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique),
+                            Updates.combine(
+                                Updates.set("date", posts[0].date),
+                                Updates.set("accessible", true)
+                            )
+                        )
 
                         if (!result.wasAcknowledged()) {
                             logger.error("A feed couldn't be updated in the database. [feed=${feed.feedUrl}, id=${feed.unique}]")
@@ -67,6 +72,7 @@ object FeedTask: Runnable {
                         }
                     } catch (exception: Exception) {
                         logger.error("An exception was raised while attempting to send to a server. [feed=${feed.feedUrl}, server=${feed.server}]", exception)
+                        FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("accessible", false))
                     }
                 }
             }

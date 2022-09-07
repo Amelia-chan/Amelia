@@ -106,8 +106,11 @@ object FeedsCommand: NexusHandler {
                 + "\nRoles Subscribed: $subscribed"
                 + "\nLast Update: `${feed.date}`"
                 + "\nChannel: $channel"
-                + "\nCreated by: <@${feed.user}>")
+                + "\nCreated by: <@${feed.user}>"
+                + "\nStatus: ${accessible(feed.accessible)}")
     }
+
+    private fun accessible(status: Boolean) = if (status) "**ONLINE**" else "**__ERROR__**"
 
     /**
      * Creates an embed based on the feed model and whether the user is authorized to see

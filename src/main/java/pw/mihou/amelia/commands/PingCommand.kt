@@ -2,6 +2,8 @@ package pw.mihou.amelia.commands
 
 import com.sun.management.OperatingSystemMXBean
 import org.javacord.api.entity.message.embed.EmbedBuilder
+import pw.mihou.amelia.db.FeedDatabase
+import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.session.AmeliaSession
 import pw.mihou.amelia.tasks.FeedTask
 import pw.mihou.amelia.utility.StringUtils
@@ -25,6 +27,13 @@ object PingCommand: NexusHandler {
             event.api.measureRestLatency().thenAccept { restLatency ->
                 val gatewayLatency = event.api.latestGatewayLatency.toMillis()
 
+                val feeds = FeedDatabase.connection.find()
+                    .map { FeedModel.from(it) }
+                    .filter { !it.feedUrl.contains("?type=series&sid=") }
+                    .map { it.accessible }
+
+                val inaccessibleFeedsCount = feeds.count { !it }
+
                 updater.addEmbed(
                     EmbedBuilder().setTimestampToNow()
                         .setColor(Color.YELLOW)
@@ -42,7 +51,8 @@ object PingCommand: NexusHandler {
                         ))
                         .addField("ScribbleHub Status", StringUtils.createEmbeddedFormat(
                             "\uD83D\uDD8B️ Author Feeds: ${booleanToEmoji(FeedTask.canAccessAuthor())}",
-                            "\uD83D\uDCD6 Story Feeds: Unsupported ([Statement from Tony](https://forum.scribblehub.com/threads/cloudflare-blocking-rss-feeds.11117/post-243945))"
+                            "\uD83D\uDCD6 Story Feeds: Unsupported ([Statement from Tony](https://forum.scribblehub.com/threads/cloudflare-blocking-rss-feeds.11117/post-243945))",
+                            "‼️ Inaccessible Feeds: $inaccessibleFeedsCount out of ${feeds.size}"
                         ))
                         .addField("Session Information", "☁ Total updates sent: `" + format(AmeliaSession.feedsUpdated.get().toLong()) + " chapters notified to servers`")
                         .addField("Inquiries", "You can send inquiries about Amelia like custom private bot, etc. on our email at **amelia@mihou.pw**!")
