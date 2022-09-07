@@ -42,7 +42,7 @@ object PingCommand: NexusHandler {
                         ))
                         .addField("ScribbleHub Status", StringUtils.createEmbeddedFormat(
                             "\uD83D\uDD8B️ Author Feeds: ${booleanToEmoji(FeedTask.canAccessAuthor())}",
-                            "\uD83D\uDCD6 Story Feeds: Unsupported [Statement from Tony](https://forum.scribblehub.com/threads/cloudflare-blocking-rss-feeds.11117/post-243945)"
+                            "\uD83D\uDCD6 Story Feeds: Unsupported ([Statement from Tony](https://forum.scribblehub.com/threads/cloudflare-blocking-rss-feeds.11117/post-243945))"
                         ))
                         .addField("Session Information", "☁ Total updates sent: `" + format(AmeliaSession.feedsUpdated.get().toLong()) + " chapters notified to servers`")
                         .addField("Inquiries", "You can send inquiries about Amelia like custom private bot, etc. on our email at **amelia@mihou.pw**!")

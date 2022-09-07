@@ -124,10 +124,10 @@ data class FeedSubscriptionCommand(val subscribe: Boolean) : NexusHandler {
                         .setEmbed(
                             EmbedBuilder().setTimestampToNow().setColor(Color.YELLOW).setDescription(
                                 "I have ${if (subscribe) "subscribed" else "unsubscribed"} ${role.mentionTag} " +
-                                        "notifications on **${feed.name}** ( ${
+                                        "notifications on **${feed.name}** (${
                                             if (feed.feedUrl.contains("unq=")) redactListLink(feed.feedUrl) 
                                             else feed.feedUrl
-                                        } )!")
+                                        })!")
                                 .setAuthor(event.user)
                         )
                         .applyChanges()
