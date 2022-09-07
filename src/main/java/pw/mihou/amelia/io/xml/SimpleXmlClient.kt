@@ -46,7 +46,7 @@ object SimpleXmlClient {
 
         return client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
-                throw RuntimeException("Failed to connect to $uri: The status code isn't within the range of 200 to 300.")
+                throw RuntimeException("Failed to connect to $uri: The status code (${response.code}) isn't within the range of 200 to 300.")
             }
 
             if (response.body == null) {
