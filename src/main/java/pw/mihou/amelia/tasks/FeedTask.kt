@@ -45,7 +45,10 @@ object FeedTask: Runnable {
                         val channel = server.getTextChannelById(feed.channel).orElse(null) ?: continue
 
                         val posts = RssReader.cached(feed.feedUrl).filter { it.date!!.after(feed.date) }
-                        if (posts.isEmpty()) continue
+                        if (posts.isEmpty()) {
+                            FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("accessible", false))
+                            continue
+                        }
 
                         val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique),
                             Updates.combine(
@@ -72,7 +75,6 @@ object FeedTask: Runnable {
                         }
                     } catch (exception: Exception) {
                         logger.error("An exception was raised while attempting to send to a server. [feed=${feed.feedUrl}, server=${feed.server}]", exception)
-                        FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("accessible", false))
                     }
                 }
             }
