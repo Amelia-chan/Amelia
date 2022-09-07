@@ -58,7 +58,7 @@ object RegisterAuthorSubcommand {
                                 .removeAllComponents()
                                 .removeAllEmbeds()
                                 .setContent(TemplateMessages.NEUTRAL_LOADING)
-                                .replaceMessage()
+                                .applyChanges()
                                 .thenAccept update@{ message ->
                                     val id = cursor.item.transformToUser().join().uid
                                     val feed = "https://www.scribblehub.com/rssfeed.php?type=author&uid=$id"
@@ -97,6 +97,9 @@ object RegisterAuthorSubcommand {
                                     }
 
                                     message.edit(TemplateMessages.ERROR_DATABASE_FAILED)
+                                }.exceptionally {
+                                    it.printStackTrace()
+                                    return@exceptionally null
                                 }
                             cursor.parent().parent.destroy()
                         }
