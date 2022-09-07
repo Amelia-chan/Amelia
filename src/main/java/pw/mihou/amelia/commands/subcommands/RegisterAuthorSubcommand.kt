@@ -108,6 +108,11 @@ object RegisterAuthorSubcommand {
                             cursor.parent().parent.destroy()
                         }
                     }).build().send(event.baseEvent.interaction, updater)
+                }.exceptionally {
+                    it.printStackTrace()
+
+                    event.respondNow().setContent("❌ Failed to connect to ScribbleHub. It's possible that the site is down or having issues.").respond()
+                    return@exceptionally null
                 }
                 return@thenAccept
             }
