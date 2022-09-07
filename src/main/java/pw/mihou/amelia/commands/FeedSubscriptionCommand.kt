@@ -11,6 +11,7 @@ import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.amelia.utility.confirmationMenu
+import pw.mihou.amelia.utility.redactListLink
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler
 import java.awt.Color
@@ -123,7 +124,10 @@ data class FeedSubscriptionCommand(val subscribe: Boolean) : NexusHandler {
                         .setEmbed(
                             EmbedBuilder().setTimestampToNow().setColor(Color.YELLOW).setDescription(
                                 "I have ${if (subscribe) "subscribed" else "unsubscribed"} ${role.mentionTag} " +
-                                        "notifications on **${feed.name}** ( ${feed.feedUrl} )!")
+                                        "notifications on **${feed.name}** ( ${
+                                            if (feed.feedUrl.contains("unq=")) redactListLink(feed.feedUrl) 
+                                            else feed.feedUrl
+                                        } )!")
                                 .setAuthor(event.user)
                         )
                         .applyChanges()
