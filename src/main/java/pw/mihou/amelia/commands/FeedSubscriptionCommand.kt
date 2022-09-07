@@ -117,18 +117,24 @@ data class FeedSubscriptionCommand(val subscribe: Boolean) : NexusHandler {
                 }
 
                 if (result!!.wasAcknowledged()) {
-                    messageUpdater.setEmbed(
-                        EmbedBuilder().setTimestampToNow().setColor(Color.YELLOW).setDescription(
-                            "I have ${if (subscribe) "subscribed" else "unsubscribed"} ${role.mentionTag} " +
-                                    "notifications on **${feed.name}** ( ${feed.feedUrl} )!"
-                        ).setAuthor(event.user)
-                    ).replaceMessage()
+                    messageUpdater
+                        .removeAllComponents()
+                        .removeAllEmbeds()
+                        .setEmbed(
+                            EmbedBuilder().setTimestampToNow().setColor(Color.YELLOW).setDescription(
+                                "I have ${if (subscribe) "subscribed" else "unsubscribed"} ${role.mentionTag} " +
+                                        "notifications on **${feed.name}** ( ${feed.feedUrl} )!")
+                                .setAuthor(event.user)
+                        )
+                        .applyChanges()
                     return@confirmationMenu
                 }
 
                 messageUpdater
+                    .removeAllComponents()
+                    .removeAllEmbeds()
                     .setEmbed(EmbedBuilder().setTimestampToNow().setAuthor(event.user).setColor(Color.RED).setDescription(TemplateMessages.ERROR_DATABASE_FAILED))
-                    .replaceMessage()
+                    .applyChanges()
             }
         }
     }

@@ -90,13 +90,15 @@ object RemoveCommand: NexusHandler {
                     messageUpdater.setEmbed(EmbedBuilder().setTimestampToNow().setColor(Color.YELLOW)
                         .setAuthor(event.user)
                         .setDescription("I have removed **${feed.name}** ($link) from this server's feeds!"))
-                        .replaceMessage()
+                        .applyChanges()
                     return@confirmationMenu
                 }
 
                 messageUpdater
+                    .removeAllComponents()
+                    .removeAllEmbeds()
                     .setEmbed(EmbedBuilder().setTimestampToNow().setColor(Color.RED).setAuthor(event.user).setDescription(TemplateMessages.ERROR_DATABASE_FAILED))
-                    .replaceMessage()
+                    .applyChanges()
             }
         }
     }
