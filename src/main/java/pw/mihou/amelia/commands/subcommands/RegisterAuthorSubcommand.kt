@@ -28,6 +28,11 @@ object RegisterAuthorSubcommand {
         event.respondLater().thenAccept { updater ->
             if (subcommand.name == "user") {
                 Amatsuki.connector.searchUser(name).thenAccept connector@{ results ->
+                    if (results == null){
+                        event.respondNow().setContent("❌ Failed to connect to ScribbleHub. It's possible that the site is down or having issues.").respond()
+                        return@connector
+                    }
+
                     if (results.isEmpty()) {
                         event.respondNow().setContent("❌ Amelia cannot found any users that matches the query, how about trying something else?").respond()
                         return@connector
