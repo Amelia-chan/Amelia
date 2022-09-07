@@ -69,7 +69,7 @@ object RegisterCommand : NexusHandler {
         }
 
         when(subcommand.name) {
-            "author" -> RegisterAuthorSubcommand.run(event, subcommand)
+            "user" -> RegisterAuthorSubcommand.run(event, subcommand)
             "list" -> RegisterListSubcommand.run(event, subcommand)
         }
     }
