@@ -75,6 +75,11 @@ object TestCommand: NexusHandler {
         event.respondLater().thenAccept { updater ->
             val latestPost = RssReader.cached(feed.feedUrl)
 
+            if (latestPost == null) {
+                updater.setContent("❌ Amelia encountered a problem while trying to send: ScribbleHub is not accessible.").update()
+                return@thenAccept
+            }
+
             if (latestPost.isEmpty()) {
                 updater.setContent(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE).update()
                 return@thenAccept
@@ -103,6 +108,11 @@ object TestCommand: NexusHandler {
 
                 return@exceptionally null
             }
+        }.exceptionally { exception ->
+            exception.printStackTrace()
+            event.respondNowAsEphemeral().setContent("❌ Amelia encountered a problem while trying to send: ${exception.message}").respond()
+
+            null
         }
 
     }

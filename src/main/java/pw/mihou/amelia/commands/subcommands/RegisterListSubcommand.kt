@@ -49,6 +49,11 @@ object RegisterListSubcommand {
 
                 val latestPosts = RssReader.cached(newLink)
 
+                if (latestPosts == null) {
+                    updater.setContent("❌ Amelia encountered a problem while trying to send: ScribbleHub is not accessible.").update()
+                    return@thenAccept
+                }
+
                 if (latestPosts.isEmpty()) {
                     updater.setContent(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE).update()
                     return@thenAccept
