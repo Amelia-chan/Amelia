@@ -53,7 +53,7 @@ object FeedTask: Runnable {
 
                         if (posts.isEmpty()) {
                             if (!feed.accessible) {
-                                FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), )
+                                FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("accessible", true))
                             }
                             continue
                         }
