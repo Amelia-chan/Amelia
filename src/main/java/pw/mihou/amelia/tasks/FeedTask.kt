@@ -27,7 +27,7 @@ object FeedTask: Runnable {
         }
 
         lock.withLock {
-            canAccessAuthor = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=author&uid=24680").isNotEmpty()
+            canAccessAuthor = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=author&uid=24680")?.isNotEmpty() ?: false
 
             val feeds = FeedDatabase.connection.find()
                 .map { FeedModel.from(it) }
