@@ -36,7 +36,7 @@ task downloadDependencies(type: Copy) {
 dependencies {
     implementation 'pw.mihou:Dotenv:1.0.1'
     implementation 'pw.mihou:Nexus:1.0.0-beta-SNAPSHOT'
-    implementation 'pw.mihou:amatsuki:4537a90d4f'
+    implementation 'pw.mihou:Amaririsu:1.0.2'
     implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.18.0'
     implementation 'org.mongodb:mongodb-driver-sync:4.7.1'
     implementation 'org.slf4j:slf4j-api:2.0.0'

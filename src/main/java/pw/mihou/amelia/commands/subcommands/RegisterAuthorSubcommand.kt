@@ -6,17 +6,18 @@ import org.javacord.api.event.interaction.ButtonClickEvent
 import org.javacord.api.interaction.SlashCommandInteractionOption
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater
 import org.javacord.api.util.logging.ExceptionLogger
+import pw.mihou.Amaririsu
 import pw.mihou.amelia.db.FeedDatabase
-import pw.mihou.amelia.io.Amatsuki
 import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.templates.TemplateMessages
+import pw.mihou.amelia.utility.future
+import pw.mihou.models.user.UserResultOrAuthor
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.paginator.NexusPaginatorBuilder
 import pw.mihou.nexus.features.paginator.enums.NexusPaginatorButtonAssignment
 import pw.mihou.nexus.features.paginator.facade.NexusPaginatorCursor
 import pw.mihou.nexus.features.paginator.facade.NexusPaginatorEvents
-import tk.mihou.amatsuki.entities.user.lower.UserResults
 import java.awt.Color
 
 object RegisterAuthorSubcommand {
@@ -27,36 +28,31 @@ object RegisterAuthorSubcommand {
 
         event.respondLater().thenAccept { updater ->
             if (subcommand.name == "user") {
-                Amatsuki.connector.searchUser(name).thenAccept connector@{ results ->
-                    if (results == null){
-                        updater.setContent("❌ Failed to connect to ScribbleHub. It's possible that the site is down or having issues.").update()
-                        return@connector
-                    }
-
-                    if (results.isEmpty()) {
+                future { Amaririsu.search(name) { series.enabled = false } }.thenAccept connector@{ results ->
+                    if (results.users.isEmpty()) {
                         updater.setContent("❌ Amelia cannot found any users that matches the query, how about trying something else?").update()
                         return@connector
                     }
 
-                    buttons(NexusPaginatorBuilder(results)).setEventHandler(object : NexusPaginatorEvents<UserResults> {
+                    buttons(NexusPaginatorBuilder(results.users.toList())).setEventHandler(object : NexusPaginatorEvents<UserResultOrAuthor> {
                         override fun onInit(
                             updater: InteractionOriginalResponseUpdater,
-                            cursor: NexusPaginatorCursor<UserResults>
+                            cursor: NexusPaginatorCursor<UserResultOrAuthor>
                         ) = updater.addEmbed(user(cursor))
 
                         override fun onPageChange(
-                            cursor: NexusPaginatorCursor<UserResults>,
+                            cursor: NexusPaginatorCursor<UserResultOrAuthor>,
                             event: ButtonClickEvent
                         ) {
                             event.buttonInteraction.message.edit(user(cursor))
                         }
 
-                        override fun onCancel(cursor: NexusPaginatorCursor<UserResults>?, event: ButtonClickEvent) {
+                        override fun onCancel(cursor: NexusPaginatorCursor<UserResultOrAuthor>?, event: ButtonClickEvent) {
                             event.buttonInteraction.message.delete()
                         }
 
                         override fun onSelect(
-                            cursor: NexusPaginatorCursor<UserResults>,
+                            cursor: NexusPaginatorCursor<UserResultOrAuthor>,
                             buttonEvent: ButtonClickEvent
                         ) {
                             buttonEvent.buttonInteraction.message.createUpdater()
@@ -65,7 +61,7 @@ object RegisterAuthorSubcommand {
                                 .setContent(TemplateMessages.NEUTRAL_LOADING)
                                 .applyChanges()
                                 .thenAccept update@{ message ->
-                                    val id = cursor.item.transformToUser().join().uid
+                                    val id = cursor.item.id
                                     val feed = "https://www.scribblehub.com/rssfeed.php?type=author&uid=$id"
 
                                     val latestPosts = RssReader.cached(feed)
@@ -135,7 +131,7 @@ object RegisterAuthorSubcommand {
         .setButton(NexusPaginatorButtonAssignment.NEXT, Button.secondary("", "Next"))
         .setButton(NexusPaginatorButtonAssignment.CANCEL, Button.secondary("", "Cancel"))
 
-    private fun user(cursor: NexusPaginatorCursor<UserResults>) =
+    private fun user(cursor: NexusPaginatorCursor<UserResultOrAuthor>) =
         EmbedBuilder().setTimestampToNow().setColor(Color.YELLOW).setTitle(cursor.item.name)
             .setDescription(
                 "You can create a notification listener for this user by pressing the **Select** button below, "

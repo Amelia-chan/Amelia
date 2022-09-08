@@ -12,6 +12,7 @@ import org.javacord.api.event.message.MessageCreateEvent
 import org.javacord.api.event.server.ServerLeaveEvent
 import org.javacord.api.util.logging.ExceptionLogger
 import org.slf4j.LoggerFactory
+import pw.mihou.Amaririsu
 import pw.mihou.amelia.commands.*
 import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.configuration.Configuration
@@ -21,6 +22,8 @@ import pw.mihou.amelia.io.rome.FeedItem
 import pw.mihou.amelia.listeners.AnnouncementModalListener
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.tasks.FeedTask
+import pw.mihou.cache.Cache
+import pw.mihou.cache.Cacheable
 import pw.mihou.dotenv.Dotenv
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
@@ -40,6 +43,16 @@ fun main() {
 
     // This is to trigger the initial init from the database.
     MongoDB.client.listDatabaseNames()
+
+    Amaririsu.set(object: Cache {
+        override fun get(uri: String): Cacheable? {
+            return Amatsuki.cache.getIfPresent(uri)
+        }
+
+        override fun set(uri: String, item: Cacheable) {
+            Amatsuki.cache.put(uri, item)
+        }
+    })
 
     nexus.listenMany(
         FeedsCommand,
