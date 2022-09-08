@@ -23,16 +23,16 @@ object RssReader {
         return mutableList.toList()
     }
 
-    private fun request(url: String): List<FeedItem> {
+    private fun request(url: String): List<FeedItem>? {
         return try {
             nodeListToFeedItems(SimpleXmlClient.read(url).getElementsByTagName("item"))
         } catch (exception: Exception) {
             logger.error("Failed to connect to $url, discarding request...", exception)
-            return emptyList()
+            return null
         }
     }
 
-    fun cached(url: String): List<FeedItem> {
+    fun cached(url: String): List<FeedItem>? {
         synchronized(url) {
             return cache.get(url)
         }

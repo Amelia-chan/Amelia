@@ -44,9 +44,14 @@ object FeedTask: Runnable {
 
                         val channel = server.getTextChannelById(feed.channel).orElse(null) ?: continue
 
-                        val posts = RssReader.cached(feed.feedUrl).filter { it.date!!.after(feed.date) }
-                        if (posts.isEmpty()) {
+                        val posts = RssReader.cached(feed.feedUrl)?.filter { it.date!!.after(feed.date) }
+
+                        if (posts == null) {
                             FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("accessible", false))
+                            continue
+                        }
+
+                        if (posts.isEmpty()) {
                             continue
                         }
 
