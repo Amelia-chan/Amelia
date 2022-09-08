@@ -12,10 +12,16 @@ import org.javacord.api.util.logging.ExceptionLogger
 import java.awt.Color
 
 fun InteractionOriginalResponseUpdater.confirmationMenu(
-    user: User, confirmation: String,
+    user: User,
+    confirmation: String,
+    additionalEmbeds: List<EmbedBuilder> = listOf(),
     onConfirmed: (message: Message, buttonEvent: ButtonClickEvent, messageUpdater: MessageUpdater) -> Unit
 ) {
     addEmbed(EmbedBuilder().setTimestampToNow().setColor(Color.RED).setAuthor(user).setDescription(confirmation))
+
+    for (embed in additionalEmbeds) {
+        addEmbed(embed)
+    }
 
     addComponents(ActionRow.of(
         Button.primary("continue", "Continue"),

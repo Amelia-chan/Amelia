@@ -18,6 +18,7 @@ import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.MongoDB
 import pw.mihou.amelia.io.Amatsuki
 import pw.mihou.amelia.io.rome.FeedItem
+import pw.mihou.amelia.listeners.AnnouncementModalListener
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.tasks.FeedTask
 import pw.mihou.dotenv.Dotenv
@@ -49,11 +50,17 @@ fun main() {
         RemoveCommand,
         TestCommand
     )
+
+    if (Configuration.DEVELOPER_SERVER != 0L) {
+        nexus.listenMany(AnnounceCommand)
+    }
+
     NexusCommandInterceptor.addRepository(Middlewares)
 
     DiscordApiBuilder()
         .setToken(Configuration.DISCORD_TOKEN)
         .addListener(nexus)
+        .addModalSubmitListener(AnnouncementModalListener)
         .addServerLeaveListener { event: ServerLeaveEvent ->
             MongoDB.client.getDatabase("amelia").getCollection("feeds").deleteMany(
                 Filters.eq("server", event.server.id)
