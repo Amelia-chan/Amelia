@@ -50,16 +50,20 @@ object FeedTask: Runnable {
                             FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("accessible", false))
                             continue
                         }
-                        
-                        if (!feed.accessible) {
-                           FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("accessible", true))
-                        }
 
                         if (posts.isEmpty()) {
+                            if (!feed.accessible) {
+                                FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), )
+                            }
                             continue
                         }
 
-                        val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("date", posts[0].date))
+                        val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), 
+                            Updates.combine(
+                               Updates.set("date", posts[0].date), 
+                               Updates.set("accessible", true)
+                            )
+                       )
 
                         if (!result.wasAcknowledged()) {
                             logger.error("A feed couldn't be updated in the database. [feed=${feed.feedUrl}, id=${feed.unique}]")
