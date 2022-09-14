@@ -39,7 +39,8 @@ object Amatsuki {
                 includeGenres = false
             }.author.name
         } catch (exception: Exception) {
-            logger.error("Failed to propagate author from the ${feed.feedUrl}, an exception was raised.", exception)
+            logger.error("Failed to propagate author from the ${feed.feedUrl} with related " +
+                    "[id=${feed.id}, category=${item.category}], an exception was raised.", exception)
             throw exception
         }
     }

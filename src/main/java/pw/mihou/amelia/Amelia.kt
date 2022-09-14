@@ -125,7 +125,7 @@ private fun onShardLogin(shard: DiscordApi) {
         val commands = nexus.commandManager.commands
         
         logger.info("Attempting to synchronize ${commands.size} commands to Discord... this may take a moment")
-        nexus.synchronizer.synchronize(1).join()
+        nexus.synchronizer.synchronize().join()
 
         logger.info("Preparing to schedule the feed updater... this will not take long!")
         scheduledExecutorService.scheduleAtFixedRate(FeedTask, 1, 10, TimeUnit.MINUTES)

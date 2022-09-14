@@ -55,7 +55,7 @@ object RegisterCommand : NexusHandler {
     private val middlewares = listOf(Middlewares.MODERATOR_ONLY)
 
     override fun onEvent(event: NexusCommandEvent) {
-        val subcommand = event.options.first()
+        val subcommand = event.interaction.options.first()
 
         if (subcommand.name == "help") {
             RegisterHelpSubcommand.run(event)
