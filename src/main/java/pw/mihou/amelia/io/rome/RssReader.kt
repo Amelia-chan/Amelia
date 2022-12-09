@@ -25,7 +25,7 @@ object RssReader {
 
     private fun request(url: String): List<FeedItem>? {
         return try {
-            nodeListToFeedItems(SimpleXmlClient.read(url).getElementsByTagName("item"))
+            nodeListToFeedItems(SimpleXmlClient.read(url.replaceFirst("https://www.scribblehub.com", "https://www.rssscribblehub.com")).getElementsByTagName("item"))
         } catch (exception: Exception) {
             logger.error("Failed to connect to $url, discarding request...", exception)
             return null

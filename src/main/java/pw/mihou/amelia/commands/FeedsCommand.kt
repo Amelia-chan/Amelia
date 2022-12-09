@@ -38,7 +38,7 @@ object FeedsCommand: NexusHandler {
             validator = { id -> id <= 9999 },
             error = { ValidationError.create("A feed identifier has at maximum 4 digits of numbers (0-9999).") },
             requirements = OptionValidation.createRequirements {
-                nonNull = createErrorableRequireSetting(ValidationError.Companion.create("You cannot leave the `feed` option."))
+                nonNull = null
             }
         )
     )
