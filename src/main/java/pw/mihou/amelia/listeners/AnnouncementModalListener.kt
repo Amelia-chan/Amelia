@@ -6,10 +6,9 @@ import org.javacord.api.event.interaction.ModalSubmitEvent
 import org.javacord.api.listener.interaction.ModalSubmitListener
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.models.FeedModel
-import pw.mihou.amelia.nexus
 import pw.mihou.amelia.utility.confirmationMenu
+import pw.mihou.nexus.Nexus
 import java.awt.Color
-import java.util.concurrent.atomic.AtomicInteger
 
 object AnnouncementModalListener: ModalSubmitListener {
 
@@ -67,7 +66,7 @@ object AnnouncementModalListener: ModalSubmitListener {
                 messageUpdater.setContent("<a:manaWinterLoading:880162110947094628> Sending message to $channelCount channels and $serverCount servers... this may take awhile.").applyChanges()
 
                 for ((serverId, channels) in channelsGroupedServer) {
-                    nexus.engineX.await(serverId).thenAccept { server ->
+                    Nexus.express.await(serverId).thenAccept { server ->
                         for (channelId in channels) {
                             server.getTextChannelById(channelId).ifPresent { channel ->
                                 channel.sendMessage(embed)

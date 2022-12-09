@@ -23,8 +23,8 @@ import java.awt.Color
 object RegisterAuthorSubcommand {
 
     fun run(event: NexusCommandEvent, subcommand: SlashCommandInteractionOption) {
-        val name = subcommand.getOptionStringValueByName("name").orElseThrow()
-        val channel = subcommand.getOptionChannelValueByName("channel").flatMap { it.asServerTextChannel() }.orElseThrow()
+        val name = subcommand.getArgumentStringValueByName("name").orElseThrow()
+        val channel = subcommand.getArgumentChannelValueByName("channel").flatMap { it.asServerTextChannel() }.orElseThrow()
 
         event.respondLater().thenAccept { updater ->
             if (subcommand.name == "user") {

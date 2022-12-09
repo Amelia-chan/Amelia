@@ -27,13 +27,13 @@ import pw.mihou.cache.Cacheable
 import pw.mihou.dotenv.Dotenv
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
+import pw.mihou.nexus.features.command.validation.errors.ValidationError
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-val nexus: Nexus = Nexus.builder().build()
 val logger = LoggerFactory.getLogger("Amelia Client") as Logger
 val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 fun main() {
@@ -43,6 +43,7 @@ fun main() {
 
     // This is to trigger the initial init from the database.
     MongoDB.client.listDatabaseNames()
+    ValidationError.Companion.textTemplate = { message -> "❌ $message" }
 
     Amaririsu.set(object: Cache {
         override fun get(uri: String): Cacheable? {
@@ -54,7 +55,7 @@ fun main() {
         }
     })
 
-    nexus.listenMany(
+    Nexus.commands(
         FeedsCommand,
         FeedSubscriptionCommand(subscribe = false),
         FeedSubscriptionCommand(subscribe = true),
@@ -65,14 +66,14 @@ fun main() {
     )
 
     if (Configuration.DEVELOPER_SERVER != 0L) {
-        nexus.listenMany(AnnounceCommand)
+        Nexus.command(AnnounceCommand)
     }
 
     NexusCommandInterceptor.addRepository(Middlewares)
 
     DiscordApiBuilder()
         .setToken(Configuration.DISCORD_TOKEN)
-        .addListener(nexus)
+        .addListener(Nexus)
         .addModalSubmitListener(AnnouncementModalListener)
         .addServerLeaveListener { event: ServerLeaveEvent ->
             MongoDB.client.getDatabase("amelia").getCollection("feeds").deleteMany(
@@ -119,13 +120,13 @@ fun main() {
 }
 
 private fun onShardLogin(shard: DiscordApi) {
-    nexus.shardManager.put(shard)
+    Nexus.sharding.set(shard)
 
     if (shard.currentShard == 0) {
-        val commands = nexus.commandManager.commands
+        val commands = Nexus.commandManager.commands
         
         logger.info("Attempting to synchronize ${commands.size} commands to Discord... this may take a moment")
-        nexus.synchronizer.synchronize().join()
+        Nexus.synchronizer.synchronize().join()
 
         logger.info("Preparing to schedule the feed updater... this will not take long!")
         scheduledExecutorService.scheduleAtFixedRate(FeedTask, 1, 10, TimeUnit.MINUTES)

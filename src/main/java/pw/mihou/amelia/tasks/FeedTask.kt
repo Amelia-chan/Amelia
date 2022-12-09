@@ -7,8 +7,8 @@ import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.logger
 import pw.mihou.amelia.models.FeedModel
-import pw.mihou.amelia.nexus
 import pw.mihou.amelia.session.AmeliaSession
+import pw.mihou.nexus.Nexus
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.system.measureTimeMillis
@@ -39,9 +39,7 @@ object FeedTask: Runnable {
             val totalFeedTime = measureTimeMillis {
                 for (feed in feeds) {
                     try {
-                        val server = nexus.shardManager.getShardOf(feed.server).flatMap { it.getServerById(feed.server) }.orElse(null)
-                            ?: continue
-
+                        val server = Nexus.sharding.server(feed.server) ?: continue
                         val channel = server.getTextChannelById(feed.channel).orElse(null) ?: continue
 
                         val posts = RssReader.cached(feed.feedUrl)?.filter { it.date!!.after(feed.date) }

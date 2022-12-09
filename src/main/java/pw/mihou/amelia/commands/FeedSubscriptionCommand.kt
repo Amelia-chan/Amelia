@@ -66,10 +66,10 @@ data class FeedSubscriptionCommand(val subscribe: Boolean) : NexusHandler {
     override fun onEvent(event: NexusCommandEvent) {
         var feed: FeedModel? = null
         val subcommand = event.interaction.options.first()
-        val role = subcommand.getOptionRoleValueByName("role").orElseThrow()
+        val role = subcommand.getArgumentRoleValueByName("role").orElseThrow()
 
         if (subcommand.name == "id") {
-            feed = FeedDatabase.get(subcommand.getOptionLongValueByName("value").orElseThrow())
+            feed = FeedDatabase.get(subcommand.getArgumentLongValueByName("value").orElseThrow())
 
             if (feed != null && feed.server != event.serverId.orElseThrow()) {
                 feed = null
@@ -78,7 +78,7 @@ data class FeedSubscriptionCommand(val subscribe: Boolean) : NexusHandler {
 
         if (subcommand.name == "name") {
             feed = FeedDatabase.connection
-                .find(Filters.and(Filters.eq("server", event.serverId.orElseThrow()), Filters.text(subcommand.getOptionStringValueByName("value").orElseThrow())))
+                .find(Filters.and(Filters.eq("server", event.serverId.orElseThrow()), Filters.text(subcommand.getArgumentStringValueByName("value").orElseThrow())))
                 .map { FeedModel.from(it) }
                 .first()
         }

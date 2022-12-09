@@ -13,12 +13,12 @@ import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 object RegisterListSubcommand {
 
     fun run(event: NexusCommandEvent, subcommand: SlashCommandInteractionOption) {
-        val name = subcommand.getOptionStringValueByName("name").orElseThrow()
-        val channel = subcommand.getOptionChannelValueByName("channel").flatMap { it.asServerTextChannel() }.orElseThrow()
+        val name = subcommand.getArgumentStringValueByName("name").orElseThrow()
+        val channel = subcommand.getArgumentChannelValueByName("channel").flatMap { it.asServerTextChannel() }.orElseThrow()
 
         event.respondLaterAsEphemeral().thenAccept { updater ->
             try {
-                val link = subcommand.getOptionStringValueByName("link").orElseThrow().toUrl()
+                val link = subcommand.getArgumentStringValueByName("link").orElseThrow().toUrl()
                 val queries = link.params
 
                 val host = link.host.removePrefix("www.")

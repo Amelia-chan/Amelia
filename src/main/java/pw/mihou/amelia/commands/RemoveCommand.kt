@@ -54,7 +54,7 @@ object RemoveCommand: NexusHandler {
         val subcommand = event.interaction.options.first()
 
         if (subcommand.name == "id") {
-            feed = FeedDatabase.get(subcommand.getOptionLongValueByName("value").orElseThrow())
+            feed = FeedDatabase.get(subcommand.getArgumentLongValueByName("value").orElseThrow())
 
             if (feed != null && feed.server != event.serverId.orElseThrow()) {
                 feed = null
@@ -63,7 +63,7 @@ object RemoveCommand: NexusHandler {
 
         if (subcommand.name == "name") {
             feed = FeedDatabase.connection
-                .find(Filters.and(Filters.eq("server", event.serverId.orElseThrow()), Filters.text(subcommand.getOptionStringValueByName("value").orElseThrow())))
+                .find(Filters.and(Filters.eq("server", event.serverId.orElseThrow()), Filters.text(subcommand.getArgumentStringValueByName("value").orElseThrow())))
                 .map { FeedModel.from(it) }
                 .first()
         }

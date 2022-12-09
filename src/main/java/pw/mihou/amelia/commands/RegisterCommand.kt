@@ -62,7 +62,7 @@ object RegisterCommand : NexusHandler {
             return
         }
 
-        val channel = subcommand.getOptionChannelValueByName("channel").flatMap { it.asServerTextChannel() }.orElseThrow()
+        val channel = subcommand.getArgumentChannelValueByName("channel").flatMap { it.asServerTextChannel() }.orElseThrow()
         if (!(channel.canYouSee() && channel.canYouWrite() && channel.canYouReadMessageHistory())) {
             event.respondNow().setContent(TemplateMessages.ERROR_CHANNEL_NOT_FOUND).respond()
             return

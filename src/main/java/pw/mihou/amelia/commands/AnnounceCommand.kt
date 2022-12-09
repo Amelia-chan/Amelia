@@ -42,7 +42,7 @@ object AnnounceCommand: NexusHandler {
         }
 
         event.interaction.respondWithModal(
-                "announcement:${event.interaction.getOptionStringValueByName("level").orElseThrow()}",
+                "announcement:${event.interaction.getArgumentStringValueByName("level").orElseThrow()}",
                 "Create an announcement.",
                 ActionRow.of(
                         TextInput.create(TextInputStyle.SHORT, "title", "Title")

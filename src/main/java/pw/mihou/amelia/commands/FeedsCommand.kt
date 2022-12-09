@@ -13,6 +13,8 @@ import pw.mihou.amelia.scheduledExecutorService
 import pw.mihou.amelia.utility.redactListLink
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler
+import pw.mihou.nexus.features.command.validation.OptionValidation
+import pw.mihou.nexus.features.command.validation.errors.ValidationError
 import pw.mihou.nexus.features.paginator.NexusPaginatorBuilder
 import pw.mihou.nexus.features.paginator.enums.NexusPaginatorButtonAssignment
 import pw.mihou.nexus.features.paginator.facade.NexusPaginatorCursor
@@ -30,6 +32,17 @@ object FeedsCommand: NexusHandler {
         SlashCommandOption.createLongOption("id", "The id of the feed to look-up.", false)
     )
 
+    val validators = listOf(
+        OptionValidation.create(
+            collector = { event -> event.interaction.getArgumentLongValueByName("id") },
+            validator = { id -> id <= 9999 },
+            error = { ValidationError.create("A feed identifier has at maximum 4 digits of numbers (0-9999).") },
+            requirements = OptionValidation.createRequirements {
+                nonNull = createErrorableRequireSetting(ValidationError.Companion.create("You cannot leave the `feed` option."))
+            }
+        )
+    )
+
     override fun onEvent(event: NexusCommandEvent) {
         val server = event.server.orElse(null)
 
@@ -38,9 +51,9 @@ object FeedsCommand: NexusHandler {
             return
         }
 
-        when (event.interaction.getOptionLongValueByName("id").isPresent) {
+        when (event.interaction.getArgumentLongValueByName("id").isPresent) {
             true -> {
-                val id = event.interaction.getOptionLongValueByName("id").get()
+                val id = event.interaction.getArgumentLongValueByName("id").get()
                 val feed = FeedDatabase.get(id)
 
                 if (feed == null) {
