@@ -62,7 +62,7 @@ object RegisterAuthorSubcommand {
                                 .applyChanges()
                                 .thenAccept update@{ message ->
                                     val id = cursor.item.id
-                                    val feed = "https://www.scribblehub.com/rssfeed.php?type=author&uid=$id"
+                                    val feed = "https://www.rssscribblehub.com/rssfeed.php?type=author&uid=$id"
 
                                     val latestPosts = RssReader.cached(feed)
 
@@ -72,7 +72,7 @@ object RegisterAuthorSubcommand {
                                     }
 
                                     if (latestPosts.isEmpty()) {
-                                        message.edit(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE)
+                                        message.edit(TemplateMessages.ERROR_RSSSCRIBBLEHUB_NOT_ACCESSIBLE)
                                         return@update
                                     }
 

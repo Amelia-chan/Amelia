@@ -81,7 +81,7 @@ object TestCommand: NexusHandler {
             }
 
             if (latestPost.isEmpty()) {
-                updater.setContent(TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE).update()
+                updater.setContent(TemplateMessages.ERROR_RSSSCRIBBLEHUB_NOT_ACCESSIBLE).update()
                 return@thenAccept
             }
 
