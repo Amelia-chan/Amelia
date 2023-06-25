@@ -42,7 +42,9 @@ object FeedTask: Runnable {
                         val server = Nexus.sharding.server(feed.server) ?: continue
                         val channel = server.getTextChannelById(feed.channel).orElse(null) ?: continue
 
-                        val posts = RssReader.cached(feed.feedUrl)?.filter { it.date!!.after(feed.date) }
+                        val posts = RssReader.cached(feed.feedUrl)?.
+                        filter { it.date!!.after(feed.date) }?.
+                        sortedBy { it.date!! }
 
                         if (posts == null) {
                             FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("accessible", false))
