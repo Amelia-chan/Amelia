@@ -136,7 +136,6 @@ object Amelia {
 
         return "\uD83D\uDCD6 **${item.title} by $author**\n" +
                 "${item.link}\n" +
-                "\n" +
                 subscribed
     }
 
