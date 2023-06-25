@@ -3,27 +3,9 @@ name = "amelia"
 build = "/"
 repository = "https://github.com/Amelia-chan/Amelia"
 restart_policy = { name = "always" }
-
-[[dependencies]]
-name = "amelia.db"
-image = "mongo"
-ports = [["1882","27017"]]
-restart_policy = { name = "always" }
-volumes = [
-    { type = "volume", source = "amelia_db", target = "/data/db" }
-]
-
-[dependencies.environment]
-MONGO_INITDB_ROOT_USERNAME="amelia"
-MONGO_INITDB_ROOT_PASSWORD="[burp: Random(256) AS mongo.password]"
+override = true
 
 [environment]
 baseline = ".env"
 override = false
 server-side = false
-
-[environment.replacements]
-MONGO_URI="mongodb://amelia:[burp: Use(mongo.password)]@172.17.0.1:2732"
-
-[[volumes]]
-name="amelia_db"
