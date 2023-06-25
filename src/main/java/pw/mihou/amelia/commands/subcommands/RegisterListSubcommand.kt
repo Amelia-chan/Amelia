@@ -27,7 +27,8 @@ object RegisterListSubcommand {
                 val unq = queries["unq"]
                 val lid = queries["lid"]?.toIntOrNull()
 
-                if !(host.equals("scribblehub.com", ignoreCase = true) || host.equals("rssscribblehub.com", ignoreCase = true)) ||
+                if (
+                    !(host.equals("scribblehub.com", ignoreCase = true) || host.equals("rssscribblehub.com", ignoreCase = true)) ||
                     !link.path.equals("/rssfeed.php", ignoreCase = true) ||
                     (type == null || uid == null || unq == null) ||
                     !(type.equals("global", ignoreCase = true) || type.equals("local", ignoreCase = true))

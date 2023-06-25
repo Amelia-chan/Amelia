@@ -16,6 +16,7 @@ data class FeedModel(
     val name: String,
     val date: Date,
     val mentions: List<Long>,
+    val format: String? = null,
     val accessible: Boolean = true
 ): BsonModel {
 
@@ -30,6 +31,7 @@ data class FeedModel(
             name = bson.getString("name"),
             date = bson.getDate("date"),
             mentions = bson["mentions"] as List<Long>,
+            format = bson.getString("message_format"),
             accessible = bson.getBoolean("accessible", true)
         )
     }
@@ -44,6 +46,7 @@ data class FeedModel(
         "name" to name,
         "date" to date,
         "mentions" to mentions,
+        "message_format" to format,
         "accessible" to accessible
     ))
 

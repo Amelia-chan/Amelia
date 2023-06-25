@@ -155,6 +155,14 @@ object Amelia {
             server.getRoleById(role).map { it.mentionTag }.orElse("")
         }
 
+        if (feedModel.format != null) {
+            return feedModel.format
+                .replace("{title}", item.title)
+                .replace("{author}", author)
+                .replace("{link}", item.link)
+                .replace("{mentions}", subscribed)
+        }
+
         return "\uD83D\uDCD6 **${item.title} by $author**\n" +
                 "${item.link}\n" +
                 "\n\n" +
