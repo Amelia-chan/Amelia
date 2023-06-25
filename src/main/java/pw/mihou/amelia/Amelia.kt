@@ -8,7 +8,6 @@ import org.javacord.api.entity.activity.ActivityType
 import org.javacord.api.entity.server.Server
 import org.javacord.api.event.connection.ReconnectEvent
 import org.javacord.api.event.connection.ResumeEvent
-import org.javacord.api.event.message.MessageCreateEvent
 import org.javacord.api.event.server.ServerLeaveEvent
 import org.javacord.api.util.logging.ExceptionLogger
 import org.slf4j.LoggerFactory
@@ -79,34 +78,6 @@ fun main() {
             MongoDB.client.getDatabase("amelia").getCollection("feeds").deleteMany(
                 Filters.eq("server", event.server.id)
             )
-        }
-        .addMessageCreateListener { event: MessageCreateEvent ->
-            if (event.messageContent == "<@${event.api.yourself.id}>") {
-                event.message.reply(
-                    "Hello, if you are wondering why message commands are no longer working, it is because Amelia has " +
-                        "moved to slash commands completely to work better with Discord. " +
-                            "\n\nIf you have any inquiries (e.g. custom bot instance) then " +
-                            "please contact my developer at **amelia@mihou.pw**!"
-                )
-                return@addMessageCreateListener
-            }
-
-            // TODO: Remove this section when September hits.
-            if (event.messageContent.startsWith("a.register")
-                || event.messageContent.startsWith("a.subscribe")
-                || event.messageContent.startsWith("a.unsubscribe")
-                || event.messageContent.startsWith("a.test")
-                || event.messageContent.startsWith("a.feeds")
-                || event.messageContent.startsWith("a.remove")
-                || event.messageContent.startsWith("a.help")) {
-                event.message.reply(
-                    "Hello, if you are wondering why message commands are no longer working, it is because Amelia has " +
-                            "moved to slash commands completely to work better with Discord. " +
-                            "\n\nIf you have any inquiries (e.g. custom bot instance) then " +
-                            "please contact my developer at **amelia@mihou.pw**!"
-                )
-                return@addMessageCreateListener
-            }
         }
         .addResumeListener { event: ResumeEvent ->
             event.api.updateActivity(ActivityType.WATCHING, "People read stories!")
