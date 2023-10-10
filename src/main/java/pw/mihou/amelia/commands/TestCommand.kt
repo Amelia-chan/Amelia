@@ -73,12 +73,14 @@ object TestCommand: NexusHandler {
         }
 
         event.respondLater().thenAccept { updater ->
-            val latestPost = RssReader.cached(feed.feedUrl)
+            val result = RssReader.cached(feed.feedUrl)
 
-            if (latestPost == null) {
+            if (result == null) {
                 updater.setContent("❌ Amelia encountered a problem while trying to send: ScribbleHub is not accessible.").update()
                 return@thenAccept
             }
+
+            val (_, latestPost) = result
 
             if (latestPost.isEmpty()) {
                 updater.setContent(TemplateMessages.ERROR_RSSSCRIBBLEHUB_NOT_ACCESSIBLE).update()

@@ -3,13 +3,15 @@ package pw.mihou.amelia.io.rome
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.LoadingCache
 import org.w3c.dom.NodeList
+import pw.mihou.amelia.Amelia
 import pw.mihou.amelia.io.xml.SimpleXmlClient
 import pw.mihou.amelia.logger
+import java.util.Date
 import java.util.concurrent.TimeUnit
 
 object RssReader {
 
-    private val cache: LoadingCache<String, List<FeedItem>> = Caffeine.newBuilder()
+    private val cache: LoadingCache<String, Pair<Date, List<FeedItem>>> = Caffeine.newBuilder()
         .expireAfterWrite(2, TimeUnit.MINUTES)
         .build(this::request)
 
@@ -23,16 +25,18 @@ object RssReader {
         return mutableList.toList()
     }
 
-    private fun request(url: String): List<FeedItem>? {
+    private fun request(url: String): Pair<Date, List<FeedItem>>? {
         return try {
-            nodeListToFeedItems(SimpleXmlClient.read(url.replaceFirst("https://www.scribblehub.com", "https://www.rssscribblehub.com")).getElementsByTagName("item"))
+            val document = SimpleXmlClient.read(url.replaceFirst("https://www.scribblehub.com", "https://www.rssscribblehub.com"))
+            val lastBuildDate = document.getElementsByTagName("lastBuildDate").item(0)
+            Amelia.formatter.parse(lastBuildDate.textContent) to nodeListToFeedItems(document.getElementsByTagName("item"))
         } catch (exception: Exception) {
             logger.error("Failed to connect to $url, discarding request...", exception)
             return null
         }
     }
 
-    fun cached(url: String): List<FeedItem>? {
+    fun cached(url: String): Pair<Date, List<FeedItem>>? {
         synchronized(url) {
             return cache.get(url)
         }

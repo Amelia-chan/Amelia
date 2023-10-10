@@ -18,6 +18,7 @@ import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.MongoDB
 import pw.mihou.amelia.io.Amatsuki
 import pw.mihou.amelia.io.rome.FeedItem
+import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.listeners.AnnouncementModalListener
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.tasks.FeedTask
@@ -108,6 +109,7 @@ private fun onShardLogin(shard: DiscordApi) {
     shard.setReconnectDelay { it * 2 }
     shard.updateActivity(ActivityType.WATCHING, "People read stories!")
 
+    logger.info("Connected as ${shard.yourself.name}.")
     logger.info("Connected to shard ${shard.currentShard} with ${shard.servers.size} servers.")
 }
 

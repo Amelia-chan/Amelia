@@ -27,7 +27,7 @@ object FeedTask: Runnable {
         }
 
         lock.withLock {
-            canAccessAuthor = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=author&uid=24680")?.isNotEmpty() ?: false
+            canAccessAuthor = RssReader.cached("https://www.scribblehub.com/rssfeed.php?type=author&uid=24680")?.second?.isNotEmpty() ?: false
 
             val feeds = FeedDatabase.connection.find()
                 .map { FeedModel.from(it) }
@@ -42,14 +42,16 @@ object FeedTask: Runnable {
                         val server = Nexus.sharding.server(feed.server) ?: continue
                         val channel = server.getTextChannelById(feed.channel).orElse(null) ?: continue
 
-                        val posts = RssReader.cached(feed.feedUrl)?.
-                        filter { it.date!!.after(feed.date) }?.
-                        sortedBy { it.date!! }
+                        val res = RssReader.cached(feed.feedUrl)
 
-                        if (posts == null) {
+                        if (res == null) {
                             FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), Updates.set("accessible", false))
                             continue
                         }
+
+                        val (lastBuildDate, posts) = res.first to res.second
+                            .filter { it.date!!.after(feed.date) }
+                            .sortedBy { it.date!! }
 
                         if (posts.isEmpty()) {
                             if (!feed.accessible) {
@@ -60,7 +62,7 @@ object FeedTask: Runnable {
 
                         val result = FeedDatabase.connection.updateOne(Filters.eq("unique", feed.unique), 
                             Updates.combine(
-                               Updates.set("date", posts[0].date), 
+                               Updates.set("date", lastBuildDate),
                                Updates.set("accessible", true)
                             )
                        )

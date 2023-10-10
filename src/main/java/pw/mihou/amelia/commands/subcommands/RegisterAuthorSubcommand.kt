@@ -64,12 +64,14 @@ object RegisterAuthorSubcommand {
                                     val id = cursor.item.id
                                     val feed = "https://www.rssscribblehub.com/rssfeed.php?type=author&uid=$id"
 
-                                    val latestPosts = RssReader.cached(feed)
+                                    val res = RssReader.cached(feed)
 
-                                    if (latestPosts == null) {
+                                    if (res == null) {
                                         message.edit("❌ Amelia encountered a problem while trying to send: ScribbleHub is not accessible.")
                                         return@update
                                     }
+
+                                    val (_, latestPosts) = res
 
                                     if (latestPosts.isEmpty()) {
                                         message.edit(TemplateMessages.ERROR_RSSSCRIBBLEHUB_NOT_ACCESSIBLE)
