@@ -1,7 +1,7 @@
 [service]
 name = "amelia"
 build = "/"
-repository = "https://github.com/Amelia-chan/Amelia"
+repository = { link = "https://github.com/Amelia-chan/Amelia" }
 restart_policy = { name = "always" }
 override = true
 
