@@ -115,7 +115,7 @@ object RegisterAuthorSubcommand {
                                 }
                             cursor.parent().parent.destroy()
                         }
-                    }).build().send(event.baseEvent.interaction, updater)
+                    }).build().send(event.event.interaction, updater)
                 }.exceptionally {
                     it.printStackTrace()
 

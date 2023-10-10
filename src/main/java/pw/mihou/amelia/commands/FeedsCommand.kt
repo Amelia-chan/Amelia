@@ -47,7 +47,7 @@ object FeedsCommand: NexusHandler {
         val server = event.server.orElse(null)
 
         if (server == null) {
-            event.respondNowAsEphemeral().setContent("❌ You cannot use this command in a private channel.").respond()
+            event.respondNowEphemerallyWith("❌ You cannot use this command in a private channel.")
             return
         }
 
@@ -57,17 +57,17 @@ object FeedsCommand: NexusHandler {
                 val feed = FeedDatabase.get(id)
 
                 if (feed == null) {
-                    event.respondNowAsEphemeral().setContent("❌ There are no feeds with the id of **$id**.").respond()
+                    event.respondNowEphemerallyWith("❌ There are no feeds with the id of **$id**.")
                     return
                 }
 
-                event.respondNowAsEphemeral().addEmbed(embed(server, feed, event.user)).respond()
+                event.respondNowEphemerallyWith(embed(server, feed, event.user))
             }
             false -> {
                 val chunks = FeedDatabase.all(server.id).chunked(5)
 
                 if (chunks.isEmpty()) {
-                    event.respondNow().setContent("❌ There are no feeds registered on this server, please use the `/register` command to register one!").respond()
+                    event.respondNowEphemerallyWith("❌ There are no feeds registered on this server, please use the `/register` command to register one!")
                     return
                 }
 
@@ -85,7 +85,7 @@ object FeedsCommand: NexusHandler {
                         }
                     })
                     .build()
-                    .send(event.baseEvent.interaction, event.respondLater().join())
+                    .send(event.event.interaction, event.respondLater().join())
                     .thenAccept {  instance ->
                         scheduledExecutorService.schedule({
                             instance.parent.destroy(instance.uuid)

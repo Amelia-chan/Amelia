@@ -1,30 +1,25 @@
 package pw.mihou.amelia.commands.middlewares
 
 import pw.mihou.amelia.templates.TemplateMessages
-import pw.mihou.nexus.features.command.interceptors.facades.NexusInterceptorRepository
-import pw.mihou.nexus.features.messages.facade.NexusMessage
+import pw.mihou.nexus.Nexus
+import pw.mihou.nexus.features.messages.NexusMessage
 
-object Middlewares: NexusInterceptorRepository() {
+object Middlewares {
 
-    const val MODERATOR_ONLY = "amelia.role.moderator"
+    val MODERATOR_ONLY = Nexus.interceptors.middleware("amelia.role.moderator") { event ->
+        if (event.server.isEmpty) {
+            event.stop(NexusMessage.from("❌ You cannot use this command in a private channel.", true))
+            return@middleware
+        }
 
-    override fun define() {
-        middleware(MODERATOR_ONLY) { event ->
-            if (event.server.isEmpty) {
-                event.stop(NexusMessage.fromEphemereal("❌ You cannot use this command in a private channel."))
-                return@middleware
-            }
+        val server = event.server.orElseThrow()
 
-            val server = event.server.orElseThrow()
-
-            if (!(server.isAdmin(event.user) || server.isOwner(event.user) || server.canManage(event.user)
-                        || server.canCreateChannels(event.user))) {
-                event.stop(
-                    NexusMessage.fromEphemereal(TemplateMessages.ERROR_MISSING_PERMISSIONS)
-                )
-                return@middleware
-            }
+        if (!(server.isAdmin(event.user) || server.isOwner(event.user) || server.canManage(event.user)
+                    || server.canCreateChannels(event.user))) {
+            event.stop(
+                NexusMessage.from(TemplateMessages.ERROR_MISSING_PERMISSIONS, true)
+            )
+            return@middleware
         }
     }
-
 }

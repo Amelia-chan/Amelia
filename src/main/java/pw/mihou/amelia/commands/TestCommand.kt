@@ -112,7 +112,7 @@ object TestCommand: NexusHandler {
             }
         }.exceptionally { exception ->
             exception.printStackTrace()
-            event.respondNowAsEphemeral().setContent("❌ Amelia encountered a problem while trying to send: ${exception.message}").respond()
+            event.respondNowEphemerallyWith("❌ Amelia encountered a problem while trying to send: ${exception.message}")
 
             null
         }

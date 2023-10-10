@@ -13,12 +13,10 @@ import org.javacord.api.util.logging.ExceptionLogger
 import org.slf4j.LoggerFactory
 import pw.mihou.Amaririsu
 import pw.mihou.amelia.commands.*
-import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.MongoDB
 import pw.mihou.amelia.io.Amatsuki
 import pw.mihou.amelia.io.rome.FeedItem
-import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.listeners.AnnouncementModalListener
 import pw.mihou.amelia.models.FeedModel
 import pw.mihou.amelia.tasks.FeedTask
@@ -26,7 +24,7 @@ import pw.mihou.cache.Cache
 import pw.mihou.cache.Cacheable
 import pw.mihou.dotenv.Dotenv
 import pw.mihou.nexus.Nexus
-import pw.mihou.nexus.features.command.interceptors.facades.NexusCommandInterceptor
+import pw.mihou.nexus.features.command.interceptors.commons.NexusCommonInterceptors
 import pw.mihou.nexus.features.command.validation.errors.ValidationError
 import java.io.File
 import java.text.SimpleDateFormat
@@ -54,6 +52,7 @@ fun main() {
             Amatsuki.cache.put(uri, item)
         }
     })
+    Nexus.addGlobalAfterwares(NexusCommonInterceptors.NEXUS_LOG)
 
     Nexus.commands(
         FeedsCommand,
@@ -68,8 +67,6 @@ fun main() {
     if (Configuration.DEVELOPER_SERVER != 0L) {
         Nexus.command(AnnounceCommand)
     }
-
-    NexusCommandInterceptor.addRepository(Middlewares)
 
     DiscordApiBuilder()
         .setToken(Configuration.DISCORD_TOKEN)

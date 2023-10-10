@@ -16,7 +16,7 @@ object RegisterListSubcommand {
         val name = subcommand.getArgumentStringValueByName("name").orElseThrow()
         val channel = subcommand.getArgumentChannelValueByName("channel").flatMap { it.asServerTextChannel() }.orElseThrow()
 
-        event.respondLaterAsEphemeral().thenAccept { updater ->
+        event.respondLaterEphemerally().thenAccept { updater ->
             try {
                 val link = subcommand.getArgumentStringValueByName("link").orElseThrow().toUrl()
                 val queries = link.params

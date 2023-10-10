@@ -35,9 +35,7 @@ object AnnounceCommand: NexusHandler {
 
     override fun onEvent(event: NexusCommandEvent) {
         if (!event.user.isBotOwnerOrTeamMember) {
-            event.respondNowAsEphemeral()
-                    .setContent("❌ You lack the privileges to use this command.")
-                    .respond()
+            event.respondNowEphemerallyWith("❌ You lack the privileges to use this command.")
             return
         }
 

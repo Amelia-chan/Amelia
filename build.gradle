@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id "org.jetbrains.kotlin.jvm" version "1.7.10"
+    id "org.jetbrains.kotlin.jvm" version "1.9.0"
     id 'application'
 }
 
@@ -32,7 +32,7 @@ task downloadDependencies(type: Copy) {
 
 dependencies {
     implementation 'pw.mihou:Dotenv:1.0.1'
-    implementation 'pw.mihou:Nexus:996684b1be'
+    implementation 'pw.mihou:Nexus:ce64bc0b26'
     implementation 'pw.mihou:Amaririsu:ba71149da1'
     implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.18.0'
     implementation 'org.mongodb:mongodb-driver-sync:4.7.1'
