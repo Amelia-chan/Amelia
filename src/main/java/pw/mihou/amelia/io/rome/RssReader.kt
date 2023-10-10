@@ -29,6 +29,10 @@ object RssReader {
         return try {
             val document = SimpleXmlClient.read(url.replaceFirst("https://www.scribblehub.com", "https://www.rssscribblehub.com"))
             val lastBuildDate = document.getElementsByTagName("lastBuildDate").item(0)
+            if (lastBuildDate.textContent == "") {
+                logger.warn("$url has no last build date.")
+                return null
+            }
             Amelia.formatter.parse(lastBuildDate.textContent) to nodeListToFeedItems(document.getElementsByTagName("item"))
         } catch (exception: Exception) {
             logger.error("Failed to connect to $url, discarding request...", exception)
