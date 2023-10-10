@@ -6,6 +6,7 @@ import org.w3c.dom.NodeList
 import pw.mihou.amelia.Amelia
 import pw.mihou.amelia.io.xml.SimpleXmlClient
 import pw.mihou.amelia.logger
+import java.time.Instant
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
@@ -31,7 +32,7 @@ object RssReader {
             val lastBuildDate = document.getElementsByTagName("lastBuildDate").item(0)
             if (lastBuildDate.textContent == "") {
                 logger.warn("$url has no last build date.")
-                return null
+                return Date.from(Instant.now()) to emptyList()
             }
             Amelia.formatter.parse(lastBuildDate.textContent) to nodeListToFeedItems(document.getElementsByTagName("item"))
         } catch (exception: Exception) {
