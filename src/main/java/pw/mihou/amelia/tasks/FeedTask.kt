@@ -9,8 +9,8 @@ import pw.mihou.amelia.Amelia
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
 import pw.mihou.amelia.logger.logger
+import pw.mihou.amelia.metrics.Metrics
 import pw.mihou.amelia.rss.reader.RssReader
-import pw.mihou.amelia.session.AmeliaSession
 import pw.mihou.nexus.Nexus
 
 object FeedTask : Runnable {
@@ -100,7 +100,7 @@ object FeedTask : Runnable {
                                 channel
                                     .sendMessage(contents)
                                     .thenAccept {
-                                        AmeliaSession.feedsUpdated.incrementAndGet()
+                                        Metrics.feedsUpdated.incrementAndGet()
                                         logger.info(
                                             "I have sent a feed update to a server with success. [feed=${feed.feedUrl}, server=${channel.server.id}]",
                                         )

@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 import org.javacord.api.entity.message.embed.EmbedBuilder
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
-import pw.mihou.amelia.session.AmeliaSession
+import pw.mihou.amelia.metrics.Metrics
 import pw.mihou.amelia.tasks.FeedTask
 import pw.mihou.amelia.utility.StringUtils
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
@@ -71,7 +71,7 @@ object PingCommand : NexusHandler {
                             ).addField(
                                 "Session Information",
                                 "☁ Total updates sent: `" +
-                                    format(AmeliaSession.feedsUpdated.get().toLong()) +
+                                    format(Metrics.feedsUpdated.get()) +
                                     " chapters notified to servers`",
                             ).addField(
                                 "Inquiries",
