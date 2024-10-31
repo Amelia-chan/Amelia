@@ -31,15 +31,30 @@ task downloadDependencies(type: Copy) {
 }
 
 dependencies {
-    implementation 'pw.mihou:Dotenv:1.0.1'
-    implementation 'pw.mihou:Nexus:ce64bc0b26'
+    implementation 'pw.mihou:envi:ccf6de7a5a'
+
+    implementation 'pw.mihou:nexus:fd92045cb8'
+    implementation 'pw.mihou:nexus.coroutines:582083f6cb'
+
     implementation 'pw.mihou:Amaririsu:ba71149da1'
+
     implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.18.0'
-    implementation 'org.mongodb:mongodb-driver-sync:4.7.1'
-    implementation 'org.slf4j:slf4j-api:2.0.0'
-    implementation 'org.javacord:javacord:3.7.0'
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC'
+    implementation 'org.mongodb:mongodb-driver-kotlin-coroutine:4.11.0'
+    implementation 'pw.mihou:ko-manga:6da5af2fca'
+
+    implementation 'org.slf4j:slf4j-api:2.0.7'
+    implementation 'org.javacord:javacord:3.8.0'
+
+    implementation 'pw.mihou:simple-khttp:1b0236b788'
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
-    implementation 'org.json:json:20230227'
+
+    implementation 'org.json:json:20231013'
     implementation 'com.github.ben-manes.caffeine:caffeine:3.1.1'
-    implementation 'ch.qos.logback:logback-classic:1.4.0'
+
+    implementation 'ch.qos.logback:logback-classic:1.4.12'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+    implementation 'org.jetbrains.kotlinx:kotlinx-datetime:0.4.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.4'
 }
