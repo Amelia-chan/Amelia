@@ -20,7 +20,8 @@ public class StringUtils {
      * @return String.
      */
     public static String stripToLengthWhileDotsEnd(String content, int length) {
-        return content != null ? (content.replaceAll(" ", "").length() > length ? content.substring(0, length) + "..." : content) : "No context.";
+        return content != null ? (content.replaceAll(" ", "").length() > length ?
+         content.substring(0, length) + "..." : content) : "No context.";
     }
 
 }
