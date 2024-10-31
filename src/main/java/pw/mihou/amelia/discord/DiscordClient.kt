@@ -26,13 +26,14 @@ import pw.mihou.amelia.scheduledExecutorService
 import pw.mihou.amelia.tasks.FeedTask
 import pw.mihou.commons.discord.delegates.DiscordClientInterface
 import pw.mihou.nexus.features.command.interceptors.commons.NexusCommonInterceptors
+import pw.mihou.nexus.features.command.validation.errors.ValidationError
 import pw.mihou.nexus.features.contexts.facade.NexusContextMenuHandler
 import pw.mihou.reakt.logger.adapters.FastLoggingAdapter
 
 @Suppress("ktlint:standard:property-naming")
 object DiscordClient : DiscordClientInterface {
     val NexusConfiguration: NexusConfigurator = {
-        // You can configure the settings of Nexus here to make things easier.
+        ValidationError.textTemplate = { message -> "❌ $message" }
     }
 
     val ReaktConfiguration: ReaktConfigurator = {

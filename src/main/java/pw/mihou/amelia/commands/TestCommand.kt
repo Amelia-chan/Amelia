@@ -7,7 +7,7 @@ import pw.mihou.amelia.Amelia
 import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
-import pw.mihou.amelia.io.rome.RssReader
+import pw.mihou.amelia.rss.reader.RssReader
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler

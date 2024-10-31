@@ -5,20 +5,15 @@ import java.text.SimpleDateFormat
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import org.javacord.api.entity.server.Server
-import pw.mihou.Amaririsu
-import pw.mihou.amelia.commands.*
 import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.MongoDB
 import pw.mihou.amelia.db.models.FeedModel
 import pw.mihou.amelia.discord.DiscordClient
-import pw.mihou.amelia.io.Amatsuki
-import pw.mihou.amelia.io.rome.FeedItem
 import pw.mihou.amelia.logger.logger
-import pw.mihou.cache.Cache
-import pw.mihou.cache.Cacheable
+import pw.mihou.amelia.rss.Amatsuki
+import pw.mihou.amelia.rss.reader.FeedItem
 import pw.mihou.envi.Envi
 import pw.mihou.envi.adapters.dotenv.SimpleDotenvAdapter
-import pw.mihou.nexus.features.command.validation.errors.ValidationError
 
 val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 
@@ -26,26 +21,13 @@ fun main() {
     Envi
         .createConfigurator(SimpleDotenvAdapter)
         .read(File(".env"), Configuration::class.java)
+
     logger.info("Amelia Client by Shindou Mihou")
     logger.info("Preparing to connect to the database... this may take a moment.")
 
-    // This is to trigger the initial init from the database.
     MongoDB.client.listDatabaseNames()
-    ValidationError.Companion.textTemplate = { message -> "❌ $message" }
 
-    Amaririsu.set(
-        object : Cache {
-            override fun get(uri: String): Cacheable? = Amatsuki.cache.getIfPresent(uri)
-
-            override fun set(
-                uri: String,
-                item: Cacheable,
-            ) {
-                Amatsuki.cache.put(uri, item)
-            }
-        },
-    )
-
+    Amatsuki.init()
     DiscordClient.connect()
 }
 

@@ -8,8 +8,8 @@ import kotlin.system.measureTimeMillis
 import pw.mihou.amelia.Amelia
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
-import pw.mihou.amelia.io.rome.RssReader
 import pw.mihou.amelia.logger.logger
+import pw.mihou.amelia.rss.reader.RssReader
 import pw.mihou.amelia.session.AmeliaSession
 import pw.mihou.nexus.Nexus
 

@@ -1,4 +1,4 @@
-package pw.mihou.amelia.io.rome
+package pw.mihou.amelia.rss.reader
 
 import java.text.ParseException
 import java.util.*

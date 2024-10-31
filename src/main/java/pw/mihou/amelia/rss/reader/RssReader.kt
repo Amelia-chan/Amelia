@@ -1,4 +1,4 @@
-package pw.mihou.amelia.io.rome
+package pw.mihou.amelia.rss.reader
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.LoadingCache
@@ -7,8 +7,8 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 import org.w3c.dom.NodeList
 import pw.mihou.amelia.Amelia
-import pw.mihou.amelia.io.xml.SimpleXmlClient
 import pw.mihou.amelia.logger.logger
+import pw.mihou.amelia.rss.xml.SimpleXmlClient
 
 object RssReader {
     private val cache: LoadingCache<String, Pair<Date, List<FeedItem>>> =

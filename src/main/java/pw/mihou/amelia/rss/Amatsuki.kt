@@ -1,11 +1,12 @@
-package pw.mihou.amelia.io
+package pw.mihou.amelia.rss
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import java.time.Duration
 import pw.mihou.Amaririsu
 import pw.mihou.amelia.db.models.FeedModel
-import pw.mihou.amelia.io.rome.FeedItem
 import pw.mihou.amelia.logger.logger
+import pw.mihou.amelia.rss.reader.FeedItem
+import pw.mihou.cache.Cache
 import pw.mihou.cache.Cacheable
 
 object Amatsuki {
@@ -21,6 +22,21 @@ object Amatsuki {
     private val BASE_USER_URL: (
         Int,
     ) -> String = { id -> "https://scribblehub.com/profile/$id/amelia-discord-bot/" }
+
+    fun init() {
+        Amaririsu.set(
+            object : Cache {
+                override fun get(uri: String): Cacheable? = cache.getIfPresent(uri)
+
+                override fun set(
+                    uri: String,
+                    item: Cacheable,
+                ) {
+                    cache.put(uri, item)
+                }
+            },
+        )
+    }
 
     fun authorFrom(
         item: FeedItem,

@@ -6,7 +6,7 @@ import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
 import pw.mihou.amelia.extensions.params
 import pw.mihou.amelia.extensions.toUrl
-import pw.mihou.amelia.io.rome.RssReader
+import pw.mihou.amelia.rss.reader.RssReader
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 
@@ -55,14 +55,13 @@ object RegisterListSubcommand {
                         return@thenAccept
                     }
 
-                    if (type.equals("local", ignoreCase = true) && lid == null)
-                        {
-                            updater
-                                .setContent(
-                                    TemplateMessages.ERROR_INVALID_READING_LIST_LINK,
-                                ).update()
-                            return@thenAccept
-                        }
+                    if (type.equals("local", ignoreCase = true) && lid == null) {
+                        updater
+                            .setContent(
+                                TemplateMessages.ERROR_INVALID_READING_LIST_LINK,
+                            ).update()
+                        return@thenAccept
+                    }
 
                     var newLink = "https://www.rssscribblehub.com/rssfeed.php?type=$type&uid=$uid&unq=$unq"
 

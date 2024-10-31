@@ -10,7 +10,7 @@ import org.javacord.api.util.logging.ExceptionLogger
 import pw.mihou.Amaririsu
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
-import pw.mihou.amelia.io.rome.RssReader
+import pw.mihou.amelia.rss.reader.RssReader
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.amelia.utility.future
 import pw.mihou.models.user.UserResultOrAuthor
