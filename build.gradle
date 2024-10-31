@@ -40,6 +40,7 @@ dependencies {
 
     implementation 'pw.mihou:nexus:fd92045cb8'
     implementation 'pw.mihou:nexus.coroutines:582083f6cb'
+    implementation 'pw.mihou:reakt.discord:05c76979ff'
 
     implementation 'pw.mihou:Amaririsu:ba71149da1'
 
