@@ -1,13 +1,14 @@
 package pw.mihou.amelia.io.rome
 
-import org.w3c.dom.Node
-import pw.mihou.amelia.Amelia.formatter
-import pw.mihou.amelia.logger
 import java.text.ParseException
 import java.util.*
+import org.w3c.dom.Node
+import pw.mihou.amelia.Amelia.formatter
+import pw.mihou.amelia.logger.logger
 
-class FeedItem(node: Node) {
-
+class FeedItem(
+    node: Node,
+) {
     val title: String?
     val date: Date?
     val author: String?
@@ -41,7 +42,11 @@ class FeedItem(node: Node) {
                     try {
                         localDate = formatter.parse(childNode.textContent)
                     } catch (e: ParseException) {
-                        logger.error("Amelia wasn't able to parse the date {}, exception: {}", childNode.textContent, e.message)
+                        logger.error(
+                            "Amelia wasn't able to parse the date {}, exception: {}",
+                            childNode.textContent,
+                            e.message,
+                        )
                     }
                 }
             }
@@ -54,7 +59,6 @@ class FeedItem(node: Node) {
         date = localDate
     }
 
-    override fun toString(): String {
-        return "{title=$title, date=$date, author=$author, link=$link, category=$category}"
-    }
+    override fun toString(): String =
+        "{title=$title, date=$date, author=$author, link=$link, category=$category}"
 }

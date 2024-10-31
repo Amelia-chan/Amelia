@@ -8,28 +8,28 @@ import com.mongodb.client.model.Indexes
 import pw.mihou.amelia.configuration.Configuration
 
 object MongoDB {
-
-    val client: MongoClient = MongoClients.create(
-        MongoClientSettings.builder()
-            .applicationName("Amelia Client")
-            .applyConnectionString(ConnectionString(Configuration.MONGO_URI))
-            .build()
-    )
+    val client: MongoClient =
+        MongoClients.create(
+            MongoClientSettings
+                .builder()
+                .applicationName("Amelia Client")
+                .applyConnectionString(ConnectionString(Configuration.MONGO_URI))
+                .build(),
+        )
 
     init {
         client.getDatabase("amelia").getCollection("feeds").createIndex(
             Indexes.compoundIndex(
                 Indexes.descending("unique"),
-                Indexes.descending("server")
-            )
+                Indexes.descending("server"),
+            ),
         )
 
         client.getDatabase("amelia").getCollection("feeds").createIndex(
             Indexes.compoundIndex(
                 Indexes.descending("server"),
-                Indexes.text("name")
-            )
+                Indexes.text("name"),
+            ),
         )
     }
-
 }

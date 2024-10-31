@@ -1,13 +1,16 @@
 package pw.mihou.amelia.configuration
 
-import pw.mihou.dotenv.annotations.EnvironmentItem
+import pw.mihou.envi.annotations.Alternatively
+import pw.mihou.envi.annotations.Required
 
+@Suppress("ktlint:standard:property-naming")
 object Configuration {
-
+    @Required
     lateinit var DISCORD_TOKEN: String
+
+    @Required
     lateinit var MONGO_URI: String
 
-    @EnvironmentItem(key = "\$DEVELOPER_SERVER_ID")
+    @Alternatively("\$DEVELOPER_SERVER_ID")
     var DEVELOPER_SERVER: Long = 0L
-
 }
