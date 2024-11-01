@@ -6,8 +6,6 @@ import kotlin.time.Duration.Companion.minutes
 import org.javacord.api.DiscordApi
 import org.javacord.api.entity.activity.ActivityType
 import org.javacord.api.entity.intent.Intent
-import org.javacord.api.listener.connection.ReconnectListener
-import org.javacord.api.listener.connection.ResumeListener
 import org.javacord.api.listener.server.ServerLeaveListener
 import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.MongoDB
@@ -20,6 +18,7 @@ import pw.mihou.amelia.discord.commands.RemoveCommand
 import pw.mihou.amelia.discord.commands.TestCommand
 import pw.mihou.amelia.discord.delegates.NexusConfigurator
 import pw.mihou.amelia.discord.delegates.ReaktConfigurator
+import pw.mihou.amelia.discord.listeners.ActivityListener
 import pw.mihou.amelia.discord.listeners.AnnouncementModalListener
 import pw.mihou.amelia.logger.logger
 import pw.mihou.amelia.scheduledExecutorService
@@ -60,16 +59,7 @@ object DiscordClient : DiscordClientInterface {
     val Listeners =
         buildList {
             add(AnnouncementModalListener)
-            add(
-                ResumeListener { event ->
-                    event.api.updateActivity(ActivityType.WATCHING, "People read stories!")
-                },
-            )
-            add(
-                ReconnectListener { event ->
-                    event.api.updateActivity(ActivityType.WATCHING, "People read stories!")
-                },
-            )
+            add(ActivityListener)
             add(
                 ServerLeaveListener { event ->
                     MongoDB.client.getDatabase("amelia").getCollection("feeds").deleteMany(
@@ -98,7 +88,7 @@ object DiscordClient : DiscordClientInterface {
         shard.setAutomaticMessageCacheCleanupEnabled(true)
         shard.setMessageCacheSize(10, 60 * 60)
         shard.setReconnectDelay { it * 2 }
-        shard.updateActivity(ActivityType.WATCHING, "People read stories!")
+        shard.updateActivity(ActivityType.WATCHING, Configuration.APP_ACTIVITY)
 
         logger.info("Connected as ${shard.yourself.name}.")
         logger.info("Connected to shard ${shard.currentShard} with ${shard.servers.size} servers.")

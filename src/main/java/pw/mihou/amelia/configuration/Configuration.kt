@@ -6,6 +6,8 @@ import pw.mihou.envi.annotations.Required
 @Suppress("ktlint:standard:property-naming")
 object Configuration {
     var APP_NAME = "Amelia"
+    var APP_ACTIVITY = "People read stories!"
+
     var LOADING_EMOJI = "<a:manaWinterLoading:880162110947094628>"
     var IS_SELF_HOSTED = false
 
