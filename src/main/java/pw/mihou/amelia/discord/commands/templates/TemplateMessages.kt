@@ -1,4 +1,4 @@
-package pw.mihou.amelia.commands.templates
+package pw.mihou.amelia.discord.commands.templates
 
 import pw.mihou.amelia.configuration.Configuration
 

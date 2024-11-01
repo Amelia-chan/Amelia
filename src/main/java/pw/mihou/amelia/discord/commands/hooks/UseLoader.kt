@@ -1,4 +1,4 @@
-package pw.mihou.amelia.commands.hooks
+package pw.mihou.amelia.discord.commands.hooks
 
 import pw.mihou.reakt.Reakt
 

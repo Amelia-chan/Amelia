@@ -1,4 +1,4 @@
-package pw.mihou.amelia.commands
+package pw.mihou.amelia.discord.commands
 
 import java.awt.Color
 import java.util.concurrent.TimeUnit

@@ -1,10 +1,10 @@
-package pw.mihou.amelia.commands.subcommands
+package pw.mihou.amelia.discord.commands.subcommands
 
 import org.javacord.api.interaction.SlashCommandInteractionOption
 import org.javacord.api.util.logging.ExceptionLogger
-import pw.mihou.amelia.commands.templates.TemplateMessages
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
+import pw.mihou.amelia.discord.commands.templates.TemplateMessages
 import pw.mihou.amelia.extensions.params
 import pw.mihou.amelia.extensions.toUrl
 import pw.mihou.amelia.rss.reader.RssReader

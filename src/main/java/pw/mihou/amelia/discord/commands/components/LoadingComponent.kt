@@ -1,6 +1,6 @@
-package pw.mihou.amelia.commands.components
+package pw.mihou.amelia.discord.commands.components
 
-import pw.mihou.amelia.commands.templates.TemplateMessages
+import pw.mihou.amelia.discord.commands.templates.TemplateMessages
 import pw.mihou.reakt.Reakt
 
 val Reakt.Document.Loading get() =

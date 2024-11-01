@@ -1,4 +1,4 @@
-package pw.mihou.amelia.commands.subcommands
+package pw.mihou.amelia.discord.commands.subcommands
 
 import java.awt.Color
 import org.javacord.api.entity.message.embed.EmbedBuilder

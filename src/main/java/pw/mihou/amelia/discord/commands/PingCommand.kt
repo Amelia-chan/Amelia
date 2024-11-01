@@ -1,4 +1,4 @@
-package pw.mihou.amelia.commands
+package pw.mihou.amelia.discord.commands
 
 import com.sun.management.OperatingSystemMXBean
 import java.awt.Color

@@ -1,13 +1,13 @@
-package pw.mihou.amelia.commands
+package pw.mihou.amelia.discord.commands
 
 import org.javacord.api.interaction.SlashCommandOption
 import org.javacord.api.interaction.SlashCommandOptionType
 import pw.mihou.amelia.Amelia
-import pw.mihou.amelia.commands.middlewares.Middlewares
-import pw.mihou.amelia.commands.templates.TemplateMessages
 import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.methods.feeds.Feeds
 import pw.mihou.amelia.db.models.FeedModel
+import pw.mihou.amelia.discord.commands.middlewares.Middlewares
+import pw.mihou.amelia.discord.commands.templates.TemplateMessages
 import pw.mihou.amelia.rss.reader.RssReader
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler

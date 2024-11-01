@@ -1,4 +1,4 @@
-package pw.mihou.amelia.commands
+package pw.mihou.amelia.discord.commands
 
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
@@ -7,11 +7,11 @@ import java.awt.Color
 import org.javacord.api.entity.message.embed.EmbedBuilder
 import org.javacord.api.interaction.SlashCommandOption
 import org.javacord.api.interaction.SlashCommandOptionType
-import pw.mihou.amelia.commands.middlewares.Middlewares
-import pw.mihou.amelia.commands.templates.TemplateMessages
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.methods.feeds.Feeds
 import pw.mihou.amelia.db.models.FeedModel
+import pw.mihou.amelia.discord.commands.middlewares.Middlewares
+import pw.mihou.amelia.discord.commands.templates.TemplateMessages
 import pw.mihou.amelia.utility.confirmationMenu
 import pw.mihou.amelia.utility.redactListLink
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent

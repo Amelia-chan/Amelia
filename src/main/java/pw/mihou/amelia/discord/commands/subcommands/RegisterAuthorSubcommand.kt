@@ -1,16 +1,16 @@
-package pw.mihou.amelia.commands.subcommands
+package pw.mihou.amelia.discord.commands.subcommands
 
 import org.javacord.api.interaction.SlashCommandInteractionOption
 import pw.mihou.Amaririsu
-import pw.mihou.amelia.commands.components.ErrorEmbed
-import pw.mihou.amelia.commands.components.Loading
-import pw.mihou.amelia.commands.components.PaginatedButtons
-import pw.mihou.amelia.commands.components.PlainEmbed
-import pw.mihou.amelia.commands.components.UserResultEmbed
-import pw.mihou.amelia.commands.hooks.useDeletable
-import pw.mihou.amelia.commands.hooks.useLoader
-import pw.mihou.amelia.commands.templates.TemplateMessages
 import pw.mihou.amelia.db.methods.feeds.Feeds
+import pw.mihou.amelia.discord.commands.components.ErrorEmbed
+import pw.mihou.amelia.discord.commands.components.Loading
+import pw.mihou.amelia.discord.commands.components.PaginatedButtons
+import pw.mihou.amelia.discord.commands.components.PlainEmbed
+import pw.mihou.amelia.discord.commands.components.UserResultEmbed
+import pw.mihou.amelia.discord.commands.hooks.useDeletable
+import pw.mihou.amelia.discord.commands.hooks.useLoader
+import pw.mihou.amelia.discord.commands.templates.TemplateMessages
 import pw.mihou.models.user.UserResultOrAuthor
 import pw.mihou.nexus.coroutines.utils.coroutine
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent

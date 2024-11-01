@@ -1,6 +1,6 @@
-package pw.mihou.amelia.commands.middlewares
+package pw.mihou.amelia.discord.commands.middlewares
 
-import pw.mihou.amelia.commands.templates.TemplateMessages
+import pw.mihou.amelia.discord.commands.templates.TemplateMessages
 import pw.mihou.nexus.Nexus
 import pw.mihou.nexus.features.messages.NexusMessage
 

@@ -1,6 +1,6 @@
 @file:Suppress("NAME_SHADOWING")
 
-package pw.mihou.amelia.commands.components
+package pw.mihou.amelia.discord.commands.components
 
 import pw.mihou.models.user.UserResultOrAuthor
 import pw.mihou.reakt.Reakt

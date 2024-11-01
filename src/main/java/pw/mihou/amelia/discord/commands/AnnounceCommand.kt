@@ -1,4 +1,4 @@
-package pw.mihou.amelia.commands
+package pw.mihou.amelia.discord.commands
 
 import org.javacord.api.entity.message.component.ActionRow
 import org.javacord.api.entity.message.component.TextInput
