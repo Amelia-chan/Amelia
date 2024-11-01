@@ -3,7 +3,6 @@ package pw.mihou.amelia.discord
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
 import org.javacord.api.DiscordApi
-import org.javacord.api.entity.activity.ActivityType
 import org.javacord.api.entity.intent.Intent
 import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.discord.commands.AnnounceCommand
@@ -80,7 +79,7 @@ object DiscordClient : DiscordClientInterface {
         shard.setAutomaticMessageCacheCleanupEnabled(true)
         shard.setMessageCacheSize(10, 60 * 60)
         shard.setReconnectDelay { it * 2 }
-        shard.updateActivity(ActivityType.WATCHING, Configuration.APP_ACTIVITY)
+        shard.updateActivity(Configuration.APP_ACTIVITY_TYPE, Configuration.APP_ACTIVITY)
 
         logger.info("Connected as ${shard.yourself.name}.")
         logger.info("Connected to shard ${shard.currentShard} with ${shard.servers.size} servers.")
@@ -96,6 +95,6 @@ object DiscordClient : DiscordClientInterface {
      * such as changing the bot's status messages, or even doing some occasional checks that you may want to do.
      */
     suspend fun onTick(shard: DiscordApi) {
-        shard.updateActivity(ActivityType.WATCHING, "People read stories!")
+        shard.updateActivity(Configuration.APP_ACTIVITY_TYPE, Configuration.APP_ACTIVITY)
     }
 }

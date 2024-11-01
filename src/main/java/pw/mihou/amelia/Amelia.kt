@@ -4,8 +4,10 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
+import org.javacord.api.entity.activity.ActivityType
 import org.javacord.api.entity.server.Server
 import pw.mihou.amelia.configuration.Configuration
+import pw.mihou.amelia.configuration.adapters.ActivityTypeAdapter
 import pw.mihou.amelia.db.MongoDB
 import pw.mihou.amelia.db.models.FeedModel
 import pw.mihou.amelia.discord.DiscordClient
@@ -14,10 +16,12 @@ import pw.mihou.amelia.rss.Amatsuki
 import pw.mihou.amelia.rss.reader.FeedItem
 import pw.mihou.envi.Envi
 import pw.mihou.envi.adapters.dotenv.SimpleDotenvAdapter
+import pw.mihou.envi.adapters.standard.EnviBiasedConverter
 
 val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 
 fun main() {
+    EnviBiasedConverter.adapters[ActivityType::class.java] = ActivityTypeAdapter
     Envi
         .createConfigurator(SimpleDotenvAdapter)
         .read(File(".env"), Configuration::class.java)

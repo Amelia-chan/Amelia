@@ -1,11 +1,14 @@
 package pw.mihou.amelia.configuration
 
+import org.javacord.api.entity.activity.ActivityType
 import pw.mihou.envi.annotations.Alternatively
 import pw.mihou.envi.annotations.Required
 
 @Suppress("ktlint:standard:property-naming")
 object Configuration {
     var APP_NAME = "Amelia"
+
+    var APP_ACTIVITY_TYPE = ActivityType.WATCHING
     var APP_ACTIVITY = "People read stories!"
 
     var LOADING_EMOJI = "<a:manaWinterLoading:880162110947094628>"
