@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.w3c.dom.Document
 import org.xml.sax.InputSource
+import pw.mihou.amelia.configuration.Configuration
 
 /**
  * An XML client intended for small file XMLs that uses the DOM parser together with
@@ -26,7 +27,7 @@ object SimpleXmlClient {
             .build()
 
     @Volatile var userAgent =
-        "Amelia/2.1 (Language=Kotlin/1.7.10, Developer=Shindou Mihou)"
+        "${Configuration.APP_NAME}/2.1 (Language=Kotlin/1.7.10, Developer=Shindou Mihou)"
 
     private val documentBuilder =
         DocumentBuilderFactory

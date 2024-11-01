@@ -74,7 +74,7 @@ object RegisterListSubcommand {
                     if (res == null) {
                         updater
                             .setContent(
-                                "❌ Amelia encountered a problem while trying to send: ScribbleHub is not accessible.",
+                                TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE,
                             ).update()
                         return@thenAccept
                     }

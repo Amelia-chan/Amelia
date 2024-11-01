@@ -4,6 +4,7 @@ import org.javacord.api.interaction.SlashCommandOption
 import org.javacord.api.interaction.SlashCommandOptionType
 import pw.mihou.amelia.Amelia
 import pw.mihou.amelia.commands.middlewares.Middlewares
+import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.models.FeedModel
 import pw.mihou.amelia.feeds.Feeds
 import pw.mihou.amelia.rss.reader.RssReader
@@ -14,7 +15,7 @@ import pw.mihou.nexus.features.command.facade.NexusHandler
 @Suppress("ktlint:standard:property-naming", "UNUSED", "ConstPropertyName")
 object TestCommand : NexusHandler {
     private const val name = "test"
-    private const val description = "Tests a feed to make sure that Amelia is working on that feed."
+    private val description = "Tests a feed to make sure that ${Configuration.APP_NAME} is working on that feed."
 
     private val options =
         listOf(
@@ -91,7 +92,7 @@ object TestCommand : NexusHandler {
                 if (contents == null) {
                     updater
                         .setContent(
-                            "❌ Amelia encountered a problem while trying to send to ${channel.mentionTag}: Amelia failed to format the contents for some reason.",
+                            "❌ ${Configuration.APP_NAME} encountered a problem while trying to send to ${channel.mentionTag}: Amelia failed to format the contents for some reason.",
                         ).update()
                     return@thenAccept
                 }
@@ -101,13 +102,13 @@ object TestCommand : NexusHandler {
                     .thenAccept messageAccept@{
                         updater
                             .setContent(
-                                "✅ Amelia was able to complete the testing of feed without a problem, you can find the message on ${channel.mentionTag}!",
+                                "✅ ${Configuration.APP_NAME} was able to complete the testing of feed without a problem, you can find the message on ${channel.mentionTag}!",
                             ).update()
                         return@messageAccept
                     }.exceptionally { exception ->
                         updater
                             .setContent(
-                                "❌ Amelia encountered a problem while trying to send to ${channel.mentionTag}: ${exception.message}",
+                                "❌ ${Configuration.APP_NAME} encountered a problem while trying to send to ${channel.mentionTag}: ${exception.message}",
                             ).update()
 
                         return@exceptionally null
@@ -115,7 +116,7 @@ object TestCommand : NexusHandler {
             }.exceptionally { exception ->
                 exception.printStackTrace()
                 event.respondNowEphemerallyWith(
-                    "❌ Amelia encountered a problem while trying to send: ${exception.message}",
+                    "❌ ${Configuration.APP_NAME} encountered a problem while trying to send: ${exception.message}",
                 )
 
                 null

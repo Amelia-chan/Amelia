@@ -6,6 +6,7 @@ import java.lang.management.ManagementFactory
 import java.text.NumberFormat
 import java.util.concurrent.TimeUnit
 import org.javacord.api.entity.message.embed.EmbedBuilder
+import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
 import pw.mihou.amelia.metrics.Metrics
@@ -17,7 +18,7 @@ import pw.mihou.nexus.features.command.facade.NexusHandler
 @Suppress("UNUSED")
 object PingCommand : NexusHandler {
     private const val name = "ping"
-    private const val description = "Shows metrics and information about Amelia."
+    private val description = "Shows metrics and information about ${Configuration.APP_NAME}."
 
     private val os = ManagementFactory.getOperatingSystemMXBean() as OperatingSystemMXBean
 
@@ -73,10 +74,14 @@ object PingCommand : NexusHandler {
                                 "☁ Total updates sent: `" +
                                     format(Metrics.feedsUpdated.get()) +
                                     " chapters notified to servers`",
-                            ).addField(
-                                "Inquiries",
-                                "You can send inquiries about Amelia like custom private bot, etc. on our email at **amelia@mihou.pw**!",
-                            ),
+                            ).apply {
+                                if (Configuration.IS_SELF_HOSTED) {
+                                    addField(
+                                        "Inquiries",
+                                        "You can send inquiries about ${Configuration.APP_NAME} like custom private bot, etc. on our email at **amelia@mihou.pw**!",
+                                    )
+                                }
+                            },
                     ).update()
             }
         }

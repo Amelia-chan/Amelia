@@ -52,8 +52,7 @@ object Feeds {
 
         val res =
             RssReader.cached(feed)
-                ?: return "❌ Amelia encountered a problem while trying to send: ScribbleHub is" +
-                    " not accessible."
+                ?: return TemplateMessages.ERROR_RSSSCRIBBLEHUB_NOT_ACCESSIBLE
 
         val (_, latestPosts) = res
 
