@@ -1,14 +1,11 @@
 package pw.mihou.amelia.discord
 
-import com.mongodb.client.model.Filters
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
 import org.javacord.api.DiscordApi
 import org.javacord.api.entity.activity.ActivityType
 import org.javacord.api.entity.intent.Intent
-import org.javacord.api.listener.server.ServerLeaveListener
 import pw.mihou.amelia.configuration.Configuration
-import pw.mihou.amelia.db.MongoDB
 import pw.mihou.amelia.discord.commands.AnnounceCommand
 import pw.mihou.amelia.discord.commands.FeedSubscriptionCommand
 import pw.mihou.amelia.discord.commands.FeedsCommand
@@ -20,6 +17,7 @@ import pw.mihou.amelia.discord.delegates.NexusConfigurator
 import pw.mihou.amelia.discord.delegates.ReaktConfigurator
 import pw.mihou.amelia.discord.listeners.ActivityListener
 import pw.mihou.amelia.discord.listeners.AnnouncementModalListener
+import pw.mihou.amelia.discord.listeners.CleanupServerListener
 import pw.mihou.amelia.logger.logger
 import pw.mihou.amelia.scheduledExecutorService
 import pw.mihou.amelia.tasks.FeedTask
@@ -60,13 +58,7 @@ object DiscordClient : DiscordClientInterface {
         buildList {
             add(AnnouncementModalListener)
             add(ActivityListener)
-            add(
-                ServerLeaveListener { event ->
-                    MongoDB.client.getDatabase("amelia").getCollection("feeds").deleteMany(
-                        Filters.eq("server", event.server.id),
-                    )
-                },
-            )
+            add(CleanupServerListener)
         }
 
     var GlobalMiddlewares = buildList<String> { }
