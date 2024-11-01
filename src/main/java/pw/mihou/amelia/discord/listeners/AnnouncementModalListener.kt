@@ -1,4 +1,4 @@
-package pw.mihou.amelia.listeners
+package pw.mihou.amelia.discord.listeners
 
 import java.awt.Color
 import org.javacord.api.entity.message.MessageFlag

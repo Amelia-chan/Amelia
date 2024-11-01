@@ -20,7 +20,7 @@ import pw.mihou.amelia.discord.commands.RemoveCommand
 import pw.mihou.amelia.discord.commands.TestCommand
 import pw.mihou.amelia.discord.delegates.NexusConfigurator
 import pw.mihou.amelia.discord.delegates.ReaktConfigurator
-import pw.mihou.amelia.listeners.AnnouncementModalListener
+import pw.mihou.amelia.discord.listeners.AnnouncementModalListener
 import pw.mihou.amelia.logger.logger
 import pw.mihou.amelia.scheduledExecutorService
 import pw.mihou.amelia.tasks.FeedTask
