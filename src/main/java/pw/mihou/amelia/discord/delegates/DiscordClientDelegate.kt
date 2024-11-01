@@ -73,6 +73,7 @@ object DiscordClientDelegate {
             .setToken(Configuration.DISCORD_TOKEN)
             .setTotalShards(1)
             .setIntents(*DiscordClient.Intents.toTypedArray())
+            .addListener(Nexus)
             .withListeners
 }
 

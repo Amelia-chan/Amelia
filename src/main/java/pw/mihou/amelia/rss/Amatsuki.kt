@@ -2,7 +2,9 @@ package pw.mihou.amelia.rss
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import java.time.Duration
+import org.jsoup.Jsoup
 import pw.mihou.Amaririsu
+import pw.mihou.amelia.configuration.Configuration
 import pw.mihou.amelia.db.models.FeedModel
 import pw.mihou.amelia.logger.logger
 import pw.mihou.amelia.rss.reader.FeedItem
@@ -17,11 +19,11 @@ object Amatsuki {
             .build<String, Cacheable>()
 
     private val BASE_STORY_URL: (Int) -> String = { id ->
-        "https://scribblehub.com/series/$id/amelia-discord-bot/"
+        "${Configuration.BASE_SCRIBBLEHUB_URL}/series/$id/amelia-discord-bot/"
     }
     private val BASE_USER_URL: (
         Int,
-    ) -> String = { id -> "https://scribblehub.com/profile/$id/amelia-discord-bot/" }
+    ) -> String = { id -> "${Configuration.BASE_SCRIBBLEHUB_URL}/profile/$id/amelia-discord-bot/" }
 
     fun init() {
         Amaririsu.set(
@@ -36,6 +38,21 @@ object Amatsuki {
                 }
             },
         )
+        Amaririsu.connector = { url ->
+            val replacedUrl =
+                url.replaceFirst(
+                    "https://www.scribblehub.com",
+                    Configuration.BASE_SCRIBBLEHUB_URL,
+                )
+            logger.info("Connecting $replacedUrl")
+            var conn =
+                Jsoup
+                    .connect(replacedUrl)
+            Configuration.BASE_AUTHORIZATION_TOKEN?.let {
+                conn = conn.header("Authorization", it)
+            }
+            conn.get()
+        }
     }
 
     fun authorFrom(

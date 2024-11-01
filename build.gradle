@@ -40,8 +40,9 @@ dependencies {
 
     implementation 'pw.mihou:nexus:fd92045cb8'
     implementation 'pw.mihou:nexus.coroutines:582083f6cb'
-    implementation 'pw.mihou:reakt.discord:05c76979ff'
+    implementation 'pw.mihou:reakt.discord:3d5a38f5ab'
 
+    implementation 'org.jsoup:jsoup:1.15.3'
     implementation 'pw.mihou:Amaririsu:ba71149da1'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC'
