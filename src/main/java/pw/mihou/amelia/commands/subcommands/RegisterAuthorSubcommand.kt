@@ -56,8 +56,7 @@ object RegisterAuthorSubcommand {
                                 .toList()
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        error =
-                            "❌ Failed to connect to ScribbleHub. It's possible that the site is down or having issues."
+                        error = TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE
                     }
                 }
             }
