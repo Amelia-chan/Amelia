@@ -1,4 +1,4 @@
-package pw.mihou.amelia.feeds
+package pw.mihou.amelia.db.methods.feeds
 
 import com.mongodb.client.model.Filters
 import org.javacord.api.entity.channel.ServerTextChannel

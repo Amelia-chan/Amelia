@@ -5,8 +5,8 @@ import org.javacord.api.interaction.SlashCommandOptionType
 import pw.mihou.amelia.Amelia
 import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.configuration.Configuration
+import pw.mihou.amelia.db.methods.feeds.Feeds
 import pw.mihou.amelia.db.models.FeedModel
-import pw.mihou.amelia.feeds.Feeds
 import pw.mihou.amelia.rss.reader.RssReader
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent

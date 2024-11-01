@@ -9,7 +9,7 @@ import pw.mihou.amelia.commands.components.PlainEmbed
 import pw.mihou.amelia.commands.components.UserResultEmbed
 import pw.mihou.amelia.commands.hooks.useDeletable
 import pw.mihou.amelia.commands.hooks.useLoader
-import pw.mihou.amelia.feeds.Feeds
+import pw.mihou.amelia.db.methods.feeds.Feeds
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.models.user.UserResultOrAuthor
 import pw.mihou.nexus.coroutines.utils.coroutine
