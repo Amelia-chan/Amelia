@@ -1,4 +1,4 @@
-package pw.mihou.amelia.templates
+package pw.mihou.amelia.commands.templates
 
 import pw.mihou.amelia.configuration.Configuration
 

@@ -7,7 +7,7 @@ import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.commands.subcommands.RegisterAuthorSubcommand
 import pw.mihou.amelia.commands.subcommands.RegisterHelpSubcommand
 import pw.mihou.amelia.commands.subcommands.RegisterListSubcommand
-import pw.mihou.amelia.templates.TemplateMessages
+import pw.mihou.amelia.commands.templates.TemplateMessages
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler
 

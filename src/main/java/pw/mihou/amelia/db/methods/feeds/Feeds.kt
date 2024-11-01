@@ -5,10 +5,10 @@ import org.javacord.api.entity.channel.ServerTextChannel
 import org.javacord.api.entity.server.Server
 import org.javacord.api.entity.user.User
 import org.javacord.api.interaction.SlashCommandInteractionOption
+import pw.mihou.amelia.commands.templates.TemplateMessages
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
 import pw.mihou.amelia.rss.reader.RssReader
-import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.models.user.UserResultOrAuthor
 
 object Feeds {
