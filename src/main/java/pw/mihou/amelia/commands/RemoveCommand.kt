@@ -1,6 +1,5 @@
 package pw.mihou.amelia.commands
 
-import com.mongodb.client.model.Filters
 import java.awt.Color
 import org.javacord.api.entity.message.embed.EmbedBuilder
 import org.javacord.api.interaction.SlashCommandOption
@@ -8,6 +7,7 @@ import org.javacord.api.interaction.SlashCommandOptionType
 import pw.mihou.amelia.commands.middlewares.Middlewares
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
+import pw.mihou.amelia.feeds.Feeds
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.amelia.utility.confirmationMenu
 import pw.mihou.amelia.utility.redactListLink
@@ -50,31 +50,10 @@ object RemoveCommand : NexusHandler {
     private val middlewares = listOf(Middlewares.MODERATOR_ONLY)
 
     override fun onEvent(event: NexusCommandEvent) {
-        var feed: FeedModel? = null
+        val server = event.server.orElseThrow()
         val subcommand = event.interaction.options.first()
 
-        if (subcommand.name == "id") {
-            feed = FeedDatabase.get(subcommand.getArgumentLongValueByName("value").orElseThrow())
-
-            if (feed != null && feed.server != event.serverId.orElseThrow()) {
-                feed = null
-            }
-        }
-
-        if (subcommand.name == "name") {
-            feed =
-                FeedDatabase.connection
-                    .find(
-                        Filters.and(
-                            Filters.eq("server", event.serverId.orElseThrow()),
-                            Filters.text(
-                                subcommand.getArgumentStringValueByName("value").orElseThrow(),
-                            ),
-                        ),
-                    ).map { FeedModel.from(it) }
-                    .first()
-        }
-
+        val feed: FeedModel? = Feeds.findFeedBySubcommand(server, subcommand)
         if (feed == null) {
             event.respondNow().setContent(TemplateMessages.ERROR_FEED_NOT_FOUND).respond()
             return

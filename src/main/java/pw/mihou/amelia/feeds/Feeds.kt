@@ -1,7 +1,10 @@
 package pw.mihou.amelia.feeds
 
+import com.mongodb.client.model.Filters
 import org.javacord.api.entity.channel.ServerTextChannel
+import org.javacord.api.entity.server.Server
 import org.javacord.api.entity.user.User
+import org.javacord.api.interaction.SlashCommandInteractionOption
 import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
 import pw.mihou.amelia.rss.reader.RssReader
@@ -9,6 +12,36 @@ import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.models.user.UserResultOrAuthor
 
 object Feeds {
+    fun findFeedBySubcommand(
+        server: Server,
+        subcommand: SlashCommandInteractionOption,
+    ): FeedModel? {
+        var feed: FeedModel? = null
+
+        if (subcommand.name == "id") {
+            feed = FeedDatabase.get(subcommand.getArgumentLongValueByName("value").orElseThrow())
+
+            if (feed != null && feed.server != server.id) {
+                feed = null
+            }
+        }
+
+        if (subcommand.name == "name") {
+            feed =
+                FeedDatabase.connection
+                    .find(
+                        Filters.and(
+                            Filters.eq("server", server.id),
+                            Filters.text(
+                                subcommand.getArgumentStringValueByName("value").orElseThrow(),
+                            ),
+                        ),
+                    ).map { FeedModel.from(it) }
+                    .first()
+        }
+        return feed
+    }
+
     fun tryRegisterUser(
         id: Int,
         channel: ServerTextChannel,

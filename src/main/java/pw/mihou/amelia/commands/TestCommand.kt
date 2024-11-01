@@ -1,18 +1,17 @@
 package pw.mihou.amelia.commands
 
-import com.mongodb.client.model.Filters
 import org.javacord.api.interaction.SlashCommandOption
 import org.javacord.api.interaction.SlashCommandOptionType
 import pw.mihou.amelia.Amelia
 import pw.mihou.amelia.commands.middlewares.Middlewares
-import pw.mihou.amelia.db.FeedDatabase
 import pw.mihou.amelia.db.models.FeedModel
+import pw.mihou.amelia.feeds.Feeds
 import pw.mihou.amelia.rss.reader.RssReader
 import pw.mihou.amelia.templates.TemplateMessages
 import pw.mihou.nexus.features.command.facade.NexusCommandEvent
 import pw.mihou.nexus.features.command.facade.NexusHandler
 
-@Suppress("UNUSED")
+@Suppress("ktlint:standard:property-naming", "UNUSED", "ConstPropertyName")
 object TestCommand : NexusHandler {
     private const val name = "test"
     private const val description = "Tests a feed to make sure that Amelia is working on that feed."
@@ -49,31 +48,9 @@ object TestCommand : NexusHandler {
 
     override fun onEvent(event: NexusCommandEvent) {
         val server = event.server.orElseThrow()
-        var feed: FeedModel? = null
         val subcommand = event.interaction.options.first()
 
-        if (subcommand.name == "id") {
-            feed = FeedDatabase.get(subcommand.getArgumentLongValueByName("value").orElseThrow())
-
-            if (feed != null && feed.server != server.id) {
-                feed = null
-            }
-        }
-
-        if (subcommand.name == "name") {
-            feed =
-                FeedDatabase.connection
-                    .find(
-                        Filters.and(
-                            Filters.eq("server", event.serverId.orElseThrow()),
-                            Filters.text(
-                                subcommand.getArgumentStringValueByName("value").orElseThrow(),
-                            ),
-                        ),
-                    ).map { FeedModel.from(it) }
-                    .first()
-        }
-
+        val feed: FeedModel? = Feeds.findFeedBySubcommand(server, subcommand)
         if (feed == null) {
             event.respondNow().setContent(TemplateMessages.ERROR_FEED_NOT_FOUND).respond()
             return
@@ -87,7 +64,7 @@ object TestCommand : NexusHandler {
                 if (result == null) {
                     updater
                         .setContent(
-                            "❌ Amelia encountered a problem while trying to send: ScribbleHub is not accessible.",
+                            TemplateMessages.ERROR_SCRIBBLEHUB_NOT_ACCESSIBLE,
                         ).update()
                     return@thenAccept
                 }
